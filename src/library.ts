@@ -1,3 +1,6 @@
+import axios from 'axios'
+import { CanvasRenderingContext2D } from 'canvas'
+
 export const heroEmotes: {[char: string]: string} = {
     'All': '**All**',
     'Monk': '<:monk:250374207194529812>',
@@ -494,7 +497,6 @@ export function abbreviateAllNumbers(string: string){
     return string
 }
 
-import axios from 'axios'
 /**
  * Takes an Imgur link and returns a list of direct image links. Works with Albums and Galleries.
  * @param url An Imgur link

@@ -1,7 +1,7 @@
 import { CommandInteraction, MessageActionRow, MessageAttachment, MessageSelectMenu } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { findBestMatch } from 'string-similarity'
-import { createCanvas, loadImage } from 'canvas'
+import { Image, createCanvas, loadImage } from 'canvas'
 import { defenseBuildData, defenseImages, shards } from '../index'
 import { wrapText, drawCentered } from '../library'
 
@@ -63,12 +63,12 @@ module.exports = {
 			if (defense.mods[0].qualibean) qualibean1 = await loadImage(qualibeans[parseInt(defense.mods[0].qualibean)-1])
 			if (defense.mods[1].qualibean) qualibean2 = await loadImage(qualibeans[parseInt(defense.mods[1].qualibean)-1])
 			if (defense.mods[2].qualibean) qualibean3 = await loadImage(qualibeans[parseInt(defense.mods[2].qualibean)-1])
-			if (defense.mods[0].qualibean) ctx.drawImage(qualibean1, 82, 254, 25, 37)
-			if (defense.mods[1].qualibean) ctx.drawImage(qualibean2, 82, 297, 25, 37)
-			if (defense.mods[2].qualibean) ctx.drawImage(qualibean3, 82, 339, 25, 37)
-			if (defense.mods[0].name)      wrapText(ctx, defense.mods[0].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 273, 200, 20)
-			if (defense.mods[1].name)      wrapText(ctx, defense.mods[1].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 315, 200, 20)
-			if (defense.mods[2].name)      wrapText(ctx, defense.mods[2].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 357, 200, 20)
+			if (qualibean1 && defense.mods[0].qualibean) ctx.drawImage(qualibean1, 82, 254, 25, 37)
+			if (qualibean2 && defense.mods[1].qualibean) ctx.drawImage(qualibean2, 82, 297, 25, 37)
+			if (qualibean3 && defense.mods[2].qualibean) ctx.drawImage(qualibean3, 82, 339, 25, 37)
+			if (defense.mods[0].name) wrapText(ctx, defense.mods[0].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 273, 200, 20)
+			if (defense.mods[1].name) wrapText(ctx, defense.mods[1].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 315, 200, 20)
+			if (defense.mods[2].name) wrapText(ctx, defense.mods[2].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 357, 200, 20)
 	
 			return new MessageAttachment(canvas.toBuffer('image/png'), `${defense.name}.png`)
 		}

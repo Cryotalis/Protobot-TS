@@ -728,5 +728,5 @@ client.on('interactionCreate', async interaction => {
 client.login(process.env.BOT_TOKEN)
 
 process.on('uncaughtException', function (error) {
-	errorChannel.send({files: [new MessageAttachment(Buffer.from(inspect(error, {depth: null}), 'utf-8'), 'error.ts')]})
+	errorChannel?.send({files: [new MessageAttachment(Buffer.from(inspect(error, {depth: null}), 'utf-8'), 'error.ts')]})
 })
