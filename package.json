@@ -1,5 +1,5 @@
 {
-  "name": "protobot-ts-old",
+  "name": "protobot-ts",
   "version": "1.0.0",
   "description": "A DD2 Discord bot written in Typescript with Discord.js.",
   "main": "./prod/index.js",
@@ -7,11 +7,11 @@
     "build": "tsc",
     "start": "node -r ./prod/index.js",
     "postinstall": "npm run build",
-    "go": "tsc && node -r dotenv/config ./prod/index.js"
+    "startup": "tsc && node -r dotenv/config ./prod/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Cryotalis/Protobot-TS-Old.git"
+    "url": "git+https://github.com/Cryotalis/Protobot-TS.git"
   },
   "engines": {
     "node": "16.13.0",
@@ -19,11 +19,11 @@
   },
   "keywords": [],
   "author": "Cryo",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/Cryotalis/Protobot-TS-Old/issues"
+    "url": "https://github.com/Cryotalis/Protobot-TS/issues"
   },
-  "homepage": "https://github.com/Cryotalis/Protobot-TS-Old#readme",
+  "homepage": "https://github.com/Cryotalis/Protobot-TS#readme",
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
     "@discordjs/rest": "^0.3.0",
