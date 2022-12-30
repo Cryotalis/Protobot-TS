@@ -1,0 +1,55 @@
+{
+  "name": "protobot-ts-old",
+  "version": "1.0.0",
+  "description": "A DD2 Discord bot written in Typescript with Discord.js.",
+  "main": "./prod/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node -r ./prod/index.js",
+    "postinstall": "npm run build",
+    "go": "tsc && node -r dotenv/config ./prod/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cryotalis/Protobot-TS-Old.git"
+  },
+  "engines": {
+    "node": "16.13.0",
+    "npm": "8.1.4"
+  },
+  "keywords": [],
+  "author": "Cryo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Cryotalis/Protobot-TS-Old/issues"
+  },
+  "homepage": "https://github.com/Cryotalis/Protobot-TS-Old#readme",
+  "dependencies": {
+    "@discordjs/builders": "^0.12.0",
+    "@discordjs/rest": "^0.3.0",
+    "@google-cloud/translate": "^7.0.1",
+    "axios": "^0.27.2",
+    "canvas": "^2.9.1",
+    "discord-api-types": "^0.37.1",
+    "discord.js": "^13.8.1",
+    "dotenv": "^10.0.0",
+    "google-spreadsheet": "^3.2.0",
+    "html-entities": "^2.3.2",
+    "node-cron": "^3.0.0",
+    "node-fetch": "^2.6.6",
+    "node-html-parser": "^6.1.1",
+    "node-schedule": "^2.1.0",
+    "rss-parser": "^3.12.0",
+    "string-similarity": "^4.0.4",
+    "unescape": "^1.0.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/google-spreadsheet": "^3.1.5",
+    "@types/node": "^16.11.10",
+    "@types/node-cron": "^3.0.1",
+    "@types/node-schedule": "^2.1.0",
+    "@types/string-similarity": "^4.0.0",
+    "typescript": "^4.5.2"
+  }
+}
