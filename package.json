@@ -26,6 +26,7 @@
   "homepage": "https://github.com/Cryotalis/Protobot-TS#readme",
   "dependencies": {
     "@canvas-fonts/arial": "^1.0.4",
+    "@canvas-fonts/arial-bold": "^1.0.4",
     "@discordjs/builders": "^0.12.0",
     "@discordjs/rest": "^0.3.0",
     "@google-cloud/translate": "^7.0.1",

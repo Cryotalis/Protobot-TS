@@ -12,12 +12,15 @@ import os from 'os'
 import Parser from 'rss-parser'
 import axios from 'axios'
 import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, timeToUnix } from './library'
+import { registerFont } from 'canvas'
 
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]})
 export const isHost = os.hostname() !== 'PC-Hywell'
 export const botSettings = {
 	'developerMode': false, // Ignores all inputs from me (Cryo) if true
 }
+registerFont(require('@canvas-fonts/arial'), {family: 'Arial'})
+registerFont(require('@canvas-fonts/arial-bold'), {family: 'Arial Bold'})
 
 const privateCommandFiles = ['run.js', 'say.js']
 const gameCommandNames = ['defense', 'drakenfrost', 'faq', 'image', 'link', 'listmods', 'listshards', 'minasc', 'mod', 'price', 'rate', 'shard', 'report', 'wiki']

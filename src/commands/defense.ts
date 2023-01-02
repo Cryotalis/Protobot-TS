@@ -35,8 +35,8 @@ module.exports = {
 			ctx.stroke()
 	
 			/* Writing the Defense name and role*/
-			wrapText(ctx, defense.name, 'center', 'bold 27px Arial', 'black', 'white', 229, 52, 200, 27)
-			drawCentered(ctx, defense.role, 'bold 17px Arial', 'black', '#E06666', 229, 95)
+			wrapText(ctx, defense.name, 'center', '27px Arial Bold', 'black', 'white', 229, 52, 200, 27)
+			drawCentered(ctx, defense.role, '17px Arial Bold', 'black', '#E06666', 229, 95)
 	
 			/* Drawing the icons for Shard and Relic */
 			const shardIcon = await loadImage('https://i.imgur.com/phrdKZu.png')
@@ -52,10 +52,10 @@ module.exports = {
 			if (shardDropIcon1) ctx.drawImage(shardDropIcon1, 80, 132, 30, 30)
 			if (shardDropIcon2) ctx.drawImage(shardDropIcon2, 80, 174, 30, 30)
 			if (shardDropIcon3) ctx.drawImage(shardDropIcon3, 80, 216, 30, 30)
-			if (shardDropIcon1) wrapText(ctx, defense.shards[0], 'left', 'bold 22px Arial', 'black', 'white', 126, 147, 200, 20)
-			if (shardDropIcon2) wrapText(ctx, defense.shards[1], 'left', 'bold 22px Arial', 'black', 'white', 126, 189, 200, 20)
-			if (shardDropIcon3) wrapText(ctx, defense.shards[2], 'left', 'bold 22px Arial', 'black', 'white', 126, 231, 200, 20)
-			if (defense.shards[2] === 'OR') wrapText(ctx, defense.shards[2], 'left', 'bold 22px Arial', 'black', 'white', 126, 252, 200, 20)
+			if (shardDropIcon1) wrapText(ctx, defense.shards[0], 'left', '22px Arial Bold', 'black', 'white', 126, 147, 200, 20)
+			if (shardDropIcon2) wrapText(ctx, defense.shards[1], 'left', '22px Arial Bold', 'black', 'white', 126, 189, 200, 20)
+			if (shardDropIcon3) wrapText(ctx, defense.shards[2], 'left', '22px Arial Bold', 'black', 'white', 126, 231, 200, 20)
+			if (defense.shards[2] === 'OR') wrapText(ctx, defense.shards[2], 'left', '22px Arial Bold', 'black', 'white', 126, 252, 200, 20)
 
 			/* Drawing the Mods and Qualibean Icons */
 			let qualibean1, qualibean2, qualibean3
@@ -66,9 +66,9 @@ module.exports = {
 			if (qualibean1 && defense.mods[0].qualibean) ctx.drawImage(qualibean1, 82, 254, 25, 37)
 			if (qualibean2 && defense.mods[1].qualibean) ctx.drawImage(qualibean2, 82, 297, 25, 37)
 			if (qualibean3 && defense.mods[2].qualibean) ctx.drawImage(qualibean3, 82, 339, 25, 37)
-			if (defense.mods[0].name) wrapText(ctx, defense.mods[0].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 273, 200, 20)
-			if (defense.mods[1].name) wrapText(ctx, defense.mods[1].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 315, 200, 20)
-			if (defense.mods[2].name) wrapText(ctx, defense.mods[2].name, 'left', 'bold 22px Arial', 'black', 'white', 126, 357, 200, 20)
+			if (defense.mods[0].name) wrapText(ctx, defense.mods[0].name, 'left', '22px Arial Bold', 'black', 'white', 126, 273, 200, 20)
+			if (defense.mods[1].name) wrapText(ctx, defense.mods[1].name, 'left', '22px Arial Bold', 'black', 'white', 126, 315, 200, 20)
+			if (defense.mods[2].name) wrapText(ctx, defense.mods[2].name, 'left', '22px Arial Bold', 'black', 'white', 126, 357, 200, 20)
 	
 			return new MessageAttachment(canvas.toBuffer('image/png'), `${defense.name}.png`)
 		}
