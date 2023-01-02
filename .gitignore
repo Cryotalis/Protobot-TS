@@ -6,3 +6,6 @@ test.js
 test.ts
 test.json
 settings.ts
+.dockerignore
+Dockerfile
+fly.toml

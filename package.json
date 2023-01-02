@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/Cryotalis/Protobot-TS#readme",
   "dependencies": {
+    "@canvas-fonts/arial": "^1.0.4",
     "@discordjs/builders": "^0.12.0",
     "@discordjs/rest": "^0.3.0",
     "@google-cloud/translate": "^7.0.1",
@@ -39,6 +40,7 @@
     "node-fetch": "^2.6.6",
     "node-html-parser": "^6.1.1",
     "node-schedule": "^2.1.0",
+    "npm": "^8.1.4",
     "rss-parser": "^3.12.0",
     "string-similarity": "^4.0.4",
     "unescape": "^1.0.1",
