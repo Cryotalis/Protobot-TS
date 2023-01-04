@@ -20,7 +20,7 @@ export const heroEmotes: {[char: string]: string} = {
     'Countess': '<:Countess:981719805784629308>',
 }
 
-export let timeZoneOffsets = [
+export const timeZoneOffsets = [
     { name: 'A', offset: 'UTC +1' },
     { name: 'ACDT', offset: 'UTC +10:30' },
     { name: 'ACST', offset: 'UTC +9:30' },
@@ -275,7 +275,7 @@ export let timeZoneOffsets = [
  * Added - fil as a language code for Filipino
  * DO NOT REMOVE ANY ENTRIES, ONLY NAMES CAN BE CHANGED
  */
-export let languageCodes = [
+export const languageCodes = [
     {code:'af', name:'Afrikaans'},
     {code:'ak', name:'Akan'},
     {code:'sq', name:'Albanian'},
@@ -416,45 +416,44 @@ export let languageCodes = [
     {code:'he', name:'Hebrew'},
 ]
 
-export let TZdefault = timeZoneOffsets.find(TZ => TZ.name === 'EST')! //Set the default timezone to use for functions
+export const TZdefault = timeZoneOffsets.find(TZ => TZ.name === 'EST')! //Set the default timezone to use for functions
 
 /**
  * Converts UTC offset in format ±hours:minutes to minutes
  * @param {String} offset - The UTC offset in format ±hours:minutes 
  */
 export function parseOffset(offset: string){
-    let hours = parseInt(offset.match(/-?\d+/)![0])
-    let minutes = /:\d+/.test(offset) ? parseInt(offset.match(/(?<=:)\d+/)![0]) : 0
+    const hours = parseInt(offset.match(/-?\d+/)![0])
+    const minutes = /:\d+/.test(offset) ? parseInt(offset.match(/(?<=:)\d+/)![0]) : 0
     return hours * 60 + minutes
 }
 
 /**
  * Returns a time zone offset object with time zone name and offset. Defaults to UTC+0 if input is invalid.
  */
-export let findTimeZone = (timeZone: string) => timeZoneOffsets.find(TZ => TZ.name === timeZone.toUpperCase()) || TZdefault
+export const findTimeZone = (timeZone: string) => timeZoneOffsets.find(TZ => TZ.name === timeZone.toUpperCase()) || TZdefault
 
 /**
  * Returns the last word in a string
  */
-export let findLastWord = (string: string) => string.trim().split(' ').pop() || ''
+export const findLastWord = (string: string) => string.trim().split(' ').pop() || ''
 
 /**
  * Capitalizes the first letter of every word in a string
  */
-export let capitalize = (string: string) => string.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+export const capitalize = (string: string) => string.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 
 /**
  * Capitalizes the first letter in a string
  */
-export let capFirstLetter = (string: string) => string.charAt(0).toUpperCase() + string.slice(1)
+export const capFirstLetter = (string: string) => string.charAt(0).toUpperCase() + string.slice(1)
 
 /**
  * Formats an array of strings by inserting commas and replacing the last comma with ", and".
  */
 export function formatList(array: string[]){
-    let formattedList = array.join(', ')
-    formattedList = formattedList.replace(/(.+)\,(\s*)(.+$)/, '$1$2and $3')
-    return formattedList
+    const formattedList = array.join(', ')
+    return formattedList.replace(/(.+)\,(\s*)(.+$)/, '$1$2and $3')
 }
 
 /**
@@ -524,19 +523,19 @@ export function dateDiff(firstDate: Date, secondDate: Date, shortFormat: boolean
     let timeDiff = Math.abs(secondDate.getTime() - firstDate.getTime()) / 1000 //Gets difference between the dates in seconds
 
     //Calculates difference of days, hours, minutes, seconds
-    let days = Math.floor(timeDiff / 86400)
+    const days = Math.floor(timeDiff / 86400)
     timeDiff -= days * 86400
-    let hours = Math.floor(timeDiff / 3600)
+    const hours = Math.floor(timeDiff / 3600)
     timeDiff -= hours * 3600
-    let minutes = Math.floor(timeDiff / 60)
+    const minutes = Math.floor(timeDiff / 60)
     timeDiff -= minutes * 60
-    let seconds = Math.floor(timeDiff)
+    const seconds = Math.floor(timeDiff)
 
     //Labels days, hours, minutes, seconds grammatically and leaves blank when appropriate
-    let daysOutput = days === 1 ? `${days} day,` : days ? `${days} days,` : ''
-    let hoursOutput = hours === 1 ? `${hours} hour,` : hours ? `${hours} hours,` : ''
-    let minutesOutput = minutes === 1 ? `${minutes} minute,` : minutes ? `${minutes} minutes,` : ''
-    let secondsOutput = seconds === 1 ? `${seconds} second,` : seconds ? `${seconds} seconds,` : ''
+    const daysOutput = days === 1 ? `${days} day,` : days ? `${days} days,` : ''
+    const hoursOutput = hours === 1 ? `${hours} hour,` : hours ? `${hours} hours,` : ''
+    const minutesOutput = minutes === 1 ? `${minutes} minute,` : minutes ? `${minutes} minutes,` : ''
+    const secondsOutput = seconds === 1 ? `${seconds} second,` : seconds ? `${seconds} seconds,` : ''
     let dateString = `${daysOutput} ${hoursOutput} ${minutesOutput} ${secondsOutput}`
         .replace(/,(?=[^,]*$)/, '') //removes extra comma at the end of the string
         .replace(/,(?=[^,]*$)/, ' and') //replaces last comma in string with "and"
@@ -548,10 +547,10 @@ export function dateDiff(firstDate: Date, secondDate: Date, shortFormat: boolean
  * Converts time duration input to unix. Format: a days b hours c minutes d seconds.
  */
 export function timeToUnix(time: string) { //Converts a day/hour/minute/second time input to unix
-    let days = /\d+\s?d/i.test(time) ? parseInt(time.match(/\d+\s?d/i)![0]) : (/\sd/i.test(time) || /^d/i.test(time)) ? 1 : 0
-    let hours = /\d+\s?h/i.test(time) ? parseInt(time.match(/\d+\s?h/i)![0]) : (/\sh/i.test(time) || /^h/i.test(time)) ? 1 : 0
-    let minutes = /\d+\s?m/i.test(time) ? parseInt(time.match(/\d+\s?m/i)![0]) : (/\sm/i.test(time) || /^m/i.test(time)) ? 1 : 0
-    let seconds = /\d+\s?s/i.test(time) ? parseInt(time.match(/\d+\s?s/i)![0]) : (/\ss/i.test(time) || /^s/i.test(time)) ? 1 : 0
+    const days = /\d+\s?d/i.test(time) ? parseInt(time.match(/\d+\s?d/i)![0]) : (/\sd/i.test(time) || /^d/i.test(time)) ? 1 : 0
+    const hours = /\d+\s?h/i.test(time) ? parseInt(time.match(/\d+\s?h/i)![0]) : (/\sh/i.test(time) || /^h/i.test(time)) ? 1 : 0
+    const minutes = /\d+\s?m/i.test(time) ? parseInt(time.match(/\d+\s?m/i)![0]) : (/\sm/i.test(time) || /^m/i.test(time)) ? 1 : 0
+    const seconds = /\d+\s?s/i.test(time) ? parseInt(time.match(/\d+\s?s/i)![0]) : (/\ss/i.test(time) || /^s/i.test(time)) ? 1 : 0
     return days * 86400000 + hours * 3600000 + minutes * 60000 + seconds * 1000
 }
 
@@ -560,15 +559,15 @@ export function timeToUnix(time: string) { //Converts a day/hour/minute/second t
  */
 export function dateStringToUnix(dateString: string) {
     dateString = dateString.toLowerCase().replace(/[^a-zA-Z0-9\s\/:]/g, '') //Remove any characters that aren't words/numbers/spaces/slashes
-    let now = new Date()
-    let year = now.getFullYear().toString()
-    let months = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
-    let month = months.find(m => dateString.toLowerCase().includes(m))
-    let timeFormat = new RegExp(/(\d+\s*:\s*\d+\s*:?\s*\d*\s*(AM|PM)?)|(\d+\s*(AM|PM))/i)
-    let abbreviated = new RegExp('(\\d\\d?)\\s*/\\s*(\\d\\d?)\\s*/?\\s*(\\d*)') // 1/1/1970
-    let american = new RegExp(`(${month}\\w*)\\s+(\\d+)(?:\\w*)\\s*(\\d*)`) // January 1, 1970
-    let british = new RegExp(`(\\d+)(?:\\w*)\\s*(${month}\\w*)\\s*(\\d*)`) // 1 January, 1970
-    let mdyTimeZones = ['sst', 'pdt', 'pst', 'pt', 'ndt', 'nst', 'adt', 'ast', 'at', 'est', 'edt', 'et', 'cst', 'cdt', 'ct', 'mst', 'mdt', 'mt', 'chut', 'pont', 'kost', 'chst', 'jst', 'kst', 'mht', 'pht', 'aoe', 'wakt', 'hst', 'akdt'] //Timezones that use the Month/Day/Year format
+    const now = new Date()
+    const year = now.getFullYear().toString()
+    const months = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ]
+    const month = months.find(m => dateString.toLowerCase().includes(m))
+    const timeFormat = new RegExp(/(\d+\s*:\s*\d+\s*:?\s*\d*\s*(AM|PM)?)|(\d+\s*(AM|PM))/i)
+    const abbreviated = new RegExp('(\\d\\d?)\\s*/\\s*(\\d\\d?)\\s*/?\\s*(\\d*)') // 1/1/1970
+    const american = new RegExp(`(${month}\\w*)\\s+(\\d+)(?:\\w*)\\s*(\\d*)`) // January 1, 1970
+    const british = new RegExp(`(\\d+)(?:\\w*)\\s*(${month}\\w*)\\s*(\\d*)`) // 1 January, 1970
+    const mdyTimeZones = ['sst', 'pdt', 'pst', 'pt', 'ndt', 'nst', 'adt', 'ast', 'at', 'est', 'edt', 'et', 'cst', 'cdt', 'ct', 'mst', 'mdt', 'mt', 'chut', 'pont', 'kost', 'chst', 'jst', 'kst', 'mht', 'pht', 'aoe', 'wakt', 'hst', 'akdt'] //Timezones that use the Month/Day/Year format
     let date = '', time = dateString.match(timeFormat)![0], timeZone = TZdefault.name
 
     if (time) { //Extracts the time, if it was provided
@@ -579,7 +578,7 @@ export function dateStringToUnix(dateString: string) {
     }
 
     let dateData: RegExpMatchArray = []
-    let getDateData = (format: RegExp) => {
+    function getDateData(format: RegExp){
         if (dateString.replace(format, '').trim()) {timeZone = dateString.replace(format, '').trim().split(' ').at(-1)!} //Note the time zone if it was provided
         dateData = dateString.match(format)!
         if (!dateData[3]) {dateData[3] = year}
@@ -600,14 +599,14 @@ export function dateStringToUnix(dateString: string) {
         date = `${dateData[2]} ${dateData[1]} ${dateData[3]}`
     } else if (time) { //If a date wasn't specified, use today's date
         if (dateString) {timeZone = dateString.trim().split(' ').at(-1)!}
-        let timeZoneOffset = findTimeZone(timeZone).offset
+        const timeZoneOffset = findTimeZone(timeZone).offset
         now.setHours(new Date().getHours() + parseInt(timeZoneOffset.match(/-?\d+/)![0]))
         date = `${now.getMonth() + 1}/${now.getDate()}/${year}`
     } else {
         return null
     }
 
-    let timeZoneOffset = findTimeZone(timeZone).offset
+    const timeZoneOffset = findTimeZone(timeZone).offset
     return isNaN(Date.parse(`${date} ${time} ${timeZoneOffset}`)) ? Date.parse(`${date} ${time}`) : Date.parse(`${date} ${time} ${timeZoneOffset}`)
 }
 
@@ -619,8 +618,8 @@ export function dateToString(date: Date, timeZone: string = 'UTC', showTZ: boole
     date.setMinutes(date.getMinutes() + new Date().getTimezoneOffset()) //Ensures that the function uses UTC rather than the system timezone. Unecessary in if host uses UTC.
     date.setMinutes(date.getMinutes() + parseOffset(findTimeZone(timeZone).offset)) //Add the offset from UTC to the date
     let dateString = String(date).replace(/\sGMT.\d{4}\s\(.+\)/, '') //Removes the timezone offset in GMT from the date string
-    let hours = parseInt(dateString.match(/\d\d:/)![0])
-    let ampm = hours < 12 ? 'AM' : 'PM'
+    const hours = parseInt(dateString.match(/\d\d:/)![0])
+    const ampm = hours < 12 ? 'AM' : 'PM'
 
     if (hours > 12) {dateString = dateString.replace(`${hours}:`, `${hours - 12}:`)} //Coerce the output to 12 hour format
     if (hours === 0) {dateString = dateString.replace(`${hours}:`, `${hours + 12}:`)} //Coerce the output to 12 hour format
@@ -648,13 +647,13 @@ export function wrapText(ctx: CanvasRenderingContext2D, text: string, alignment:
     ctx.lineWidth = 3
     ctx.fillStyle = color
     ctx.textBaseline = 'middle'
-    let words = text.split(' ')
+    const words = text.split(' ')
     let line = ''
     
     for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' '
-        let metrics = ctx.measureText(testLine)
-        let testWidth = metrics.width
+        const testLine = line + words[n] + ' '
+        const metrics = ctx.measureText(testLine)
+        const testWidth = metrics.width
         if (testWidth > maxWidth && n > 0) {
             // textY -= 20
             textY -= (ctx.measureText(text).actualBoundingBoxAscent + ctx.measureText(text).actualBoundingBoxDescent) / 2
