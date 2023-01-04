@@ -325,7 +325,7 @@ schedule('* * * * *', () => {
 })
 
 // Twitch Live Notifications
-const twitchCredentials = getTwitchAccessToken(process.env.TWITCH_CLIENT_ID!, process.env.TWITCH_CLIENT_SECRET!)
+export const twitchCredentials = getTwitchAccessToken(process.env.TWITCH_CLIENT_ID!, process.env.TWITCH_CLIENT_SECRET!)
 schedule('* * * * *', () => {
 	if (!isHost || !twitchCredentials || !twitchChannels) return
 	twitchChannels.forEach(async channel => {
