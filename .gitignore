@@ -6,6 +6,8 @@ test.js
 test.ts
 test.json
 settings.ts
+
+# For use with Fly.io
 .dockerignore
 Dockerfile
 fly.toml

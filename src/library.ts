@@ -689,3 +689,72 @@ export function drawCentered(ctx: CanvasRenderingContext2D, text: string, font: 
     ctx.fillStyle = color
     ctx.fillText(text, x, y)
 }
+
+export interface accessTokenObj {access_token: string, expires_in: number, token_type: string}
+/**
+ * Generates a twitch access token. Access tokens expire in around 2 months from date of creation.
+ * 
+ * - Documentation: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#client-credentials-grant-flow
+ * - Console: https://dev.twitch.tv/console
+ */
+export async function getTwitchAccessToken(clientID: string, clientSecret: string): Promise<accessTokenObj>{
+    const {data} = await axios.post(`https://id.twitch.tv/oauth2/token`, null, {
+        params: {
+            client_id: clientID,
+            client_secret: clientSecret,
+            grant_type: 'client_credentials'
+        }
+    })
+    return data
+}
+
+export interface streamInfo {
+    id: string,
+    user_id: string,
+    user_login: string,
+    user_name: string,
+    game_id: string,
+    game_name: string,
+    type: string,
+    title: string,
+    viewer_count: number,
+    started_at: string,
+    language: string,
+    thumbnail_url: string,
+    tag_ids: string[],
+    tags: string[],
+    is_mature: boolean
+}
+
+export interface userInfo {
+    id: string,
+    login: string,
+    display_name: string,
+    type: string,
+    broadcaster_type: string,
+    description: string,
+    profile_image_url: string,
+    offline_image_url: string,
+    view_count: number,
+    created_at: string
+}
+/**
+ * Gets info about a Twitch User's channel or stream
+ * 
+ * Documentation: 
+ * - https://dev.twitch.tv/docs/api/reference#get-users
+ * - https://dev.twitch.tv/docs/api/reference#get-streams
+ * @param username 
+ * @param type 0 for channel info and 1 for stream info. Defaults to 0.
+ * @return User info object or stream info object. If stream is not live, returns undefined.
+ */
+export async function getTwitchUserInfo(username: string, type = 0): Promise<userInfo | streamInfo | undefined>{
+    const query = [`users?login=${username}`, `streams?user_login=${username}`][type]
+    const {data: {data: [info]}} = await axios.get(`https://api.twitch.tv/helix/${query}`, {
+        headers: {
+            'Client-ID': process.env.TWITCH_CLIENT_ID!,
+            'Authorization': `Bearer ${process.env.TWITCH_ACCESS_TOKEN}`
+        }
+    })
+    return info
+}

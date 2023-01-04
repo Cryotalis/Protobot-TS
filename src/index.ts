@@ -1,4 +1,4 @@
-import { Client, Collection, Intents, Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, MessageOptions, Modal, ModalActionRowComponent, TextChannel, TextInputComponent, User } from 'discord.js'
+import { Client, Collection, Intents, Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, Modal, ModalActionRowComponent, TextChannel, TextInputComponent, User } from 'discord.js'
 import { Routes } from 'discord-api-types/v9'
 import { REST } from '@discordjs/rest'
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
@@ -11,7 +11,7 @@ import fs from 'node:fs'
 import os from 'os'
 import Parser from 'rss-parser'
 import axios from 'axios'
-import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, timeToUnix } from './library'
+import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library'
 import { registerFont } from 'canvas'
 
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]})
@@ -80,9 +80,17 @@ export async function registerCommands() {
 // Connecting to the Database
 export let publicDB: GoogleSpreadsheet
 export let privateDB: GoogleSpreadsheet
+
 export let defenseBuilds: GoogleSpreadsheet
 export let defenseImages: Array<GoogleSpreadsheetRow>
+
+export let auctions: Array<GoogleSpreadsheetRow>
 export let userLogs: Array<GoogleSpreadsheetRow>
+export let youtubeChannels: Array<GoogleSpreadsheetRow>
+export let twitchChannels: Array<GoogleSpreadsheetRow>
+export let variables: Array<GoogleSpreadsheetRow>
+export let blacklist: Array<string>
+
 export let shards: Array<GoogleSpreadsheetRow>
 export let mods: Array<GoogleSpreadsheetRow>
 export let prices: Array<GoogleSpreadsheetRow>
@@ -90,13 +98,9 @@ export let images: Array<GoogleSpreadsheetRow>
 export let faq: Array<GoogleSpreadsheetRow>
 export let links: Array<GoogleSpreadsheetRow>
 export let contributors: Array<GoogleSpreadsheetRow>
-export let ytpn: Array<GoogleSpreadsheetRow>
-export let variables: Array<GoogleSpreadsheetRow>
-export let auctions: Array<GoogleSpreadsheetRow>
-export let blacklist: Array<string>
 export let councilMemberTags: Array<string>
 
-//Connecting to CG Bug Reporting Sheet
+// Connecting to CG Bug Reporting Sheet
 export let bugReportDoc: GoogleSpreadsheet
 export let ddgrReports: Array<GoogleSpreadsheetRow>
 export let ddaReports: Array<GoogleSpreadsheetRow>
@@ -118,8 +122,10 @@ export async function connectToDB () {
 
 	auctions = await privateDB.sheetsByTitle['Auctions'].getRows()
 	userLogs = await privateDB.sheetsByTitle['User Logs'].getRows()
-	ytpn = await privateDB.sheetsByTitle['Youtube Post Notifications'].getRows()
+	youtubeChannels = await privateDB.sheetsByTitle['Youtube Post Notifications'].getRows()
+	twitchChannels = await privateDB.sheetsByTitle['Twitch Live Notifications'].getRows()
 	variables = await privateDB.sheetsByTitle['Variables'].getRows()
+	blacklist = (await privateDB.sheetsByTitle['Blacklist'].getRows()).map(entry => entry.id)
 
     shards = await publicDB.sheetsByTitle['Shards'].getRows()
     mods = await publicDB.sheetsByTitle['Mods'].getRows()
@@ -128,7 +134,6 @@ export async function connectToDB () {
 	faq = await publicDB.sheetsByTitle['FAQ'].getRows()
 	links = await publicDB.sheetsByTitle['Links'].getRows()
 	contributors = await publicDB.sheetsByTitle['Contributors'].getRows()
-	blacklist = (await privateDB.sheetsByTitle['Blacklist'].getRows()).map(entry => entry.id)
 	councilMemberTags = contributors.map(contributor => contributor.tag)
 
 	console.log('Database connection successful')
@@ -234,7 +239,7 @@ client.on('messageCreate', (message: Message) => {
 })
 
 // Looking-For-Trade Chat Automod (Dungeon Defenders Server only)
-let AMLogChannel: TextChannel // The channel to send log messages to
+let AMLogChannel: TextChannel // The channel to send log messages to (Auto Mod Log Channel)
 client.on('ready', async () => {AMLogChannel = client.channels.cache.get('916495567037816853') as TextChannel})
 
 const tradeRules = '1. Follow the trading format below.\n2. One trade per line, no more than 1 image per message.\n3. Do not discuss trades here. See market-discussion.\n4. If a trade has been completed, delete or edit the original post.\n5. Do not post advertisements more than once every 23 hours.\n\n[**H**] = **Have**\n[**W**] = **Want**\nYou must include one of the above in your listing!\n\nExample Trades:\n[H]  99 Pristine Motes   [W] 3m <:gold:460345588911833088>\n[W] 99 Shiny Motes   [H] 3m <:gold:460345588911833088>\n\nTrade Format(copy & paste):\n```[H] item-name  [W] :gold:\n[W] item-name  [H] :gold:```'
@@ -293,29 +298,53 @@ client.on('messageCreate', async (message: Message) => {
 })
 
 // Youtube Post Notifications
-schedule('* * * * *', async () => {
-	if (!isHost) return
-	ytpn.forEach(async YTChannel => {
-		const channel = client.channels.cache.get(YTChannel.discordChannelID) as TextChannel
-		const feed = await new Parser().parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${YTChannel.youtubeID}`).catch(() => undefined) // Parse the RSS Feed for the channel, ignore any 404 errors if the rss feed is unavailable
+schedule('* * * * *', () => {
+	if (!isHost || !youtubeChannels) return
+	youtubeChannels.forEach(async channel => {
+		const discordChannel = client.channels.cache.get(channel.discordChannelID) as TextChannel
+		const feed = await new Parser().parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channel.youtubeID}`).catch(() => undefined) // Parse the RSS Feed for the channel, ignore any 404 errors if the rss feed is unavailable
 		if (!feed) return
 		const newVideo = feed.items[0] // The most recently published video
-		const recentVideos: string[] = YTChannel.recentVideos ? JSON.parse(YTChannel.recentVideos) : []
+		const recentVideos: string[] = channel.recentVideos ? JSON.parse(channel.recentVideos) : []
 		if (!recentVideos.includes(newVideo.link!)){
 			const {data} = await axios.get(newVideo.link!)
 			if (/Scheduled\sfor/i.test(data)) return // Do not post if this is a scheduled stream (the user has not gone live)
 			else {
 				if (/watching\snow/i.test(data)){
-					channel.send(`${newVideo.author} is now live!\n${newVideo.link}`)
+					discordChannel.send(`${newVideo.author} is now live!\n${newVideo.link}`)
 				} else {
-					channel.send(`${newVideo.author} has uploaded a new video!\n${newVideo.link}`)
+					discordChannel.send(`${newVideo.author} has uploaded a new video!\n${newVideo.link}`)
 				}
 				if (recentVideos.length >= 5) recentVideos.shift() // Only store the 5 most recent videos
 				recentVideos.push(newVideo.link!)
-				YTChannel.recentVideos = JSON.stringify(recentVideos) // Store the video so that it doesn't get posted again
-				YTChannel.save()
+				channel.recentVideos = JSON.stringify(recentVideos) // Store the video so that it doesn't get posted again
+				channel.save()
 			}
 		}
+	})
+})
+
+// Twitch Live Notifications
+const twitchCredentials = getTwitchAccessToken(process.env.TWITCH_CLIENT_ID!, process.env.TWITCH_CLIENT_SECRET!)
+schedule('* * * * *', () => {
+	if (!isHost || !twitchCredentials || !twitchChannels) return
+	twitchChannels.forEach(async channel => {
+		const discordChannel = client.channels.cache.get(channel.discordChannelID) as TextChannel
+		const [streamInfo, userInfo] = await Promise.all([
+			getTwitchUserInfo(channel.username, 1) as unknown as streamInfo,
+			getTwitchUserInfo(channel.username, 1) as unknown as userInfo
+		])
+		if (!streamInfo || !userInfo) return
+
+		const twitchStreamEmbed = new MessageEmbed()
+			.setAuthor({name: 'Twitch', iconURL: 'https://cdn.icon-icons.com/icons2/3041/PNG/512/twitch_logo_icon_189242.png'})
+			.setTitle(`${streamInfo.user_name} is playing ${streamInfo.game_name}!`)
+			.setURL(`https://www.twitch.tv/${channel.username}`)
+			.setDescription(streamInfo.title)
+			.setThumbnail(userInfo.profile_image_url)
+			.setColor('PURPLE')
+
+		discordChannel.send({embeds: [twitchStreamEmbed]})
 	})
 })
 
