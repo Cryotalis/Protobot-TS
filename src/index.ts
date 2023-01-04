@@ -89,7 +89,8 @@ export let userLogs: Array<GoogleSpreadsheetRow>
 export let youtubeChannels: Array<GoogleSpreadsheetRow>
 export let twitchChannels: Array<GoogleSpreadsheetRow>
 export let variables: Array<GoogleSpreadsheetRow>
-export let blacklist: Array<string>
+export let blacklist: Array<GoogleSpreadsheetRow>
+export let blacklistedIDs: Array<string>
 
 export let shards: Array<GoogleSpreadsheetRow>
 export let mods: Array<GoogleSpreadsheetRow>
@@ -109,32 +110,47 @@ export let dd2Reports: Array<GoogleSpreadsheetRow>
 const serviceAccountCredentials = {client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!, private_key: process.env.GOOGLE_PRIVATE_KEY!}
 export async function connectToDB () {
     publicDB = new GoogleSpreadsheet('1yOjZhkn9z8dJ8HMD0YSUl7Ijgd9o1KJ62Ecf4SgyTdU')
-    await publicDB.useServiceAccountAuth(serviceAccountCredentials)
-    await publicDB.loadInfo()
-
     privateDB = new GoogleSpreadsheet(process.env.PRIVATE_DB_ID)
-    await privateDB.useServiceAccountAuth(serviceAccountCredentials)
-    await privateDB.loadInfo()
-
 	bugReportDoc = new GoogleSpreadsheet(process.env.CG_BUGREPORT_DOC_ID)
-    await bugReportDoc.useServiceAccountAuth(serviceAccountCredentials)
-    await bugReportDoc.loadInfo()
 
-	auctions = await privateDB.sheetsByTitle['Auctions'].getRows()
-	userLogs = await privateDB.sheetsByTitle['User Logs'].getRows()
-	youtubeChannels = await privateDB.sheetsByTitle['Youtube Post Notifications'].getRows()
-	twitchChannels = await privateDB.sheetsByTitle['Twitch Live Notifications'].getRows()
-	variables = await privateDB.sheetsByTitle['Variables'].getRows()
-	blacklist = (await privateDB.sheetsByTitle['Blacklist'].getRows()).map(entry => entry.id)
+	await Promise.all([
+		publicDB.useServiceAccountAuth(serviceAccountCredentials),
+		privateDB.useServiceAccountAuth(serviceAccountCredentials),
+		bugReportDoc.useServiceAccountAuth(serviceAccountCredentials)
+	])
+	await Promise.all([publicDB.loadInfo(), privateDB.loadInfo(), bugReportDoc.loadInfo()]);
 
-    shards = await publicDB.sheetsByTitle['Shards'].getRows()
-    mods = await publicDB.sheetsByTitle['Mods'].getRows()
-    prices = await publicDB.sheetsByTitle['Prices'].getRows()
-	images = await publicDB.sheetsByTitle['Images'].getRows()
-	faq = await publicDB.sheetsByTitle['FAQ'].getRows()
-	links = await publicDB.sheetsByTitle['Links'].getRows()
-	contributors = await publicDB.sheetsByTitle['Contributors'].getRows()
+	[
+		auctions,
+		userLogs,
+		youtubeChannels,
+		twitchChannels,
+		variables,
+		blacklist,
+		shards,
+		mods,
+		prices,
+		images,
+		faq,
+		links,
+		contributors,
+	] = await Promise.all([
+		privateDB.sheetsByTitle['Auctions'].getRows(),
+		privateDB.sheetsByTitle['User Logs'].getRows(),
+		privateDB.sheetsByTitle['Youtube Post Notifications'].getRows(),
+		privateDB.sheetsByTitle['Twitch Live Notifications'].getRows(),
+		privateDB.sheetsByTitle['Variables'].getRows(),
+		privateDB.sheetsByTitle['Blacklist'].getRows(),
+		publicDB.sheetsByTitle['Shards'].getRows(),
+		publicDB.sheetsByTitle['Mods'].getRows(),
+		publicDB.sheetsByTitle['Prices'].getRows(),
+		publicDB.sheetsByTitle['Images'].getRows(),
+		publicDB.sheetsByTitle['FAQ'].getRows(),
+		publicDB.sheetsByTitle['Links'].getRows(),
+		publicDB.sheetsByTitle['Contributors'].getRows(),
+	])
 	councilMemberTags = contributors.map(contributor => contributor.tag)
+	blacklistedIDs = blacklist.map(user => user.id)
 
 	console.log('Database connection successful')
 }
@@ -191,7 +207,7 @@ client.on('ready', async () => {
 // Slash Command Handler
 client.on('interactionCreate', async interaction => {
     if ((!interaction.isCommand() && !interaction.isMessageContextMenu()) || (!isHost && interaction.user.id !== '251458435554607114')) return
-	if (blacklist?.includes(interaction.user.id)) return interaction.reply(`🤡 ${interaction.user} 🤡`)
+	if (blacklistedIDs?.includes(interaction.user.id)) return interaction.reply(`🤡 ${interaction.user} 🤡`)
 	if (botSettings.developerMode && interaction.user.id === '251458435554607114' && interaction.commandName !== 'settings') return
 
 	const isModCommand = modCommands.includes(`${interaction.commandName}.js`)
@@ -325,9 +341,8 @@ schedule('* * * * *', () => {
 })
 
 // Twitch Live Notifications
-export const twitchCredentials = getTwitchAccessToken(process.env.TWITCH_CLIENT_ID!, process.env.TWITCH_CLIENT_SECRET!)
 schedule('* * * * *', () => {
-	if (!isHost || !twitchCredentials || !twitchChannels) return
+	if (!isHost || !twitchChannels) return
 	twitchChannels.forEach(async channel => {
 		const discordChannel = client.channels.cache.get(channel.discordChannelID) as TextChannel
 		const [streamInfo, userInfo] = await Promise.all([
