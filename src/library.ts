@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { CanvasRenderingContext2D } from 'canvas'
-import { twitchCredentials } from '.'
 
 export const heroEmotes: {[char: string]: string} = {
     'All': '**All**',
@@ -739,6 +738,10 @@ export interface userInfo {
     view_count: number,
     created_at: string
 }
+
+let twitchCredentials: accessTokenObj
+getTwitchAccessToken(process.env.TWITCH_CLIENT_ID!, process.env.TWITCH_CLIENT_SECRET!).then(credentials => twitchCredentials = credentials)
+
 /**
  * Gets info about a Twitch User's channel or stream
  * 
@@ -754,7 +757,7 @@ export async function getTwitchUserInfo(username: string, type = 0): Promise<use
     const {data: {data: [info]}} = await axios.get(`https://api.twitch.tv/helix/${query}`, {
         headers: {
             'Client-ID': process.env.TWITCH_CLIENT_ID!,
-            'Authorization': `Bearer ${(await twitchCredentials).access_token}`
+            'Authorization': `Bearer ${twitchCredentials.access_token}`
         }
     })
     return info
