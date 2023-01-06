@@ -52,7 +52,7 @@ module.exports = {
 			interaction.editReply('Startup Completed.')
 		}
 
-		if (command === 'connectToDB'){
+		if (command === 'connect_database'){
 			await Promise.all([
 				interaction.reply('Connecting to Database <a:loading:763160594974244874>'),
 				connectToDB()
@@ -60,7 +60,7 @@ module.exports = {
 			interaction.editReply('Database Connection Successful.')
 		}
 
-		if (command === 'loadDefenseBuilds'){
+		if (command === 'load_defenses'){
 			await Promise.all([
 				interaction.reply('Loading Defense Builds <a:loading:763160594974244874>'),
 				loadDefenseBuilds()
@@ -68,7 +68,7 @@ module.exports = {
 			interaction.editReply('Defense Builds Loaded.')
 		}
 
-		if (command === 'registerCommands'){
+		if (command === 'register_commands'){
 			await Promise.all([
 				interaction.reply('Registering Commands <a:loading:763160594974244874>'),
 				registerCommands()
@@ -76,7 +76,7 @@ module.exports = {
 			interaction.editReply('Commands Registered.')
 		}
 
-		if (command === 'developerMode'){
+		if (command === 'developer_mode'){
 			if (!isHost) return interaction.reply('This command cannot be used on the local build')
 			if (interaction.user.id !== '251458435554607114') return interaction.reply('You do not have permission to use this command.')
 			botSettings.developerMode = !botSettings.developerMode
