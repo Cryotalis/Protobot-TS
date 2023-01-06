@@ -320,23 +320,23 @@ schedule('* * * * *', () => {
 		const discordChannel = client.channels.cache.get(channel.discordChannelID) as TextChannel
 		const feed = await new Parser().parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channel.youtubeID}`).catch(() => undefined) // Parse the RSS Feed for the channel, ignore any 404 errors if the rss feed is unavailable
 		if (!feed) return
+
 		const newVideo = feed.items[0] // The most recently published video
 		const recentVideos: string[] = channel.recentVideos ? JSON.parse(channel.recentVideos) : []
-		if (!recentVideos.includes(newVideo.link!)){
-			const {data} = await axios.get(newVideo.link!)
-			if (/Scheduled\sfor/i.test(data)) return // Do not post if this is a scheduled stream (the user has not gone live)
-			else {
-				if (/watching\snow/i.test(data)){
-					discordChannel.send(`${newVideo.author} is now live!\n${newVideo.link}`)
-				} else {
-					discordChannel.send(`${newVideo.author} has uploaded a new video!\n${newVideo.link}`)
-				}
-				if (recentVideos.length >= 5) recentVideos.shift() // Only store the 5 most recent videos
-				recentVideos.push(newVideo.link!)
-				channel.recentVideos = JSON.stringify(recentVideos) // Store the video so that it doesn't get posted again
-				channel.save()
-			}
+		if (recentVideos.includes(newVideo.link!)) return
+
+		const {data} = await axios.get(newVideo.link!)
+		if (/Scheduled\sfor/i.test(data)) return // Do not post if this is a scheduled stream (the user has not gone live)
+		if (/watching\snow/i.test(data)){
+			discordChannel.send(`${newVideo.author} is now live!\n${newVideo.link}`)
+		} else {
+			discordChannel.send(`${newVideo.author} has uploaded a new video!\n${newVideo.link}`)
 		}
+		if (recentVideos.length >= 5) recentVideos.shift() // Only store the 5 most recent videos
+		recentVideos.push(newVideo.link!)
+		channel.recentVideos = JSON.stringify(recentVideos) // Store the video so that it doesn't get posted again
+		channel.save()
+		
 	})
 })
 
@@ -350,16 +350,23 @@ schedule('* * * * *', () => {
 			getTwitchUserInfo(channel.username, 1) as unknown as userInfo
 		])
 		if (!streamInfo || !userInfo) return
+		const recentStreamIDs: string[] = channel.recentStreamIDs ? JSON.parse(channel.recentStreamIDs) : []
+		if (recentStreamIDs.includes(streamInfo.id)) return
 
 		const twitchStreamEmbed = new MessageEmbed()
 			.setAuthor({name: 'Twitch', iconURL: 'https://cdn.icon-icons.com/icons2/3041/PNG/512/twitch_logo_icon_189242.png'})
-			.setTitle(`${streamInfo.user_name} is playing ${streamInfo.game_name}!`)
+			.setTitle(`${streamInfo.user_name} is now playing ${streamInfo.game_name}!`)
 			.setURL(`https://www.twitch.tv/${channel.username}`)
 			.setDescription(streamInfo.title)
 			.setThumbnail(userInfo.profile_image_url)
 			.setColor('PURPLE')
 
 		discordChannel.send({embeds: [twitchStreamEmbed]})
+
+		if (recentStreamIDs.length >= 5) recentStreamIDs.shift() // Only store the 5 most recent videos
+		recentStreamIDs.push(streamInfo.id)
+		channel.recentStreamIDs = JSON.stringify(recentStreamIDs) // Store the video so that it doesn't get posted again
+		channel.save()
 	})
 })
 
@@ -429,7 +436,7 @@ client.on('interactionCreate', async interaction => {
 		const reproSteps = !isFeedback ? interaction.fields.getTextInputValue('Bug Reproduction Steps') : undefined
 		const gameMode = !isFeedback ? interaction.fields.getTextInputValue('Game Mode') : undefined
 		const links = interaction.fields.getTextInputValue('Links')
-		const reportLinks = (links && /https?:\/\/.+?(?=$|http)/.test(links)) ? links.match(/https?:\/\/.+?(?=$|http)/gm)! : []
+		const reportLinks = (links && /https?:\/\/.+?(?=$|http)/.test(links)) ? links.match(/https?:\/\/.+?(?=$|http)/gm)! : ['']
 		const imgurLinks = reportLinks.filter(link => link.includes('imgur.com'))
 		if (imgurLinks) imgurLinks.forEach(async link => {
 			reportLinks.splice(reportLinks.indexOf(link), 1)
@@ -504,7 +511,7 @@ client.on('interactionCreate', async interaction => {
 		if (timeToUnix(duration) < 3600000 || timeToUnix(duration) > 604800000) return interaction.reply({content: 'Auction duration cannot be lower than 1 hour or greater than 7 days.', ephemeral: true})
 		const endDate = new Date(new Date().getTime() + timeToUnix(duration))
 		const links = interaction.fields.getTextInputValue('Links')
-		const parsedLinks = (links && /https?:\/\/.+?(?=$|http)/.test(links)) ? links.match(/https?:\/\/.+?(?=$|http)/gm)! : []
+		const parsedLinks = (links && /https?:\/\/.+?(?=$|http)/.test(links)) ? links.match(/https?:\/\/.+?(?=$|http)/gm)! : ['']
 		const imgurLinks = parsedLinks.filter(link => link.includes('imgur.com'))
 		if (imgurLinks) imgurLinks.forEach(async link => {
 			parsedLinks.splice(parsedLinks.indexOf(link), 1)
