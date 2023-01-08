@@ -1,9 +1,8 @@
 import { CommandInteraction, MessageActionRow, MessageAttachment, MessageSelectMenu } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { findBestMatch } from 'string-similarity'
-import { Image, createCanvas, loadImage } from 'canvas'
+import { createCanvas, loadImage } from 'canvas'
 import { defenseBuildData, defenseImages, shards } from '../index'
-import { wrapText, drawCentered } from '../library'
+import { wrapText, drawCentered, findBestCIMatch } from '../library'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -77,8 +76,8 @@ module.exports = {
 		const roleInput = interaction.options.getString('role')
 	
 		interface defenseObject {name: string, role: string, shards: string[], mods: {name: string, qualibean: string}[], relic: string}
-		let defenseName = findBestMatch(nameInput, defenseBuildData.map((defense: defenseObject) => defense.name)).bestMatch.target
-		let defenseRole = findBestMatch(String(roleInput), defenseBuildData.filter((defense: defenseObject) => defense.name === defenseName).map((defense: defenseObject) => defense.role)).bestMatch.target
+		let defenseName = findBestCIMatch(nameInput, defenseBuildData.map((defense: defenseObject) => defense.name)).bestMatch.target
+		let defenseRole = findBestCIMatch(String(roleInput), defenseBuildData.filter((defense: defenseObject) => defense.name === defenseName).map((defense: defenseObject) => defense.role)).bestMatch.target
 	
 		if (!roleInput && defenseBuildData.filter((defense: defenseObject) => defense.name === defenseName).length > 1){
 			let roleOptions = defenseBuildData.filter((defense: defenseObject) => defense.name === defenseName).map((defense: defenseObject) => defense.role)

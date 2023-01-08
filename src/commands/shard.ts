@@ -1,8 +1,7 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { findBestMatch } from 'string-similarity'
 import { shards, mods, client } from '../index'
-import { heroEmotes } from '../library'
+import { findBestCIMatch, heroEmotes } from '../library'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -14,8 +13,8 @@ module.exports = {
         const userInput = interaction.options.getString('name')!
 		const shardNames = shards.map(shard => shard.name)
         const modNames = mods.map(mod => mod.name)
-        const shardBestMatch = findBestMatch(userInput, shardNames).bestMatch
-        const modBestMatch = findBestMatch(userInput, modNames).bestMatch
+        const shardBestMatch = findBestCIMatch(userInput, shardNames).bestMatch
+        const modBestMatch = findBestCIMatch(userInput, modNames).bestMatch
         const shard = shards.find(shard => shard.name === shardBestMatch.target)!
 
         const shardEmbed = new MessageEmbed()

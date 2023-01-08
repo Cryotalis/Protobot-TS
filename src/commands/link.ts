@@ -1,7 +1,7 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { findBestMatch } from 'string-similarity'
 import { links } from '../index'
+import { findBestCIMatch } from '../library'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -13,8 +13,8 @@ module.exports = {
 	async execute(interaction: CommandInteraction) {
 		const userInput = interaction.options.getString('link')!
 		const targettedUser = interaction.options.getUser('target')!
-		const key = findBestMatch(userInput.toLowerCase(), links.map(entry => entry.name.toLowerCase())).bestMatch.target
-		const link = links.find(entry => entry.name.toLowerCase() === key)!
+		const key = findBestCIMatch(userInput, links.map(entry => entry.name)).bestMatch.target
+		const link = links.find(entry => entry.name === key)!
 
 		const linkEmbed = new MessageEmbed()
 			.setColor('ORANGE')

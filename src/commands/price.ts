@@ -1,7 +1,7 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { findBestMatch } from 'string-similarity'
 import { prices, mods } from '../index'
+import { findBestCIMatch } from '../library'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -37,7 +37,7 @@ module.exports = {
 		const psPetNames = prices.filter(p => p.psRarity !== '#N/A').map(p => p.psItem)
 		const xboxPetNames = prices.filter(p => p.xboxRarity !== '#N/A').map(p => p.xboxItem)
 		const allPetNames = pcPetNames.concat(psPetNames, xboxPetNames)
-		let itemName = findBestMatch(item, pcItemNames.concat(psItemNames, xboxItemNames)).bestMatch.target
+		let itemName = findBestCIMatch(item, pcItemNames.concat(psItemNames, xboxItemNames)).bestMatch.target
 		if (!chipType && mods.find(mod => mod.name === itemName.replace('Chip', 'Servo'))){itemName = itemName.replace('Chip', 'Servo')} //If no mod type was given, default to Servo (assuming a servo version exists)
 		if (/Pristine|Shiny|Plain/i.test(itemName) && !/Pristine|Shiny|Plain/i.test(item)){itemName = itemName.replace(/Shiny|Plain/i, 'Pristine')}
 		const pcItem = prices.find(i => i.pcItem === itemName)

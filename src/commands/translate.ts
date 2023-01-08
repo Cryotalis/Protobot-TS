@@ -1,8 +1,7 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { findBestMatch } from 'string-similarity'
 import { Translate } from '@google-cloud/translate/build/src/v2'
-import { languageCodes } from '../library'
+import { findBestCIMatch, languageCodes } from '../library'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -15,16 +14,16 @@ module.exports = {
 	async execute(interaction: CommandInteraction) {
 		await interaction.deferReply()
 		const textInput = interaction.options.getString('text')!
-		const sourceLangInput = interaction.options.getString('from')?.toLowerCase()
-		const outputLangInput = interaction.options.getString('to')?.toLowerCase()
+		const sourceLangInput = interaction.options.getString('from')
+		const outputLangInput = interaction.options.getString('to')
 		const userLocale = /-/.test(interaction.locale) ? interaction.locale.match(/.+(?=-)/)![0] : interaction.locale
 		const gTranslate = new Translate({credentials: {client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!, private_key: process.env.GOOGLE_PRIVATE_KEY!}})
 		
-		const sourceLangBestMatch = findBestMatch(String(sourceLangInput), languageCodes.map(lang => lang.name.toLowerCase())).bestMatch.target
-		const outputLangBestMatch = findBestMatch(String(outputLangInput), languageCodes.map(lang => lang.name.toLowerCase())).bestMatch.target
-		const sourceLanguage = languageCodes.find(lang => lang.name.toLowerCase() === sourceLangBestMatch)!
+		const sourceLangBestMatch = findBestCIMatch(String(sourceLangInput), languageCodes.map(lang => lang.name)).bestMatch.target
+		const outputLangBestMatch = findBestCIMatch(String(outputLangInput), languageCodes.map(lang => lang.name)).bestMatch.target
+		const sourceLanguage = languageCodes.find(lang => lang.name === sourceLangBestMatch)!
 		const outputLanguage = outputLangInput
-			? languageCodes.find(lang => lang.name.toLowerCase() === outputLangBestMatch)!
+			? languageCodes.find(lang => lang.name === outputLangBestMatch)!
 			: languageCodes.find(lang => lang.code === userLocale)!
 		const [translation] = (await gTranslate.translate(textInput, {from: sourceLangInput ? sourceLanguage.code : '', to: outputLanguage.code}))[1].data.translations
 		const detectedSourceLanguage = languageCodes.find(lang => lang.code === translation.detectedSourceLanguage) ?? translation.detectedSourceLanguage
