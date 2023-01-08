@@ -23,9 +23,9 @@ module.exports = {
 		const hero = interaction.options.getString('hero')
 		const slot = interaction.options.getString('slot')
 		const customFilter = interaction.options.getString('custom-filter')
-		let dropFilter: RegExpMatchArray = []
-		let heroFilter: RegExpMatchArray = []
-		let typeFilter: RegExpMatchArray = []
+		let dropFilter: RegExpMatchArray = ['']
+		let heroFilter: RegExpMatchArray = ['']
+		let typeFilter: RegExpMatchArray = ['']
 		let output = mods
 
 		if (!hero && !slot && !diff && !customFilter) return await interaction.reply('You must supply at least one parameter!')

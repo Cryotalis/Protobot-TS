@@ -577,7 +577,7 @@ export function dateStringToUnix(dateString: string) {
         while (!/.+:.+:.+/.test(time)) {time += ':00'} //Coerce time input to format hh:mm:ss (hours, minutes, and seconds)
     }
 
-    let dateData: RegExpMatchArray = []
+    let dateData: RegExpMatchArray = ['']
     function getDateData(format: RegExp){
         if (dateString.replace(format, '').trim()) {timeZone = dateString.replace(format, '').trim().split(' ').at(-1)!} //Note the time zone if it was provided
         dateData = dateString.match(format)!
