@@ -208,7 +208,7 @@ client.on('ready', async () => {
 client.on('interactionCreate', async interaction => {
     if ((!interaction.isCommand() && !interaction.isMessageContextMenu()) || (!isHost && interaction.user.id !== '251458435554607114')) return
 	if (blacklistedIDs?.includes(interaction.user.id)) return interaction.reply(`🤡 ${interaction.user} 🤡`)
-	if (botSettings.developerMode && interaction.user.id === '251458435554607114' && interaction.commandName !== 'settings') return
+	if (botSettings.developerMode && interaction.user.id === '251458435554607114' && interaction.commandName !== 'run') return
 
 	const isModCommand = modCommands.includes(`${interaction.commandName}.js`)
     const command: any = client.commands?.get(interaction.commandName)
@@ -344,13 +344,14 @@ schedule('* * * * *', () => {
 schedule('* * * * *', () => {
 	if (!isHost || !twitchChannels) return
 	twitchChannels.forEach(async channel => {
-		const discordChannel = client.channels.cache.get(channel.discordChannelID) as TextChannel
+		const discordChannels = JSON.parse(channel.discordChannels || '[]')
+		if (discordChannels.length === 0) return
 		const [streamInfo, userInfo] = await Promise.all([
 			getTwitchUserInfo(channel.username, 1) as unknown as streamInfo,
-			getTwitchUserInfo(channel.username, 1) as unknown as userInfo
+			getTwitchUserInfo(channel.username, 0) as unknown as userInfo
 		])
 		if (!streamInfo || !userInfo) return
-		const recentStreamIDs: string[] = channel.recentStreamIDs ? JSON.parse(channel.recentStreamIDs) : []
+		const recentStreamIDs: string[] = JSON.parse(channel.recentStreamIDs || '[]')
 		if (recentStreamIDs.includes(streamInfo.id)) return
 
 		const twitchStreamEmbed = new MessageEmbed()
@@ -361,11 +362,14 @@ schedule('* * * * *', () => {
 			.setThumbnail(userInfo.profile_image_url)
 			.setColor('PURPLE')
 
-		discordChannel.send({embeds: [twitchStreamEmbed]})
+		discordChannels.forEach((channel: {message: string | null, id: string}) => {
+			const discordChannel = client.channels.cache.get(channel.id) as TextChannel
+			discordChannel.send({content: channel.message, embeds: [twitchStreamEmbed]})
+		})
 
-		if (recentStreamIDs.length >= 5) recentStreamIDs.shift() // Only store the 5 most recent videos
+		if (recentStreamIDs.length >= 5) recentStreamIDs.shift() // Only store the 5 most recent stream IDs
 		recentStreamIDs.push(streamInfo.id)
-		channel.recentStreamIDs = JSON.stringify(recentStreamIDs) // Store the video so that it doesn't get posted again
+		channel.recentStreamIDs = JSON.stringify(recentStreamIDs) // Store the stream ID so that it doesn't get posted again
 		channel.save()
 	})
 })
