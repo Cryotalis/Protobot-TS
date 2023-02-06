@@ -377,7 +377,7 @@ schedule('* * * * *', () => {
 // DD2 Wiki Changes
 schedule('* * * * *', async () => {
 	if (!isHost) return
-	const wikiChannel = client.channels.cache.get('1024790555999346758') as TextChannel
+	const wikiChannel = client.channels.cache.get('1072236073515745451') as TextChannel
 	const res = await axios.get('https://wiki.dungeondefenders2.com/api.php?action=query&list=recentchanges&rcprop=user|title|timestamp|comment|loginfo|ids&rclimit=5&format=json')
     const {data: {query: {recentchanges}}} = res
 	const recentChangeIDsInfo = variables.find(v => v.name === 'recentChangeIDs')!
