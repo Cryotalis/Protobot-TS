@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { botSettings, isHost, councilMemberTags, connectToDB, loadDefenseBuilds, registerCommands } from '../index'
+import { botSettings, isHost, connectToDB, loadDefenseBuilds, registerCommands, councilMemberIDs } from '../index'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -33,7 +33,7 @@ module.exports = {
 		)
 	,
 	async execute(interaction: CommandInteraction) {
-		if (!councilMemberTags?.includes(interaction.user.tag)) {
+		if (!councilMemberIDs?.includes(interaction.user.id)) {
 			return interaction.reply('This command is reserved for Protobot Council Members only.')
 		}
 
