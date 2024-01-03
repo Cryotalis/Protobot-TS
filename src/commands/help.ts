@@ -10,9 +10,9 @@ module.exports = {
 		const helpEmbed = new MessageEmbed()
 			.setColor('ORANGE')
 			.setTitle('Protobot Command List')
-			.setDescription('The complete list of commands for Protobot can be found here: [https://cryotalis.github.io/Protobot/commands.html](https://cryotalis.github.io/Protobot/commands.html)')
+			.setDescription('The complete list of commands for Protobot can be found [here](https://cryotalis.github.io/Protobot/commands.html)')
 			.setThumbnail('https://i.imgur.com/GkZIG4R.png')
-			.addField('\u200b','If you want to talk to my creator about anything, please join the support server here: [https://discord.gg/YtwzVSp](https://discord.gg/YtwzVSp)')
-    	await interaction.reply({embeds: [helpEmbed]})
+			.addField('\u200b','If you want to talk to my creator about anything, please join the [support server](https://discord.gg/YtwzVSp).')
+    	return interaction.reply({embeds: [helpEmbed]})
 	}
 }
