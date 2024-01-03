@@ -11,7 +11,7 @@ module.exports = {
 	,
 	async execute(interaction: CommandInteraction) {
 		const timeInput = interaction.options.getString('time')!
-		if (!timeInput) return await interaction.reply(`It is currently \`${dateToString(new Date(), 'EST')}\` in Gainesville.`)
+		if (!timeInput) return await interaction.reply(`It is currently \`${dateToString(new Date(), 'ET')}\` in Gainesville.`)
 		
 		const timeZone1 = findTimeZone(findLastWord(timeInput)).name
 		const timeZone2 = interaction.options.getString('timezone')
