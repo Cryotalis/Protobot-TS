@@ -15,7 +15,7 @@ import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbr
 import { registerFont } from 'canvas'
 
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]})
-export const isHost = os.hostname() !== 'PC-Hywell'
+export const isHost = true
 export const botSettings = {
 	'developerMode': false, // Ignores all inputs from me (Cryo) if true
 }
@@ -99,7 +99,7 @@ export let images: Array<GoogleSpreadsheetRow>
 export let faq: Array<GoogleSpreadsheetRow>
 export let links: Array<GoogleSpreadsheetRow>
 export let contributors: Array<GoogleSpreadsheetRow>
-export let councilMemberTags: Array<string>
+export let councilMemberIDs: Array<string>
 
 // Connecting to CG Bug Reporting Sheet
 export let bugReportDoc: GoogleSpreadsheet
@@ -149,38 +149,45 @@ export async function connectToDB () {
 		publicDB.sheetsByTitle['Links'].getRows(),
 		publicDB.sheetsByTitle['Contributors'].getRows(),
 	])
-	councilMemberTags = contributors.map(contributor => contributor.tag)
+	councilMemberIDs = contributors.map(contributor => contributor.id)
 	blacklistedIDs = blacklist.map(user => user.id)
 
 	console.log('Database connection successful')
 }
 connectToDB().then(() => registerCommands())
 
-export let defenseBuildData: any = []
+export let defenseBuildData: defenseObject[] = []
+export interface defenseObject {name: string, role: string, tertiary: string, shards: string[], mods: {name: string, qualibean: string}[], relic: string}
 export async function loadDefenseBuilds(){
 	defenseBuilds = new GoogleSpreadsheet('1sjBA60Fr9ryVnw4FUIMU2AVXbKw395Tdz7j--EAUA1A')
     await defenseBuilds.useServiceAccountAuth(serviceAccountCredentials)
     await defenseBuilds.loadInfo()
 	defenseImages = await defenseBuilds.sheetsByTitle['Data'].getRows()
 
-	let buildData: any = []
-	for (let i = 2; i < defenseBuilds.sheetCount-1; i++){
+	let buildData: defenseObject[] = []
+	for (let i = 2; i < defenseBuilds.sheetCount-2; i++){
 		let sheet = defenseBuilds.sheetsByIndex[i]
 		await sheet.loadCells()
 
 		for (let y = 2; y < sheet.rowCount; y += 20){
+			if (y >= sheet.rowCount) continue
 			for (let x = 1; x < sheet.columnCount; x += 5){
-				if (!sheet.getCell(y + 1, x + 2).value) continue
+				if (x >= sheet.columnCount || !sheet.getCell(y + 1, x + 2).value) continue
 				buildData.push({
-					name: sheet.getCell(y + 1, x + 2).value,
-					role: sheet.getCell(y + 4, x + 2).value,
-					shards: [sheet.getCell(y + 6, x + 2).value, sheet.getCell(y + 8, x + 2).value, sheet.getCell(y + 10, x + 2).value],
-					mods: [
-						{name: sheet.getCell(y + 12, x + 2).value, qualibean: sheet.getCell(y + 12, x + 1).formula?.match(/\d+/)?.toString()}, 
-						{name: sheet.getCell(y + 14, x + 2).value, qualibean: sheet.getCell(y + 14, x + 1).formula?.match(/\d+/)?.toString()}, 
-						{name: sheet.getCell(y + 16, x + 2).value, qualibean: sheet.getCell(y + 16, x + 1).formula?.match(/\d+/)?.toString()}
+					name: sheet.getCell(y + 1, x + 2).value?.toString(),
+					role: sheet.getCell(y + 4, x + 2).value?.toString(),
+					tertiary: sheet.getCell(y + 5, x + 2).value?.toString(),
+					shards: [
+						sheet.getCell(y + 6, x + 2).value?.toString(),
+						sheet.getCell(y + 8, x + 2).value?.toString(),
+						sheet.getCell(y + 10, x + 2).value?.toString()
 					],
-					relic: sheet.getCell(y + 12, x).formula?.match(/(?<=").+(?=")/)?.toString()
+					mods: [
+						{name: sheet.getCell(y + 12, x + 2).value?.toString(), qualibean: sheet.getCell(y + 12, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
+						{name: sheet.getCell(y + 14, x + 2).value?.toString(), qualibean: sheet.getCell(y + 14, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
+						{name: sheet.getCell(y + 16, x + 2).value?.toString(), qualibean: sheet.getCell(y + 16, x + 1).formula?.match(/\d+/)?.toString() || "0"}
+					],
+					relic: sheet.getCell(y + 12, x).formula?.match(/(?<=").+(?=")/)?.toString() || ""
 				})
 			}
 		}	
@@ -192,11 +199,13 @@ loadDefenseBuilds()
 
 export let logChannel: TextChannel
 export let errorChannel: TextChannel
+export let modQueue: TextChannel
 client.on('ready', async () => {
 	client.user?.setActivity('/help')
 	
 	logChannel = client.channels.cache.get('577636091834662915') as TextChannel
 	errorChannel = client.channels.cache.get('936833258149281862') as TextChannel
+	modQueue = client.channels.cache.get('791527921142988832') as TextChannel
 
 	console.log('Protobot is now online')
 	if (isHost) logChannel?.send('**:white_check_mark:  Protobot is now online**')
@@ -207,13 +216,13 @@ client.on('ready', async () => {
 // Slash Command Handler
 client.on('interactionCreate', async interaction => {
     if ((!interaction.isCommand() && !interaction.isMessageContextMenu()) || (!isHost && interaction.user.id !== '251458435554607114')) return
-	if (blacklistedIDs?.includes(interaction.user.id)) return interaction.reply(`🤡 ${interaction.user} 🤡`)
+	if (blacklistedIDs?.includes(interaction.user.id)) return interaction.reply(`${interaction.user} you have been banned running commands.`)
 	if (botSettings.developerMode && interaction.user.id === '251458435554607114' && interaction.commandName !== 'run') return
 
 	const isModCommand = modCommands.includes(`${interaction.commandName}.js`)
     const command: any = client.commands?.get(interaction.commandName)
 	if (!command) return interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true})
-	if (isModCommand && !(interaction.memberPermissions?.has('MANAGE_MESSAGES') || councilMemberTags?.includes((interaction.member?.user as User).tag))){
+	if (isModCommand && !(interaction.memberPermissions?.has('MANAGE_MESSAGES') || councilMemberIDs?.includes(interaction.user.id))){
 		return interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true})
 	} 
 
@@ -232,27 +241,27 @@ client.on('interactionCreate', async interaction => {
 })
 
 // Message Command Handler, for testing only
-const prefix = 'dd!'
-client.on('messageCreate', (message: Message) => {
-	if (message.author.id !== '251458435554607114' || message.author.bot || !message.content.startsWith(prefix)) return
+// const prefix = 'dd!'
+// client.on('messageCreate', (message: Message) => {
+// 	if (message.author.id !== '251458435554607114' || message.author.bot || !message.content.startsWith(prefix)) return
 
-	const args = message.content.slice(prefix.length).trim().split(' ')
-	const command: string = args?.shift()?.toLowerCase()!
+// 	const args = message.content.slice(prefix.length).trim().split(' ')
+// 	const command: string = args?.shift()?.toLowerCase()!
  
-	try {
-		const commands = require(`./messageCommands/${command}.js`)
-		commands.run(client, message, prefix, args)
-	} catch (error) {
-		console.error(error)
-		errorChannel.send({
-			content: `🚫  **${message.author.tag}** ran the command \`${command}\` in **${message.guild?.name ?? 'Direct Messages'}** (${message.guildId ?? message.channelId})`,
-			files: [new MessageAttachment(Buffer.from(inspect(error, {depth: null}), 'utf-8'), 'error.ts')]
-		})
-		message.channel.send('There was an error while executing this command!')
-	} finally {
-		logChannel?.send(`:scroll:  **${message.author.tag}** ran the command \`${command}\` in **${message.guild?.name ?? 'Direct Messages'}** (${message.guildId ?? message.channelId})`)
-	}
-})
+// 	try {
+// 		const commands = require(`./messageCommands/${command}.js`)
+// 		commands.run(client, message, prefix, args)
+// 	} catch (error) {
+// 		console.error(error)
+// 		errorChannel.send({
+// 			content: `🚫  **${message.author.tag}** ran the command \`${command}\` in **${message.guild?.name ?? 'Direct Messages'}** (${message.guildId ?? message.channelId})`,
+// 			files: [new MessageAttachment(Buffer.from(inspect(error, {depth: null}), 'utf-8'), 'error.ts')]
+// 		})
+// 		message.channel.send('There was an error while executing this command!')
+// 	} finally {
+// 		logChannel?.send(`:scroll:  **${message.author.tag}** ran the command \`${command}\` in **${message.guild?.name ?? 'Direct Messages'}** (${message.guildId ?? message.channelId})`)
+// 	}
+// })
 
 // Looking-For-Trade Chat Automod (Dungeon Defenders Server only)
 let AMLogChannel: TextChannel // The channel to send log messages to (Auto Mod Log Channel)
@@ -341,11 +350,12 @@ schedule('* * * * *', () => {
 })
 
 // Twitch Live Notifications
+export interface channelConfig {id: string, message: string | null, categories: string[]}
 schedule('* * * * *', () => {
 	if (!isHost || !twitchChannels) return
 	twitchChannels.forEach(async channel => {
-		const discordChannels = JSON.parse(channel.discordChannels || '[]')
-		if (discordChannels.length === 0) return
+		const configs: channelConfig[] = JSON.parse(channel.configs || '[]')
+		if (configs.length === 0) return
 		const [streamInfo, userInfo] = await Promise.all([
 			getTwitchUserInfo(channel.username, 1) as unknown as streamInfo,
 			getTwitchUserInfo(channel.username, 0) as unknown as userInfo
@@ -362,9 +372,9 @@ schedule('* * * * *', () => {
 			.setThumbnail(userInfo.profile_image_url)
 			.setColor('PURPLE')
 
-		discordChannels.forEach((channel: {message: string | null, id: string}) => {
-			const discordChannel = client.channels.cache.get(channel.id) as TextChannel
-			discordChannel.send({content: channel.message, embeds: [twitchStreamEmbed]})
+		configs.forEach((config: channelConfig) => {
+			const discordChannel = client.channels.cache.get(config.id) as TextChannel
+			discordChannel.send({content: config.message, embeds: [twitchStreamEmbed]})
 		})
 
 		if (recentStreamIDs.length >= 5) recentStreamIDs.shift() // Only store the 5 most recent stream IDs
@@ -376,48 +386,61 @@ schedule('* * * * *', () => {
 
 // DD2 Wiki Changes
 schedule('* * * * *', async () => {
+	interface wikiChange {title: string, user: string, comment: string, timestamp: string, type: string, logaction: string, logtype: string, rcid: number, revid: number, logparams: {target_title: string, img_sha1: string}}
+	function getAction(change: wikiChange){
+		let action = ''
+		
+		if (change.type === 'log'){
+			switch(change.logaction){
+				case 'overwrite': 	action = 'Overwrote'; break
+				case 'rights': 		action = 'Changed User Rights for'; break
+				default: 			action = change.logaction.replace(/e$/, '') + 'ed'
+			}
+		} else {
+			action = change.type === 'edit' ? 'Edited' : 'Created'
+		}
+
+		action += ` "${change.title}"`
+
+		if (change.logaction === 'move') action += ` to "${change.logparams.target_title}"`
+		if (change.logtype === 'newusers') action = 'Created an Account'
+
+		return capFirstLetter(action)
+	}
+
 	if (!isHost) return
-	const wikiChannel = client.channels.cache.get('1072236073515745451') as TextChannel
-	const res = await axios.get('https://wiki.dungeondefenders2.com/api.php?action=query&list=recentchanges&rcprop=user|title|timestamp|comment|loginfo|ids&rclimit=5&format=json')
-    const {data: {query: {recentchanges}}} = res
+	const wikiChangesChannel = client.channels.cache.get('1072236073515745451') as TextChannel
+	const response = await axios.get('https://wiki.dungeondefenders2.com/api.php?action=query&list=recentchanges&rcprop=user|title|timestamp|comment|loginfo|ids&rclimit=5&format=json')
+    const {data: {query: {recentchanges}}} = response
 	const recentChangeIDsInfo = variables.find(v => v.name === 'recentChangeIDs')!
 	const recentChangeIDs = JSON.parse(recentChangeIDsInfo.value || '[]')
-	const changes = recentchanges.filter((change: any) => change.logaction !== 'create').reverse()
+	const changes: wikiChange[] = recentchanges.reverse()
 
-	for await (const change of changes){
+	for (const change of changes){
 		if (recentChangeIDs.includes(change.rcid)) continue
 		recentChangeIDs.push(change.rcid)
-		const action = change.type === 'log'
-			? change.logaction === 'overwrite' 
-				? 'overwrote' 
-				: change.logaction.replace(/e$/, '') + 'ed'
-			: change.type === 'new'
-				? 'created'
-				: 'edited'
 		const url = `https://wiki.dungeondefenders2.com/index.php?title=${change.title}&diff=${change.revid}`.replace(/\s/g, '_')
 		const wikiChangeEmbed = new MessageEmbed()
 			.setAuthor({name: change.user, url: `https://wiki.dungeondefenders2.com/wiki/User:${change.user.replace(/\s/g, '_')}`})
-			.setTitle(`${change.user} ${capFirstLetter(action)} "${change.title}"`)
-			.setURL(url)
+			.setTitle(`${change.user} ${getAction(change)}`)
+			.setURL(`https://wiki.dungeondefenders2.com/wiki/${change.title.replace(/\s/g, '_')}`)
 			.addField('Comment', change.comment || 'No Comment Provided')
 			.setColor('ORANGE')
 			.setTimestamp(Date.parse(change.timestamp))
 
-		if (action === 'edited'){
-			const {data} = await axios.get(url)
-			const document = parse(data)
+		if (change.type === 'edit'){
+			const document = parse((await axios.get(url)).data)
 			const removed = document.querySelectorAll('.diff-deletedline').map(e => `- ${e.textContent}`).join('\n')
 			const added = document.querySelectorAll('.diff-addedline').map(e => `+ ${e.textContent}`).join('\n')
 			if (removed) wikiChangeEmbed.addField('Removed', '```diff\n' + (removed.length > 950 ? `${removed.substring(0, 950)}\n- and more...` : removed) + '```')
 			if (added) wikiChangeEmbed.addField('Added', '```diff\n' + (added.length > 950 ? `${added.substring(0, 950)}\n+ and more...` : added) + '```')
 		} else if (change.logparams?.img_sha1){
-			const {data} = await axios.get(url)
-			const document = parse(data)
+			const document = parse((await axios.get(url)).data)
 			const imgURL = document.querySelector('img')!.getAttribute('src')!
-			wikiChangeEmbed.setImage(`https://wiki.dungeondefenders2.com${imgURL}`)
+			if (!/poweredby_mediawiki/.test(imgURL)) wikiChangeEmbed.setImage(`https://wiki.dungeondefenders2.com${imgURL}`)
 		}
 
-		wikiChannel.send({embeds: [wikiChangeEmbed]})
+		wikiChangesChannel.send({embeds: [wikiChangeEmbed]})
 	}
 	if (recentChangeIDsInfo.value === JSON.stringify(recentChangeIDs.slice(-10))) return
 	recentChangeIDsInfo.value = JSON.stringify(recentChangeIDs.slice(-10)) // Store the recent change IDs to prevent duplicates
@@ -780,6 +803,32 @@ client.on('interactionCreate', async interaction => {
 			.setColor('ORANGE')
 		if (topBid?.bidder) client.users.fetch(topBid.bidder).then(user => user.send({embeds: [cancelledEmbed]}))
 		interaction.reply({content: 'Auction cancelled.', ephemeral: true})
+	}
+})
+
+client.on('messageCreate', async (message: Message) => {
+	if (message.channelId !== '343306253587709952') return
+	// if (message.embeds[0]?.fields[0]?.name === 'Account Age' && timeToUnix(message.embeds[0].fields[0].value) <= 604800000){
+	// 	const newMemberEmbed = new MessageEmbed()
+	// 		.setColor('ORANGE')
+	// 		.setTitle('New Account Joined')
+	// 		.setDescription(message.embeds[0].description!)
+	// 		.addField('Account Age', message.embeds[0].fields[0].value)
+	// 		.setFooter(message.embeds[0].footer)
+	// 		.setTimestamp(message.embeds[0].timestamp)
+	// 	modQueue.send({content: `Take Action? (${message.embeds[0].description?.match(/<@\d+>/)})`, embeds: [newMemberEmbed]})
+	// }
+	if (message.embeds[0]?.description?.includes('was given the roles `Livestream Notification`, `Promo & Event Notifications`, `DD1 Update`, `DDGR`, `DD2 Update`, `DDA Update`, `PS4`, `Update Notifications`, `DD1`, `DD2`, `Survey Notifications`, `Giveaways`, `DDA`, `PC`, `Trader`, `DDGR Update`, `Switch`, `Xbox`, `ImABot`')){
+		const targetUserID = message.embeds[0]?.description.match(/\d+/)![0]
+		const targetMember = await client.guilds.cache.get('98499414632448000')?.members.fetch(targetUserID)
+		await targetMember?.roles.set(['1097974123625451572'], 'Suspected Bot Account')
+		const susMemberEmbed = new MessageEmbed()
+			.setColor('RED')
+			.setTitle('Suspected Bot Account Joined')
+			.setDescription(`${targetMember?.user.tag} assigned themself every single user assignable role, including <@&1097974123625451572>. Their roles have been stripped.`)
+			.setFooter(message.embeds[0].footer)
+			.setTimestamp(message.embeds[0].timestamp)
+		modQueue.send({embeds: [susMemberEmbed]})
 	}
 })
 
