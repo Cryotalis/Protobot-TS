@@ -19,6 +19,8 @@ export const heroEmotes: {[char: string]: string} = {
     'Mystic': '<:mystic:250374210562555904>',
     'Mercenary': '<:Mercenary:908430318845956136>',
     'Countess': '<:Countess:981719805784629308>',
+    'Engineer': '<:Engineer:1090841647383859230>',
+    'Hunter': '<:Hunter:1167149310119510046>'
 }
 
 export const timeZoneOffsets = [
@@ -562,11 +564,14 @@ export function dateDiff(firstDate: Date, secondDate: Date, shortFormat: boolean
  * Converts time duration input to unix. Format: a days b hours c minutes d seconds.
  */
 export function timeToUnix(time: string) { //Converts a day/hour/minute/second time input to unix
+    const years = /\d+\s?y/i.test(time) ? parseInt(time.match(/\d+\s?y/i)![0]) : (/\sy/i.test(time) || /^y/i.test(time)) ? 1 : 0
+    const months = /\d+\s?mo/i.test(time) ? parseInt(time.match(/\d+\s?mo/i)![0]) : (/\smo/i.test(time) || /^mo/i.test(time)) ? 1 : 0
+    const weeks = /\d+\s?w/i.test(time) ? parseInt(time.match(/\d+\s?w/i)![0]) : (/\sw/i.test(time) || /^w/i.test(time)) ? 1 : 0
     const days = /\d+\s?d/i.test(time) ? parseInt(time.match(/\d+\s?d/i)![0]) : (/\sd/i.test(time) || /^d/i.test(time)) ? 1 : 0
     const hours = /\d+\s?h/i.test(time) ? parseInt(time.match(/\d+\s?h/i)![0]) : (/\sh/i.test(time) || /^h/i.test(time)) ? 1 : 0
-    const minutes = /\d+\s?m/i.test(time) ? parseInt(time.match(/\d+\s?m/i)![0]) : (/\sm/i.test(time) || /^m/i.test(time)) ? 1 : 0
+    const minutes = /\d+\s?min/i.test(time) ? parseInt(time.match(/\d+\s?min/i)![0]) : (/\smin/i.test(time) || /^min/i.test(time)) ? 1 : 0
     const seconds = /\d+\s?s/i.test(time) ? parseInt(time.match(/\d+\s?s/i)![0]) : (/\ss/i.test(time) || /^s/i.test(time)) ? 1 : 0
-    return days * 86400000 + hours * 3600000 + minutes * 60000 + seconds * 1000
+    return years * 3.156e+10 + months * 2.628e+9 + weeks * 6.048e+8 + days * 8.64e+7 + hours * 3.6e+6 + minutes * 6e+4 + seconds * 1e+3
 }
 
 /**
@@ -582,7 +587,16 @@ export function dateStringToUnix(dateString: string) {
     const abbreviated = new RegExp('(\\d\\d?)\\s*/\\s*(\\d\\d?)\\s*/?\\s*(\\d*)') // 1/1/1970
     const american = new RegExp(`(${month}\\w*)\\s+(\\d+)(?:\\w*)\\s*(\\d*)`) // January 1, 1970
     const british = new RegExp(`(\\d+)(?:\\w*)\\s*(${month}\\w*)\\s*(\\d*)`) // 1 January, 1970
-    const mdyTimeZones = ['sst', 'pdt', 'pst', 'pt', 'ndt', 'nst', 'adt', 'ast', 'at', 'est', 'edt', 'et', 'cst', 'cdt', 'ct', 'mst', 'mdt', 'mt', 'chut', 'pont', 'kost', 'chst', 'jst', 'kst', 'mht', 'pht', 'aoe', 'wakt', 'hst', 'akdt'] //Timezones that use the Month/Day/Year format
+    const mdyTimeZones = [
+        'SST',  'PDT',  'PST',  'PT',
+        'NDT',  'NST',  'ADT',  'AST',
+        'AT',   'EST',  'EDT',  'ET',
+        'CST',  'CDT',  'CT',   'MST',
+        'MDT',  'MT',   'CHUT', 'PONT',
+        'KOST', 'CHST', 'JST',  'KST',
+        'MHT',  'PHT',  'AOE',  'WAKT',
+        'HST',  'AKDT'
+    ] // Timezones that use the Month/Day/Year format
     let date = '', time = dateString.match(timeFormat)![0], timeZone = TZdefault.name
 
     if (time) { //Extracts the time, if it was provided
@@ -601,7 +615,7 @@ export function dateStringToUnix(dateString: string) {
 
     if (abbreviated.test(dateString)) { //Abbreviated date format
         getDateData(abbreviated)
-        if (mdyTimeZones.some((e) => e === timeZone)) {
+        if (mdyTimeZones.some(tz => tz === timeZone)) {
             date = `${dateData[1]}/${dateData[2]}/${dateData[3]}`
         } else {
             date = `${dateData[2]}/${dateData[1]}/${dateData[3]}`
@@ -642,25 +656,29 @@ export function dateToString(date: Date, timeZone: string = 'UTC', showTZ: boole
     return `${dateString} ${ampm} ${timeZone.toUpperCase()}`.trim()
 }
 
+export interface CanvasTextInfo {
+    ctx: CanvasRenderingContext2D,
+    font: string,
+    textAlign: CanvasTextAlign,
+    strokeStyle: string | CanvasGradient | CanvasPattern,
+    fillStyle: string | CanvasGradient | CanvasPattern
+}
 /**
  * Writes text that wraps around when it reaches a horizontal limit
- * @param ctx - The Canvas API
+ * @param textInfo - Object containing styling information for the text
  * @param text - The text to be written
- * @param alignment - The alignment of the text (left, right, center)
- * @param font - The font of the text
- * @param outline - The color for the outline of the text
- * @param color - The color of the text
  * @param textX - The X coordinate of the text
  * @param textY - The Y coordinate of the text
  * @param maxWidth - The width of the line of text. After reaching this width limit the text will wrap around
  * @param lineHeight - The spacing between lines of text
  */
-export function wrapText(ctx: CanvasRenderingContext2D, text: string, alignment: CanvasTextAlign, font: string, outline: string, color: string, textX: number, textY: number, maxWidth: number, lineHeight: number) { // For drawing event titles
-    ctx.font = font
-    ctx.textAlign = alignment
-    ctx.strokeStyle = outline
+export function wrapText(textInfo: CanvasTextInfo, text: string, textX: number, textY: number, maxWidth: number, lineHeight: number) {
+    const {ctx} = textInfo
+    ctx.font = textInfo.font
+    ctx.textAlign = textInfo.textAlign
+    ctx.strokeStyle = textInfo.strokeStyle
     ctx.lineWidth = 3
-    ctx.fillStyle = color
+    ctx.fillStyle = textInfo.fillStyle
     ctx.textBaseline = 'middle'
     const words = text.split(' ')
     let line = ''
@@ -670,7 +688,6 @@ export function wrapText(ctx: CanvasRenderingContext2D, text: string, alignment:
         const metrics = ctx.measureText(testLine)
         const testWidth = metrics.width
         if (testWidth > maxWidth && n > 0) {
-            // textY -= 20
             textY -= (ctx.measureText(text).actualBoundingBoxAscent + ctx.measureText(text).actualBoundingBoxDescent) / 2
             ctx.strokeText(line, textX, textY)
             ctx.fillText(line, textX, textY)
@@ -694,7 +711,7 @@ export function wrapText(ctx: CanvasRenderingContext2D, text: string, alignment:
  * @param x - The x coordinate of the text
  * @param y - The y coordinate of the text
  */
-export function drawCentered(ctx: CanvasRenderingContext2D, text: string, font: string, outline: string, color: string, x: number, y: number) { // For drawing event durations
+export function drawCentered(ctx: CanvasRenderingContext2D, text: string, font: string, outline: string, color: string, x: number, y: number) {
     ctx.font = font
     ctx.textAlign = 'center'
     ctx.strokeStyle = outline
