@@ -9,10 +9,10 @@ module.exports = {
 		.setDescription('List all mods equippable on a given slot for a given hero from a given difficulty')
 		.addStringOption(option => option.setName('difficulty')
 			.setDescription('The difficulty to filter the list by')
-			.addChoices(['Campaign', 'Chaos 1', 'Chaos 2', 'Chaos 3', 'Chaos 4', 'Chaos 5', 'Chaos 6', 'Chaos 7', 'Chaos 8', 'Chaos 9'].map(e => [e, e])))
+			.addChoices(['Campaign', 'Chaos 1', 'Chaos 2', 'Chaos 3', 'Chaos 4', 'Chaos 5', 'Chaos 6', 'Chaos 7', 'Chaos 8', 'Chaos 9', 'Chaos 10'].map(e => [e, e])))
 		.addStringOption(option => option.setName('hero')
 			.setDescription('The hero to filter the list by')
-			.addChoices(['Monk', 'Apprentice', 'Huntress', 'Squire', 'Ev2', 'Lavamancer', 'Abyss Lord', 'Adept', 'Gunwitch', 'Initiate', 'Dryad', 'Barbarian', 'Mystic', 'Mercenary', 'Countess'].map(e => [e, e])))
+			.addChoices(['All', 'Monk', 'Apprentice', 'Huntress', 'Squire', 'Ev2', 'Lavamancer', 'Abyss Lord', 'Adept', 'Gunwitch', 'Initiate', 'Dryad', 'Barbarian', 'Mystic', 'Mercenary', 'Countess', 'Engineer', 'Hunter'].map(e => [e, e])))
 		.addStringOption(option => option.setName('slot')
 			.setDescription('The slot to filter the list by')
 			.addChoices(['Armor', 'Relic', 'Weapon'].map(e => [e, e])))
@@ -43,7 +43,7 @@ module.exports = {
 		}
 
 		if (hero){
-			heroFilter = hero.match(/\b(?:All|Squire|Apprentice|Huntress|Monk|Abyss Lord|EV2|Gunwitch|Lavamancer|Mystic|Dryad|Initiate|Adept|Barbarian|Mercenary|Countess)\b/ig)!
+			heroFilter = hero.match(/\b(?:All|Squire|Apprentice|Huntress|Monk|Abyss Lord|EV2|Gunwitch|Lavamancer|Mystic|Dryad|Initiate|Adept|Barbarian|Mercenary|Countess|Engineer|Hunter)\b/ig)!
 			output = output.filter(mod => heroFilter?.some(hero => mod.hero?.includes(capitalize(hero))))
 		}
 

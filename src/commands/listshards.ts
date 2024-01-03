@@ -9,14 +9,14 @@ module.exports = {
 		.setDescription('List all shards equippable on a given slot for a given hero from a given difficulty')
 		.addStringOption(option => option.setName('difficulty')
 			.setDescription('The difficulty to filter the list by')
-			.addChoices(['Campaign', 'Chaos 1', 'Chaos 2', 'Chaos 3', 'Chaos 4', 'Chaos 5', 'Chaos 6', 'Chaos 7', 'Chaos 8', 'Chaos 9'].map(e => [e, e])))
+			.addChoices(['Campaign', 'Chaos 1', 'Chaos 2', 'Chaos 3', 'Chaos 4', 'Chaos 5', 'Chaos 6', 'Chaos 7', 'Chaos 8', 'Chaos 9', 'Chaos 10'].map(e => [e, e])))
 		.addStringOption(option => option.setName('hero')
 			.setDescription('The hero to filter the list by')
-			.addChoices(['Monk', 'Apprentice', 'Huntress', 'Squire', 'Ev2', 'Lavamancer', 'Abyss Lord', 'Adept', 'Gunwitch', 'Initiate', 'Dryad', 'Barbarian', 'Mystic', 'Mercenary', 'Countess'].map(e => [e, e])))
+			.addChoices(['All', 'Monk', 'Apprentice', 'Huntress', 'Squire', 'Ev2', 'Lavamancer', 'Abyss Lord', 'Adept', 'Gunwitch', 'Initiate', 'Dryad', 'Barbarian', 'Mystic', 'Mercenary', 'Countess', 'Engineer', 'Hunter'].map(e => [e, e])))
 		.addStringOption(option => option.setName('slot')
 			.setDescription('The slot to filter the list by')
 			.addChoice('Armor', 'Helmet, Chestplate, Gloves, Boots')
-			.addChoices(['Relic', 'Weapon', 'Helmet', 'Chestplate', 'Gloves', 'Boots'].map(e => [e, e])))
+			.addChoices(['Relic', 'Weapon', 'Shield', 'Helmet', 'Chestplate', 'Gloves', 'Boots'].map(e => [e, e])))
 		.addStringOption(option => option.setName('custom-filter').setDescription('A custom filter to apply to the list'))
 	,
 	async execute(interaction: CommandInteraction) {
@@ -38,12 +38,12 @@ module.exports = {
 		}
 	
 		if (hero){
-			heroFilter = hero.match(/\b(?:All|Squire|Apprentice|Huntress|Monk|Abyss Lord|EV2|Gunwitch|Lavamancer|Mystic|Dryad|Initiate|Adept|Barbarian|Mercenary|Countess)\b/ig)!
+			heroFilter = hero.match(/\b(?:All|Squire|Apprentice|Huntress|Monk|Abyss Lord|EV2|Gunwitch|Lavamancer|Mystic|Dryad|Initiate|Adept|Barbarian|Mercenary|Countess|Engineer|Hunter)\b/ig)!
 			output = output.filter(shard => heroFilter?.some(hero => shard.hero?.includes(capitalize(hero))))
 		}
 	
 		if (slot){
-			typeFilter = slot.match(/\b(?:Relic|Weapon|Armor|Helmet|Chestplate|Gloves|Boots)\b/ig)!
+			typeFilter = slot.match(/\b(?:Relic|Weapon|Shield|Armor|Helmet|Chestplate|Gloves|Boots)\b/ig)!
 			output = output.filter(shard => typeFilter?.some(type => capitalize(type) === shard.type))
 		}
 	
