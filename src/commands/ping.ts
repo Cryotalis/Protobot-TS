@@ -1,12 +1,11 @@
-import { CommandInteraction } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
 		.setDescription("Show Protobot's response time")
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const time = Date.now()
 		await interaction.reply('Pinging <a:loading:763160594974244874>')
 		await interaction.editReply(`Pong! - Time: **${time - interaction.createdTimestamp}ms**`)

@@ -2,8 +2,7 @@
  * This file contains instructions on how to register and delete Slash Commands (global & guild-specific methods are both included)
  */
 
-import { REST } from '@discordjs/rest'
-import { Routes } from 'discord-api-types/v9';
+import { REST, Routes } from 'discord.js'
 import fs from 'node:fs'
 
 const clientUserID = 'Your_Client_ID_Here'

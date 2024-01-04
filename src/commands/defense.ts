@@ -1,5 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageAttachment, MessageSelectMenu } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, ActionRowBuilder, SlashCommandBuilder, ComponentType, StringSelectMenuBuilder, AttachmentBuilder } from 'discord.js'
 import { createCanvas, loadImage } from 'canvas'
 import { defenseBuildData, defenseImages, shards } from '../index'
 import { wrapText, drawCentered, findBestCIMatch, CanvasTextInfo } from '../library'
@@ -11,7 +10,7 @@ module.exports = {
 		.addStringOption(option => option.setName('name').setDescription('The name of the defense').setRequired(true))
 		.addStringOption(option => option.setName('role').setDescription('The role of the defense').setRequired(false))
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		async function generateBuildImage(){
 			let defense = defenseBuildData.find((defense: defenseObject) => defense.name === defenseName && defense.role === defenseRole)!
 			const canvas = createCanvas(326, 378)
@@ -71,7 +70,7 @@ module.exports = {
 			if (defense.mods[1].name) wrapText(textStyles, defense.mods[1].name, 126, 315, 200, 20)
 			if (defense.mods[2].name) wrapText(textStyles, defense.mods[2].name, 126, 357, 200, 20)
 	
-			return new MessageAttachment(canvas.toBuffer('image/png'), `${defense.name}.png`)
+			return new AttachmentBuilder(canvas.toBuffer('image/png'), {name: `${defense.name}.png`})
 		}
 
 		const nameInput = interaction.options.getString('name')!
@@ -80,21 +79,19 @@ module.exports = {
 		interface defenseObject {name: string, role: string, shards: string[], mods: {name: string, qualibean: string}[], relic: string}
 		let defenseName = findBestCIMatch(nameInput, defenseBuildData.map((defense: defenseObject) => defense.name)).bestMatch.target
 		let defenseRole = findBestCIMatch(String(roleInput), defenseBuildData.filter((defense: defenseObject) => defense.name === defenseName).map((defense: defenseObject) => defense.role)).bestMatch.target
-	
-		return interaction.reply({files: [await generateBuildImage()]})
 		
 		if (!roleInput && defenseBuildData.filter((defense: defenseObject) => defense.name === defenseName).length > 1){
 			let roleOptions = defenseBuildData.filter((defense: defenseObject) => defense.name === defenseName).map((defense: defenseObject) => defense.role)
 			roleOptions = [...new Set(roleOptions)]
-			const menu = new MessageActionRow()
+			const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
 				.addComponents(
-					new MessageSelectMenu()
+					new StringSelectMenuBuilder()
 						.setCustomId('Defense Build Selector')
 						.setPlaceholder('Select a build')
 						.addOptions(roleOptions.map((option: string) => ({label: option, value: option})))
 				)
 			await interaction.reply({content: 'Please select a build:', components: [menu]}).then(() => {
-				const collector = interaction.channel?.createMessageComponentCollector({componentType: 'SELECT_MENU', filter: msg => msg.member?.user.id === interaction.member?.user.id, time: 30000, max: 1})
+				const collector = interaction.channel?.createMessageComponentCollector({componentType: ComponentType.StringSelect, filter: msg => msg.member?.user.id === interaction.member?.user.id, time: 30000, max: 1})
 				collector?.on('collect', async i => {
 					defenseRole = i.values[0]
 					await interaction.editReply({content: null, components: [], files: [await generateBuildImage()]})

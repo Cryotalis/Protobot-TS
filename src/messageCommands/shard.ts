@@ -1,4 +1,4 @@
-import { Client, Message, MessageEmbed } from 'discord.js'
+import { Client, Message, EmbedBuilder } from 'discord.js'
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { findBestMatch } from 'string-similarity'
 import { heroEmotes } from '../library'
@@ -9,13 +9,15 @@ exports.run = async (client: Client, message: Message, prefix: string, args: str
     const shardBestMatch = findBestMatch(args.join(' '), shardNames).bestMatch
     const shard: GoogleSpreadsheetRow = shards.find(shard => shard.name === shardBestMatch.target)!
 
-    const shardEmbed = new MessageEmbed()
-        .setColor('ORANGE')
+    const shardEmbed = new EmbedBuilder()
+        .setColor('Blue')
         .setAuthor({name: shard.name, iconURL: shard.dropURL})
         .setThumbnail(shard.image)
         .setDescription(shard.description)
-        .addField('Gilded: ', shard.gilded, false)
-        .addField('Usable by:', shard.hero.split(', ').map((hero: string) => heroEmotes[hero]).join(''), false)
+        .addFields([
+            {name: 'Gilded: ', value: shard.gilded, inline: false},
+            {name: 'Usable by:', value: shard.hero.split(', ').map((hero: string) => heroEmotes[hero]).join(''), inline: false}
+        ])
         .setFooter({text: `Upgrade Levels: ${shard.upgradeLevels} | ${shard.type} | ${shard.drop}`})
 
     message.reply({embeds: [shardEmbed], allowedMentions: {repliedUser: false}})

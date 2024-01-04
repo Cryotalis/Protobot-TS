@@ -1,6 +1,4 @@
-import { Client, Collection, Intents, Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, Modal, ModalActionRowComponent, TextChannel, TextInputComponent, User } from 'discord.js'
-import { Routes } from 'discord-api-types/v9'
-import { REST } from '@discordjs/rest'
+import { ChannelType, Client, Collection, EmbedBuilder, GatewayIntentBits, Message, ModalActionRowComponent, REST, Routes, TextChannel, TextInputComponent, User } from 'discord.js'
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { schedule } from 'node-cron'
 import { inspect } from 'util'
@@ -11,16 +9,13 @@ import axios from 'axios'
 import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library'
 import { registerFont } from 'canvas'
 
-export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]})
-export const isHost = true
-export const botSettings = {
-	'developerMode': false, // Ignores all inputs from me (Cryo) if true
-}
+export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages], rest: {timeout: 60000}})
+
 registerFont(require('@canvas-fonts/arial'), {family: 'Arial'})
 registerFont(require('@canvas-fonts/arial-bold'), {family: 'Arial Bold'})
 
 const privateCommandFiles = ['run.js', 'say.js']
-const gameCommandNames = ['defense', 'drakenfrost', 'faq', 'image', 'link', 'listmods', 'listshards', 'minasc', 'mod', 'price', 'rate', 'shard', 'report', 'wiki']
+const gameCommandNames = ['defense', 'drakenfrost', 'faq', 'image', 'link', 'listmods', 'listshards', 'minasc', 'mod', 'price', 'rate', 'shard', 'wiki']
 
 export const regCommands = fs.readdirSync('./prod/commands').filter(file => file.endsWith('.js'))
 export const modCommands = fs.readdirSync('./prod/modCommands').filter(file => file.endsWith('.js'))
@@ -65,13 +60,11 @@ export async function registerCommands() {
 	await publicDB.sheetsByTitle['Commands'].addRows(commandInfo)
 
 	const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN!)
-	rest.put(Routes.applicationCommands(client.user?.id!), { body: commands })
+	rest.put(Routes.applicationCommands('521180443958181889'), { body: commands })
 		.then(() => console.log('Successfully registered application commands globally.'))
 		.catch(console.error)
 
-	rest.put(Routes.applicationGuildCommands(client.user?.id!, '379501550097399810'), { body: privateCommands })
-		.then(() => console.log('Successfully registered private commands to The Cryo Chamber.'))
-		.catch(console.error)
+	rest.put(Routes.applicationGuildCommands('521180443958181889', '379501550097399810'), { body: privateCommands })
 }
 
 // Connecting to the Database
@@ -205,33 +198,32 @@ client.on('ready', async () => {
 	modQueue = client.channels.cache.get('791527921142988832') as TextChannel
 
 	console.log('Protobot is now online')
-	if (isHost) logChannel?.send('**:white_check_mark:  Protobot is now online**')
+	logChannel?.send('**:white_check_mark:  Protobot is now online**')
 
 	setInterval(() => (client.channels.cache.get('762948660983496715') as TextChannel).edit({name: `Server Count: ${client.guilds.cache.size}`}), 1.8e+6) // Every half an hour
 })
 
 // Slash Command Handler
-client.on('interactionCreate', async interaction => {
-    if ((!interaction.isCommand() && !interaction.isMessageContextMenu()) || (!isHost && interaction.user.id !== '251458435554607114')) return
-	if (blacklistedIDs?.includes(interaction.user.id)) return interaction.reply(`${interaction.user} you have been banned running commands.`)
-	if (botSettings.developerMode && interaction.user.id === '251458435554607114' && interaction.commandName !== 'run') return
+client.on('interactionCreate', interaction => {
+    if ((!interaction.isCommand() && !interaction.isMessageContextMenuCommand()) || !interaction.channel) return
+	if (blacklistedIDs?.includes(interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
 
 	const isModCommand = modCommands.includes(`${interaction.commandName}.js`)
     const command: any = client.commands?.get(interaction.commandName)
-	if (!command) return interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true})
-	if (isModCommand && !(interaction.memberPermissions?.has('MANAGE_MESSAGES') || councilMemberIDs?.includes(interaction.user.id))){
-		return interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true})
+	if (!command) {interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true}); return}
+	if (isModCommand && !(interaction.memberPermissions?.has('ManageMessages') || councilMemberIDs?.includes(interaction.user.id))){
+		interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true}); return
 	} 
 
 	try {
-		await command.execute(interaction)
+		command.execute(interaction)
 	} catch (error) {
 		console.error(error)
 		errorChannel.send({
 			content: `🚫  **${interaction.user.tag}** ran the ${isModCommand ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`,
-			files: [new MessageAttachment(Buffer.from(inspect(error, {depth: null}), 'utf-8'), 'error.ts')]
+			files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]
 		})
-		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
+		interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
 	} finally {
 		logChannel?.send(`:scroll:  **${interaction.user.tag}** ran the ${isModCommand ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`)
 	}
@@ -267,26 +259,28 @@ client.on('ready', async () => {AMLogChannel = client.channels.cache.get('916495
 const tradeRules = '1. Follow the trading format below.\n2. One trade per line, no more than 1 image per message.\n3. Do not discuss trades here. See market-discussion.\n4. If a trade has been completed, delete or edit the original post.\n5. Do not post advertisements more than once every 23 hours.\n\n[**H**] = **Have**\n[**W**] = **Want**\nYou must include one of the above in your listing!\n\nExample Trades:\n[H]  99 Pristine Motes   [W] 3m <:gold:460345588911833088>\n[W] 99 Shiny Motes   [H] 3m <:gold:460345588911833088>\n\nTrade Format(copy & paste):\n```[H] item-name  [W] :gold:\n[W] item-name  [H] :gold:```'
 client.on('messageCreate', async (message: Message) => {
 	const LFTAutomodChannels = ['460339922231099402', '460340670960500737', '460340942990475264'] // The channels that should be automodded
-	if (message.channel.type === 'DM' || !LFTAutomodChannels.includes(message.channelId) || !AMLogChannel || message.author.bot || !userLogs) {return}
+	if (message.channel.type === ChannelType.DM || !LFTAutomodChannels.includes(message.channelId) || !AMLogChannel || message.author.bot || !userLogs) {return}
 
 	function createDelMsgEmbed(reason: string){
 		if (!message.content){message.content = 'No Content'}
-		return new MessageEmbed()
-			.setColor('RED')
-			.setAuthor({name: `${message.author.tag}  |  ${user.warnings} Warnings`, iconURL: message.author.displayAvatarURL({format: 'png'})})
+		return new EmbedBuilder()
+			.setColor('Red')
+			.setAuthor({name: `${message.author.tag}  |  ${user.warnings} Warnings`, iconURL: message.author.displayAvatarURL({extension: 'png'})})
 			.setDescription(`Message sent by ${message.author} deleted in ${message.channel}`)
-			.addField('Content', message.content.length > 1024 ? `${message.content.slice(0, 1020)}...` : message.content)
-			.addField('Reason', `Trade Channel Rule Violation: ${reason}`)
+			.addFields([
+				{name: 'Content', value: message.content.length > 1024 ? `${message.content.slice(0, 1020)}...` : message.content},
+				{name: 'Reason', value: `Trade Channel Rule Violation: ${reason}`}
+			])
 			.setFooter({text: `Author: ${message.author.id} | Message ID: ${message.id}`})
 			.setTimestamp(new Date())
 	}
 
 	function DMRules(violation: string){
 		const dmEmbeds = [
-			new MessageEmbed().setColor('ORANGE').setTitle('Looking-For-Trade Channel Rules:').setDescription(tradeRules),
-			new MessageEmbed().setColor('ORANGE').setTitle("Here's what you posted:").setDescription(`\`\`\`${message.content}\`\`\``)
+			new EmbedBuilder().setColor('Blue').setTitle('Looking-For-Trade Channel Rules:').setDescription(tradeRules),
+			new EmbedBuilder().setColor('Blue').setTitle("Here's what you posted:").setDescription(`\`\`\`${message.content}\`\`\``)
 		]
-		if (violation.includes('23')){dmEmbeds.push(new MessageEmbed().setColor('ORANGE').setDescription(`You may post again after <t:${Date.parse(user.time)/1000 + 8.28e+4}>`))}
+		if (violation.includes('23')){dmEmbeds.push(new EmbedBuilder().setColor('Blue').setDescription(`You may post again after <t:${Date.parse(user.time)/1000 + 8.28e+4}>`))}
 		message.author.send({content: `${violation} Please review the Looking-For-Trade channel rules here:`, embeds: dmEmbeds})
 	}
 	
@@ -321,7 +315,7 @@ client.on('messageCreate', async (message: Message) => {
 
 // Youtube Post Notifications
 schedule('* * * * *', () => {
-	if (!isHost || !youtubeChannels) return
+	if (!youtubeChannels) return
 	youtubeChannels.forEach(async channel => {
 		const discordChannel = client.channels.cache.get(channel.discordChannelID) as TextChannel
 		const feed = await new Parser().parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channel.youtubeID}`).catch(() => undefined) // Parse the RSS Feed for the channel, ignore any 404 errors if the rss feed is unavailable
@@ -349,7 +343,7 @@ schedule('* * * * *', () => {
 // Twitch Live Notifications
 export interface channelConfig {id: string, message: string | null, categories: string[]}
 schedule('* * * * *', () => {
-	if (!isHost || !twitchChannels) return
+	if (!twitchChannels) return
 	twitchChannels.forEach(async channel => {
 		const configs: channelConfig[] = JSON.parse(channel.configs || '[]')
 		if (configs.length === 0) return
@@ -361,17 +355,17 @@ schedule('* * * * *', () => {
 		const recentStreamIDs: string[] = JSON.parse(channel.recentStreamIDs || '[]')
 		if (recentStreamIDs.includes(streamInfo.id)) return
 
-		const twitchStreamEmbed = new MessageEmbed()
+		const twitchStreamEmbed = new EmbedBuilder()
 			.setAuthor({name: 'Twitch', iconURL: 'https://cdn.icon-icons.com/icons2/3041/PNG/512/twitch_logo_icon_189242.png'})
 			.setTitle(`${streamInfo.user_name} is now playing ${streamInfo.game_name}!`)
 			.setURL(`https://www.twitch.tv/${channel.username}`)
 			.setDescription(streamInfo.title)
 			.setThumbnail(userInfo.profile_image_url)
-			.setColor('PURPLE')
+			.setColor('Purple')
 
 		configs.forEach((config: channelConfig) => {
 			const discordChannel = client.channels.cache.get(config.id) as TextChannel
-			discordChannel.send({content: config.message, embeds: [twitchStreamEmbed]})
+			discordChannel.send({content: config.message!, embeds: [twitchStreamEmbed]})
 		})
 
 		if (recentStreamIDs.length >= 5) recentStreamIDs.shift() // Only store the 5 most recent stream IDs
@@ -405,7 +399,6 @@ schedule('* * * * *', async () => {
 		return capFirstLetter(action)
 	}
 
-	if (!isHost) return
 	const wikiChangesChannel = client.channels.cache.get('1072236073515745451') as TextChannel
 	const response = await axios.get('https://wiki.dungeondefenders2.com/api.php?action=query&list=recentchanges&rcprop=user|title|timestamp|comment|loginfo|ids&rclimit=5&format=json')
     const {data: {query: {recentchanges}}} = response
@@ -417,20 +410,20 @@ schedule('* * * * *', async () => {
 		if (recentChangeIDs.includes(change.rcid)) continue
 		recentChangeIDs.push(change.rcid)
 		const url = `https://wiki.dungeondefenders2.com/index.php?title=${change.title}&diff=${change.revid}`.replace(/\s/g, '_')
-		const wikiChangeEmbed = new MessageEmbed()
+		const wikiChangeEmbed = new EmbedBuilder()
 			.setAuthor({name: change.user, url: `https://wiki.dungeondefenders2.com/wiki/User:${change.user.replace(/\s/g, '_')}`})
 			.setTitle(`${change.user} ${getAction(change)}`)
 			.setURL(`https://wiki.dungeondefenders2.com/wiki/${change.title.replace(/\s/g, '_')}`)
-			.addField('Comment', change.comment || 'No Comment Provided')
-			.setColor('ORANGE')
+			.addFields({name: 'Comment', value: change.comment || 'No Comment Provided'})
+			.setColor('Blue')
 			.setTimestamp(Date.parse(change.timestamp))
 
 		if (change.type === 'edit'){
 			const document = parse((await axios.get(url)).data)
 			const removed = document.querySelectorAll('.diff-deletedline').map(e => `- ${e.textContent}`).join('\n')
 			const added = document.querySelectorAll('.diff-addedline').map(e => `+ ${e.textContent}`).join('\n')
-			if (removed) wikiChangeEmbed.addField('Removed', '```diff\n' + (removed.length > 950 ? `${removed.substring(0, 950)}\n- and more...` : removed) + '```')
-			if (added) wikiChangeEmbed.addField('Added', '```diff\n' + (added.length > 950 ? `${added.substring(0, 950)}\n+ and more...` : added) + '```')
+			if (removed) wikiChangeEmbed.addFields({name: 'Removed', value: '```diff\n' + (removed.length > 950 ? `${removed.substring(0, 950)}\n- and more...` : removed) + '```'})
+			if (added) wikiChangeEmbed.addFields({name: 'Added', value: '```diff\n' + (added.length > 950 ? `${added.substring(0, 950)}\n+ and more...` : added) + '```'})
 		} else if (change.logparams?.img_sha1){
 			const document = parse((await axios.get(url)).data)
 			const imgURL = document.querySelector('img')!.getAttribute('src')!
@@ -469,14 +462,14 @@ schedule('* * * * *', async () => {
 // 		})
 
 // 		const channelLink = `https://discord.com/channels/${interaction.guildId}/${interaction.channelId!}`
-// 		const auctionEmbed = new MessageEmbed()
+// 		const auctionEmbed = new EmbedBuilder()
 // 			.setAuthor({name: `Auction by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
 // 			.setTitle(`${title}`)
 // 			.setDescription(description)
 // 			.addField('Minimum Bid:', minBid.replace(/gold/ig, '<:gold:460345588911833088>'), true)
 // 			.addField('Top Bidder:', 'None', true)
 // 			.addField('Time Remaining:', `Ends <t:${Math.ceil(endDate.getTime()/1000)}:R>`, true)
-// 			.setColor('ORANGE')
+// 			.setColor('Blue')
 // 			.setURL(channelLink)
 // 			.setFooter({text: 'Ends'})
 // 			.setTimestamp(endDate)
@@ -487,29 +480,29 @@ schedule('* * * * *', async () => {
 // 				if (i > 3) break // Limit to 4 images
 // 				if (!parsedLinks[i]) continue
 // 				if (!auctionEmbed.image) {auctionEmbed.setImage(parsedLinks[i]); continue}
-// 				const auctionImageEmbed = new MessageEmbed()
+// 				const auctionImageEmbed = new EmbedBuilder()
 // 					.setURL(channelLink)
 // 					.setImage(parsedLinks[i])
-// 					.setColor('ORANGE')
+// 					.setColor('Blue')
 // 				embedArray.push(auctionImageEmbed)
 // 			}
 // 		}
 
-// 		const auctionInputs = new MessageActionRow()
+// 		const auctionInputs = new ActionRowBuilder()
 // 			.addComponents(
-// 				new MessageButton()
+// 				new ButtonBuilder()
 // 					.setCustomId('Auction Bid Button')
 // 					.setLabel(`Place Bid`)
-// 					.setStyle('PRIMARY')
+// 					.setStyle(ButtonStyle.Primary)
 // 			)
 // 			.addComponents(
-// 				new MessageButton()
+// 				new ButtonBuilder()
 // 					.setCustomId('Retract Bid Button')
 // 					.setLabel(`Retract Bid`)
 // 					.setStyle('DANGER')
 // 			)
 // 			.addComponents(
-// 				new MessageButton()
+// 				new ButtonBuilder()
 // 					.setCustomId('Cancel Auction Button')
 // 					.setLabel(`Cancel Auction`)
 // 					.setStyle('DANGER')
@@ -523,14 +516,14 @@ schedule('* * * * *', async () => {
 // 		if (!DMSuccess) return
 
 // 		const auctionMessage = await interaction.reply({embeds: embedArray, components: [auctionInputs], fetchReply: true}) as Message
-// 		const auctionOverviewEmbed = new MessageEmbed()
+// 		const auctionOverviewEmbed = new EmbedBuilder()
 // 			.setAuthor({name: `Auction by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
 // 			.setTitle(`${title}`)
 // 			.setDescription(description)
 // 			.addField('Minimum Bid:', minBid.replace(/gold/ig, '<:gold:460345588911833088>'), true)
 // 			.addField('Time Remaining:', `Ends <t:${Math.ceil(endDate.getTime()/1000)}:R>`, true)
 // 			.addField('Direct Link:', `[Click Here](${channelLink}/${auctionMessage.id})`, true)
-// 			.setColor('ORANGE')
+// 			.setColor('Blue')
 // 			.setURL(`${channelLink}/${auctionMessage.id}`)
 // 			.setFooter({text: 'Ends'})
 // 			.setTimestamp(endDate)
@@ -564,27 +557,27 @@ schedule('* * * * *', async () => {
 
 // 			client.users.fetch(auctionEntry.auctioneerID).then(async user => {
 // 				const auctionWinner = await client.users.fetch(topBid.bidder)
-// 				const auctionEndEmbed = new MessageEmbed()
+// 				const auctionEndEmbed = new EmbedBuilder()
 // 					.setTitle('Auction Concluded')
 // 					.setDescription(`Your auction for [${auctionEntry.title}](${auctionEmbed.url}/${message.id}) has ended! Contact the winner to set up the transaction!`)
 // 					.addField('Winner:', `<@${topBid.bidder}> (${auctionWinner.tag})`)
 // 					.addField('Winning bid:', topBid.bid)
 // 					.setURL(`${auctionEmbed.url}/${message.id}`)
-// 					.setColor('ORANGE')
+// 					.setColor('Blue')
 
-// 				const auctionFailEmbed = new MessageEmbed()
+// 				const auctionFailEmbed = new EmbedBuilder()
 // 					.setTitle('Auction Concluded')
 // 					.setDescription(`Your auction for [${auctionEntry.title}](${auctionEmbed.url}/${message.id}) has ended, but no bids were placed.`)
 // 					.setURL(`${auctionEmbed.url}/${message.id}`)
-// 					.setColor('ORANGE')
+// 					.setColor('Blue')
 // 				user.send({embeds: [topBid.bidder ? auctionEndEmbed : auctionFailEmbed]})
 // 			})
 
 // 			if (!topBid?.bidder) return
 // 			const auctioneer = await client.users.fetch(auctionEntry.auctioneerID)
-// 			const auctionWinEmbed = new MessageEmbed()
+// 			const auctionWinEmbed = new EmbedBuilder()
 // 				.setDescription(`You won an auction by ${auctioneer} (${auctioneer.tag}) for [${auctionEntry.title}](${auctionEmbed.url}/${message.id})! Contact them to set up the transaction!`)
-// 				.setColor('ORANGE')
+// 				.setColor('Blue')
 // 			client.users.fetch(topBid.bidder).then(user => user.send({embeds: [auctionWinEmbed]}))
 // 		}.bind(null, auctionMessage.id, auctionMessage.channelId))
 // 	}
@@ -619,9 +612,9 @@ schedule('* * * * *', async () => {
 // 			await auction.edit({embeds: [auction.embeds[0]]})
 // 			bidStatus = 'Accepted'
 // 			if (currentBid.bidder && interaction.user.id !== currentBid.bidder){
-// 				const outbidEmbed = new MessageEmbed()
+// 				const outbidEmbed = new EmbedBuilder()
 // 					.setDescription(`You have been outbid in the auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id})!`)
-// 					.setColor('ORANGE')
+// 					.setColor('Blue')
 // 				client.users.fetch(currentBid.bidder).then(user => user.send({embeds: [outbidEmbed]}))
 // 			}
 // 			interaction.reply({content: 'Bid successful!', ephemeral: true})
@@ -661,7 +654,7 @@ schedule('* * * * *', async () => {
 // 			.setCustomId(`Auction Bid Modal`)
 // 			.setTitle('Place a Bid')
 		
-// 		const bid = new MessageActionRow<ModalActionRowComponent>().addComponents(
+// 		const bid = new ActionRowBuilder<ModalActionRowComponent>().addComponents(
 // 			new TextInputComponent()
 // 				.setCustomId('Auction Bid')
 // 				.setLabel('Your Bid')
@@ -721,9 +714,9 @@ schedule('* * * * *', async () => {
 // 		auctionEntry.status = 'Cancelled'
 // 		auctions.splice(auctionIndex, 1, auctionEntry)
 // 		await auctionEntry.save()
-// 		const cancelledEmbed = new MessageEmbed()
+// 		const cancelledEmbed = new EmbedBuilder()
 // 			.setDescription(`The auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id}) has been cancelled.`)
-// 			.setColor('ORANGE')
+// 			.setColor('Blue')
 // 		if (topBid?.bidder) client.users.fetch(topBid.bidder).then(user => user.send({embeds: [cancelledEmbed]}))
 // 		interaction.reply({content: 'Auction cancelled.', ephemeral: true})
 // 	}
@@ -732,8 +725,8 @@ schedule('* * * * *', async () => {
 client.on('messageCreate', async (message: Message) => {
 	if (message.channelId !== '343306253587709952') return
 	// if (message.embeds[0]?.fields[0]?.name === 'Account Age' && timeToUnix(message.embeds[0].fields[0].value) <= 604800000){
-	// 	const newMemberEmbed = new MessageEmbed()
-	// 		.setColor('ORANGE')
+	// 	const newMemberEmbed = new EmbedBuilder()
+	// 		.setColor('Blue')
 	// 		.setTitle('New Account Joined')
 	// 		.setDescription(message.embeds[0].description!)
 	// 		.addField('Account Age', message.embeds[0].fields[0].value)
@@ -745,18 +738,18 @@ client.on('messageCreate', async (message: Message) => {
 		const targetUserID = message.embeds[0]?.description.match(/\d+/)![0]
 		const targetMember = await client.guilds.cache.get('98499414632448000')?.members.fetch(targetUserID)
 		await targetMember?.roles.set(['1097974123625451572'], 'Suspected Bot Account')
-		const susMemberEmbed = new MessageEmbed()
-			.setColor('RED')
+		const susMemberEmbed = new EmbedBuilder()
+			.setColor('Red')
 			.setTitle('Suspected Bot Account Joined')
 			.setDescription(`${targetMember?.user.tag} assigned themself every single user assignable role, including <@&1097974123625451572>. Their roles have been stripped.`)
 			.setFooter(message.embeds[0].footer)
-			.setTimestamp(message.embeds[0].timestamp)
+			.setTimestamp(new Date(Date.parse(message.embeds[0].timestamp!)))
 		modQueue.send({embeds: [susMemberEmbed]})
 	}
 })
 
 client.login(process.env.BOT_TOKEN)
 
-process.on('uncaughtException', function (error) {
-	errorChannel?.send({files: [new MessageAttachment(Buffer.from(inspect(error, {depth: null}), 'utf-8'), 'error.ts')]})
-})
+// process.on('uncaughtException', error => {
+// 	errorChannel?.send({files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]})
+// })

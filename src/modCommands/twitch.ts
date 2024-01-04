@@ -1,5 +1,4 @@
-import { CommandInteraction } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { channelConfig, privateDB, twitchChannels } from '..'
 import { getTwitchUserInfo, userInfo } from '../library'
 
@@ -24,7 +23,7 @@ module.exports = {
 				.addChannelOption(option => option.setName('channel').setDescription('The Discord Channel to disable notifications in').setRequired(true))
 		)
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		return interaction.reply('Command not yet available.')
 		// const twitchUsername = interaction.options.getString('username')!
 		// const discordChannel = interaction.options.getChannel('channel')!

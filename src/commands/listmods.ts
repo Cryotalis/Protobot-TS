@@ -1,5 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { mods } from '../index'
 import { capitalize } from '../library'
 
@@ -9,16 +8,21 @@ module.exports = {
 		.setDescription('List all mods equippable on a given slot for a given hero from a given difficulty')
 		.addStringOption(option => option.setName('difficulty')
 			.setDescription('The difficulty to filter the list by')
-			.addChoices(['Campaign', 'Chaos 1', 'Chaos 2', 'Chaos 3', 'Chaos 4', 'Chaos 5', 'Chaos 6', 'Chaos 7', 'Chaos 8', 'Chaos 9', 'Chaos 10'].map(e => [e, e])))
+			.addChoices(...['Campaign', 'Chaos 1', 'Chaos 2', 'Chaos 3', 'Chaos 4', 'Chaos 5', 'Chaos 6', 'Chaos 7', 'Chaos 8', 'Chaos 9', 'Chaos 10'].map(e => ({name: e, value: e}))))
 		.addStringOption(option => option.setName('hero')
 			.setDescription('The hero to filter the list by')
-			.addChoices(['All', 'Monk', 'Apprentice', 'Huntress', 'Squire', 'Ev2', 'Lavamancer', 'Abyss Lord', 'Adept', 'Gunwitch', 'Initiate', 'Dryad', 'Barbarian', 'Mystic', 'Mercenary', 'Countess', 'Engineer', 'Hunter'].map(e => [e, e])))
+			.addChoices(...[
+				'All', 			'Monk', 		'Apprentice', 	'Huntress', 	'Squire', 
+				'Ev2', 			'Lavamancer', 	'Abyss Lord', 	'Adept', 		'Gunwitch', 
+				'Initiate', 	'Dryad', 		'Barbarian', 	'Mystic', 		'Mercenary', 
+				'Countess', 	'Engineer', 	'Hunter'
+			].map(e => ({name: e, value: e}))))
 		.addStringOption(option => option.setName('slot')
 			.setDescription('The slot to filter the list by')
-			.addChoices(['Armor', 'Relic', 'Weapon'].map(e => [e, e])))
+			.addChoices(...['Armor', 'Relic', 'Weapon'].map(e => ({name: e, value: e}))))
 		.addStringOption(option => option.setName('custom-filter').setDescription('A custom filter to apply to the list'))
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const diff = interaction.options.getString('difficulty')
 		const hero = interaction.options.getString('hero')
 		const slot = interaction.options.getString('slot')
@@ -67,14 +71,16 @@ module.exports = {
 		const types = slot ? typeFilter.map(t => capitalize(t)).join(', ') : 'Any'
 		const customfilter = customFilter ? capitalize(customFilter) : 'N/A'
 
-		const modListEmbed = new MessageEmbed()
-			.setColor('ORANGE')
+		const modListEmbed = new EmbedBuilder()
+			.setColor('Blue')
 			.setTitle(`List of mods with filters:`)
-			.addField('Heroes', heroes, true)      
-			.addField('Difficulty', difficulty, true)
-			.addField('Type(s)', types, true)
 			.setDescription(`**Custom Filters**: ${customfilter}`)
-			.addField('Mods', `\`\`\`${modlist.join(', ')}\`\`\``)
+			.addFields(
+				{name: 'Heroes', value: heroes, inline: true},
+				{name: 'Difficulty', value: difficulty, inline: true},
+				{name: 'Type(s)', value: types, inline: true},
+				{name: 'Shards', value: '```' + modlist.join(', ') + '```'},
+			)
 		
 		await interaction.reply({embeds: [modListEmbed]})
 	}

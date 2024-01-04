@@ -1,5 +1,4 @@
-import { CommandInteraction } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -7,7 +6,7 @@ module.exports = {
 		.setDescription('Convfrt text joto erunk text')
 		.addStringOption(option => option.setName('text').setDescription("The text you'd like to convert to drunk text").setRequired(true))
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const text = interaction.options.getString('text')!
 		let drunkMsg = ''
 

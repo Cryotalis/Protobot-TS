@@ -1,6 +1,5 @@
-import { CommandInteraction } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { botSettings, isHost, connectToDB, loadDefenseBuilds, registerCommands, councilMemberIDs } from '../index'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { connectToDB, loadDefenseBuilds, registerCommands, councilMemberIDs } from '../index'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -26,13 +25,8 @@ module.exports = {
 				.setName('register_commands')
 				.setDescription('Registers and updates all Slash Commands.')
 		)
-		.addSubcommand(option => 
-			option
-				.setName('developer_mode')
-				.setDescription('Toggles Developer Mode, which ignores commands issued from Developers to the Host.')
-		)
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		if (!councilMemberIDs?.includes(interaction.user.id)) {
 			return interaction.reply('This command is reserved for Protobot Council Members only.')
 		}
@@ -74,13 +68,6 @@ module.exports = {
 				registerCommands()
 			])
 			interaction.editReply('Commands Registered.')
-		}
-
-		if (command === 'developer_mode'){
-			if (!isHost) return interaction.reply('This command cannot be used on the local build')
-			if (interaction.user.id !== '251458435554607114') return interaction.reply('You do not have permission to use this command.')
-			botSettings.developerMode = !botSettings.developerMode
-			interaction.reply(`Developer Mode has been set to ${botSettings.developerMode}`)
 		}
 	}
 }

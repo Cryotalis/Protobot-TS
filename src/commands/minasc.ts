@@ -1,5 +1,4 @@
-import { CommandInteraction, Interaction, MessageEmbed } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, Interaction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -16,7 +15,7 @@ module.exports = {
 			.setMinValue(1)
 			.setMaxValue(999))
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const ascInput = interaction.options.getNumber('ascension')!
 		const floorInput = interaction.options.getNumber('floor')!
 		const ascension = Math.round(ascInput)
@@ -42,16 +41,18 @@ module.exports = {
 		? 'What are you waiting for? You have more than enough Minimum Ascension for your next reset!'
 		: 'Hmm, it seems that your input is invalid, so I cannot provide a proper suggestion...'
 		
-		const ascEmbed = new MessageEmbed()
-			.setColor('ORANGE')
+		const ascEmbed = new EmbedBuilder()
+			.setColor('Blue')
 			.setAuthor({name: (interaction as Interaction).user.tag})
 			.setThumbnail(`https://cdn.discordapp.com/avatars/${user?.id}/${user?.avatar}.png`)
-			.addField('**Ascension:**', `${ascension}`, true)
-			.addField('**Floor:**', `${floor}`, true)
-			.addField('**Talent Caps:**', `${talentCaps}`, true)
-			.addField('**Minimum Ascension:**', `\`\`\`${minAsc} (${offense} Offense | ${defense} Defense | ${utility} Utility)\`\`\``)
-			.addField('<:protobot:563244237433602048> My suggestion:', suggestion)
-			.addField('\u200b', '[Click Here](https://wiki.dungeondefenders2.com/wiki/Ancient_Power_Calculations) to learn more about how this was calculated')
+			.addFields([
+				{name: '**Ascension:**', value: `${ascension}`, inline: true},
+				{name: '**Floor:**', value: `${floor}`, inline: true},
+				{name: '**Talent Caps:**', value: `${talentCaps}`, inline: true},
+				{name: '**Minimum Ascension:**', value: `\`\`\`${minAsc} (${offense} Offense | ${defense} Defense | ${utility} Utility)\`\`\``},
+				{name: '<:protobot:563244237433602048> My suggestion:', value: suggestion},
+				{name: '\u200b', value: '[Click Here](https://wiki.dungeondefenders2.com/wiki/Ancient_Power_Calculations) to learn more about how this was calculated'}
+			])
 		
 		await interaction.reply({embeds: [ascEmbed], allowedMentions: {repliedUser: false}})
 	}

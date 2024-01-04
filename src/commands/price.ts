@@ -1,5 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { prices, mods } from '../index'
 import { findBestCIMatch } from '../library'
 
@@ -17,9 +16,9 @@ module.exports = {
 			.setMaxValue(10))
 		.addStringOption(option => option.setName('rarity')
 			.setDescription('The rarity of the pet')
-			.addChoices(['Legendary', 'Mythical', 'Epic', 'Powerful'].map(e => [e, e])))
+			.addChoices(...['Legendary', 'Mythical', 'Epic', 'Powerful'].map(e => ({name: e, value: e}))))
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		let amount = interaction.options.getNumber('amount')
 		const qualibean = interaction.options.getNumber('quality') ?? 10 // Default to 10/10 if no quality was given
 		let rarity = interaction.options.getString('rarity')
@@ -89,14 +88,16 @@ module.exports = {
 		const xboxPrice = xboxItem ? getPrice(xboxItem.xboxPrice, 'Xbox') : '-'
 		itemName = itemName.replace(' (x1)', "")
 
-		const priceEmbed = new MessageEmbed()
-			.setColor('ORANGE')
+		const priceEmbed = new EmbedBuilder()
+			.setColor('Blue')
 			.setAuthor({name: 'Price Check', url: 'https://docs.google.com/spreadsheets/d/1GXtKq58mLDBWbhTlUhOj4GbMmJ37MZf2D8rnDHHl_R8'})
 			.setTitle(`Showing Prices for ${itemPrefix + itemName}:`)
-			.addField('<:Windows:841728740333715497>  PC Price', `${pcPrice} <:gold:460345588911833088>`)
-			.addField('<:PS:841728740282597426>  PlayStation Price', `${psPrice} <:gold:460345588911833088>`)
-			.addField('<:Xbox:841728740303437824>  Xbox Price', `${xboxPrice} <:gold:460345588911833088>`)
-			.addField('\u200b', 'Prices taken from [DD2 Market Prices](https://docs.google.com/spreadsheets/d/1GXtKq58mLDBWbhTlUhOj4GbMmJ37MZf2D8rnDHHl_R8)')
+			.addFields([
+				{name: '<:Windows:841728740333715497>  PC Price', value: `${pcPrice} <:gold:460345588911833088>`},
+				{name: '<:PS:841728740282597426>  PlayStation Price', value: `${psPrice} <:gold:460345588911833088>`},
+				{name: '<:Xbox:841728740303437824>  Xbox Price', value: `${xboxPrice} <:gold:460345588911833088>`},
+				{name: '\u200b', value: 'Prices taken from [DD2 Market Prices](https://docs.google.com/spreadsheets/d/1GXtKq58mLDBWbhTlUhOj4GbMmJ37MZf2D8rnDHHl_R8)'}
+			])
 		await interaction.reply({embeds: [priceEmbed]})
 	}
 }

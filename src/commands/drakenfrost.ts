@@ -1,12 +1,11 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('drakenfrost')
 		.setDescription('Show the weapons and mods that are currently in rotation in Drakenfrost Keep')
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const nextDate = new Date()
 		const today = new Date()
 		const theDay = new Date(1554786000000) // April 9th, 2019, 5am UTC
@@ -35,18 +34,20 @@ module.exports = {
 		DFKMods[week] = `**${DFKMods[week]}**`
 		nextDate.setMinutes(nextDate.getMinutes() - new Date().getTimezoneOffset()) // Convert the UTC time back to local time
 
-		const DFKEmbed = new MessageEmbed()
-			.setColor('ORANGE')
+		const DFKEmbed = new EmbedBuilder()
+			.setColor('Blue')
 			.setTitle('__**Time until next rotation:**__')
 			.setThumbnail('https://i.imgur.com/BrTSxJu.png')
-			.addField('\u200B    ' + diffDays + '           ' + diffHours + '            ' + diffMins + '             ' + diffSecs, `Days \u2009 Hours \u2009 Minutes \u2009 Seconds\n\u200B `)
-			.addField('Week 1', DFKMods[0], true)
-			.addField('Week 2', DFKMods[1], true)
-			.addField('\u200b', '\u200b', true)
-			.addField('Week 3', DFKMods[2], true)
-			.addField('Week 4', DFKMods[3], true)
-			.addField('\u200b', `\u200b\n\u200b`, true)
-			.addField('**Next Rotation At**:', `<t:${nextDate.getTime()/1000}:F>`)
+			.addFields([
+				{name: '\u200B    ' + diffDays + '           ' + diffHours + '            ' + diffMins + '             ' + diffSecs, value: 'Days \u2009 Hours \u2009 Minutes \u2009 Seconds\n\u200B '},
+				{name: 'Week 1', value: DFKMods[0], inline: true},
+				{name: 'Week 2', value: DFKMods[1], inline: true},
+				{name: '\u200b', value: '\u200b', inline: true},
+				{name: 'Week 3', value: DFKMods[2], inline: true},
+				{name: 'Week 4', value: DFKMods[3], inline: true},
+				{name: '\u200b', value: `\u200b\n\u200b`, inline: true},
+				{name: '**Next Rotation At**:', value: `<t:${nextDate.getTime()/1000}:F>`}
+			])
 			.setImage(Img)
 
 		await interaction.reply({embeds: [DFKEmbed]})

@@ -1,5 +1,4 @@
-import { CommandInteraction, TextChannel } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel } from 'discord.js'
 import { client } from '..'
 
 module.exports = {
@@ -9,7 +8,7 @@ module.exports = {
         .addStringOption(option => option.setName('channel').setDescription('The ID of the channel to send a message to').setRequired(true))
 		.addStringOption(option => option.setName('message').setDescription('The message to send').setRequired(true))
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		if (interaction.user.id !== '251458435554607114') return
         const channelID = interaction.options.getString('channel')!
 		const message = interaction.options.getString('message')!

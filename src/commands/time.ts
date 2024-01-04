@@ -1,5 +1,4 @@
-import { CommandInteraction } from 'discord.js'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { findLastWord, dateToString, dateStringToUnix, findTimeZone } from '../library'
 
 module.exports = {
@@ -9,7 +8,7 @@ module.exports = {
 		.addStringOption(option => option.setName('time').setDescription("The date/time you'd like to convert from"))
 		.addStringOption(option => option.setName('timezone').setDescription("The timezone you'd like to convert to"))
 	,
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const timeInput = interaction.options.getString('time')!
 		if (!timeInput) return await interaction.reply(`It is currently \`${dateToString(new Date(), 'ET')}\` in Gainesville.`)
 		
