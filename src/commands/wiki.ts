@@ -16,7 +16,7 @@ module.exports = {
 			({data} = await axios.get('https://wiki.dungeondefenders2.com/index.php?search=' + data.match(/(?<=data-serp-pos="1">).+?(?=<\/a>)/).toString()))
 		}
 		const document = parse(data)
-		const title = document.getElementById('firstHeading').textContent
+		const title = document.getElementById('firstHeading')!.textContent
 		const url = document.querySelector('[title="View the content page [c]"]')?.getAttribute('href') ?? `/index.php?search=${userInput.replace(/\s/g, '+')}`
 		const imgURL = document.getElementsByTagName('img')[0].getAttribute('src')!
 		let description = document.getElementsByTagName('p')[0]?.textContent.trim() ?? document.getElementsByTagName('li')[0]?.textContent.trim() ?? 'No description available'
