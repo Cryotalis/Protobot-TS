@@ -10,7 +10,7 @@ import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbr
 import { registerFont } from 'canvas'
 import { JWT } from 'google-auth-library'
 
-export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages], rest: {timeout: 60000}})
+export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], rest: {timeout: 60000}})
 
 registerFont(require('@canvas-fonts/arial'), {family: 'Arial'})
 registerFont(require('@canvas-fonts/arial-bold'), {family: 'Arial Bold'})
@@ -254,7 +254,7 @@ client.on('ready', async () => {AMLogChannel = client.channels.cache.get('916495
 const tradeRules = '1. Follow the trading format below.\n2. One trade per line, no more than 1 image per message.\n3. Do not discuss trades here. See market-discussion.\n4. If a trade has been completed, delete or edit the original post.\n5. Do not post advertisements more than once every 23 hours.\n\n[**H**] = **Have**\n[**W**] = **Want**\nYou must include one of the above in your listing!\n\nExample Trades:\n[H]  99 Pristine Motes   [W] 3m <:gold:460345588911833088>\n[W] 99 Shiny Motes   [H] 3m <:gold:460345588911833088>\n\nTrade Format(copy & paste):\n```[H] item-name  [W] :gold:\n[W] item-name  [H] :gold:```'
 client.on('messageCreate', async (message: Message) => {
 	const LFTAutomodChannels = ['460339922231099402', '460340670960500737', '460340942990475264'] // The channels that should be automodded
-	if (message.channel.type === ChannelType.DM || !LFTAutomodChannels.includes(message.channelId) || !AMLogChannel || message.author.bot || !userLogs) {return}
+	if (message.channel.type === ChannelType.DM || !LFTAutomodChannels.includes(message.channelId) || !AMLogChannel || message.author.bot || !userLogs) return
 
 	function createDelMsgEmbed(reason: string){
 		if (!message.content){message.content = 'No Content'}
