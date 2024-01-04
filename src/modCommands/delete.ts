@@ -8,8 +8,8 @@ module.exports = {
 	,
 	async execute(interaction: MessageContextMenuCommandInteraction) {
 		if (!councilMemberIDs.includes(interaction.user.id)) return interaction.reply({content: 'Only Protobot Council members may use this command.', ephemeral: true})
-		if (interaction.targetMessage.author.id !== '521180443958181889') return interaction.reply({content: "This command can only delete Protobot's messages!", ephemeral: true})
+		if (interaction.targetMessage.author.id !== '521180443958181889') return interaction.reply({content: 'You do not have permission to delete that message!', ephemeral: true})
 		await (interaction.targetMessage as Message).delete()
-		await interaction.reply('Message deleted').then(() => interaction.deleteReply())
+		interaction.reply({content: 'Message deleted.', ephemeral: true})
 	}
 }
