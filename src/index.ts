@@ -2,13 +2,10 @@ import { Client, Collection, Intents, Message, MessageActionRow, MessageAttachme
 import { Routes } from 'discord-api-types/v9'
 import { REST } from '@discordjs/rest'
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
-import { scheduleJob } from 'node-schedule'
 import { schedule } from 'node-cron'
 import { inspect } from 'util'
 import parse from 'node-html-parser'
-import fetch from 'node-fetch'
 import fs from 'node:fs'
-import os from 'os'
 import Parser from 'rss-parser'
 import axios from 'axios'
 import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library'
@@ -448,363 +445,289 @@ schedule('* * * * *', async () => {
 })
 
 // Handle modals
-interface auctionBid {bidder: string, bid: string, status: string, timestamp: string}
-client.on('interactionCreate', async interaction => {
-	if (!interaction.isModalSubmit() || (interaction.user.id === '251458435554607114' && botSettings.developerMode)) return
-	
-	// Dungeon Defenders Bug Reports and Feedback
-	if (/(Feedback|Bug Report) Form/.test(interaction.customId)){
-		const isFeedback = /Feedback/.test(interaction.customId)
-		const anonymous = /Anonymous/.test(interaction.customId)
-		interaction.reply({content: `${isFeedback ? 'Feedback' : 'Bug Report'} received!`}).then(() => setTimeout(() => interaction.deleteReply(), 5000))
-		const ddGame = (interaction.customId.match(/dd(?:gr|a|2)/i)!.toString()!).toUpperCase()
-		const title = interaction.fields.getTextInputValue('Report Title')
-		const description = interaction.fields.getTextInputValue('Report Description')
-		const reproSteps = !isFeedback ? interaction.fields.getTextInputValue('Bug Reproduction Steps') : undefined
-		const gameMode = !isFeedback ? interaction.fields.getTextInputValue('Game Mode') : undefined
-		const links = interaction.fields.getTextInputValue('Links')
-		const reportLinks = (links && /https?:\/\/.+?(?=$|http)/.test(links)) ? links.match(/https?:\/\/.+?(?=$|http)/gm)! : ['']
-		const imgurLinks = reportLinks.filter(link => link.includes('imgur.com'))
-		if (imgurLinks) imgurLinks.forEach(async link => {
-			reportLinks.splice(reportLinks.indexOf(link), 1)
-			reportLinks.push(...await getDirectImgurLinks(link))
-		})
+// interface auctionBid {bidder: string, bid: string, status: string, timestamp: string}
+// client.on('interactionCreate', async interaction => {
+// 	if (!interaction.isModalSubmit() || (interaction.user.id === '251458435554607114' && botSettings.developerMode)) return
+
+// 	// Handle Auction Creation
+// 	if (interaction.customId === 'Auction Modal'){
+// 		const title = interaction.fields.getTextInputValue('Title')
+// 		const description = interaction.fields.getTextInputValue('Description')
+// 		let minBid = interaction.fields.getTextInputValue('Minimum Bid')
+// 		if (!(minBid.includes('gold') || /^[\d\s.]+(?:[tbmk]{1})?$/i.test(minBid))) return interaction.reply({content: 'Setting the minimum bid to a non-gold value is currently not supported.', ephemeral: true})
+// 		if (/^[\d\s.]+(?:[tbmk]{1})?$/i.test(minBid)) minBid += ' gold'
+// 		minBid = abbreviateAllNumbers(minBid)
+// 		const duration = interaction.fields.getTextInputValue('Duration')
+// 		if (timeToUnix(duration) < 3600000 || timeToUnix(duration) > 604800000) return interaction.reply({content: 'Auction duration cannot be lower than 1 hour or greater than 7 days.', ephemeral: true})
+// 		const endDate = new Date(new Date().getTime() + timeToUnix(duration))
+// 		const links = interaction.fields.getTextInputValue('Links')
+// 		const parsedLinks = (links && /https?:\/\/.+?(?=$|http)/.test(links)) ? links.match(/https?:\/\/.+?(?=$|http)/gm)! : ['']
+// 		const imgurLinks = parsedLinks.filter(link => link.includes('imgur.com'))
+// 		if (imgurLinks) imgurLinks.forEach(async link => {
+// 			parsedLinks.splice(parsedLinks.indexOf(link), 1)
+// 			parsedLinks.push(...await getDirectImgurLinks(link))
+// 		})
+
+// 		const channelLink = `https://discord.com/channels/${interaction.guildId}/${interaction.channelId!}`
+// 		const auctionEmbed = new MessageEmbed()
+// 			.setAuthor({name: `Auction by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
+// 			.setTitle(`${title}`)
+// 			.setDescription(description)
+// 			.addField('Minimum Bid:', minBid.replace(/gold/ig, '<:gold:460345588911833088>'), true)
+// 			.addField('Top Bidder:', 'None', true)
+// 			.addField('Time Remaining:', `Ends <t:${Math.ceil(endDate.getTime()/1000)}:R>`, true)
+// 			.setColor('ORANGE')
+// 			.setURL(channelLink)
+// 			.setFooter({text: 'Ends'})
+// 			.setTimestamp(endDate)
 		
-		async function isImage(url: string){  
-			const res = await fetch(url)
-			return /image/i.test(res.headers.get('content-type')!)
-		}
+// 		const embedArray = [auctionEmbed]
+// 		if (parsedLinks){
+// 			for (let i = 0; i < parsedLinks.length; i++){
+// 				if (i > 3) break // Limit to 4 images
+// 				if (!parsedLinks[i]) continue
+// 				if (!auctionEmbed.image) {auctionEmbed.setImage(parsedLinks[i]); continue}
+// 				const auctionImageEmbed = new MessageEmbed()
+// 					.setURL(channelLink)
+// 					.setImage(parsedLinks[i])
+// 					.setColor('ORANGE')
+// 				embedArray.push(auctionImageEmbed)
+// 			}
+// 		}
 
-		(interaction.channel as TextChannel).threads.create({name: capitalize(title), reason: 'Bug Report/Feedback Thread'}).then(async thread => {
-			const parentMessageLink = `https://discord.com/channels/${interaction.guildId}/${interaction.channelId!}/${thread.id}`
-			const reportEmbed = new MessageEmbed()
-				.setTitle(`${isFeedback ? 'Feedback' : 'Bug'} Description:`)
-				.setDescription(description)
-				.setURL(parentMessageLink)
-				.setColor('ORANGE')
-
-			if (anonymous) reportEmbed.setAuthor({name: isFeedback ? 'Feedback' : 'Bug Report'})
-			else reportEmbed.setAuthor({name: `${isFeedback ? 'Feedback' : 'Bug Report'} by ${(interaction.member?.user as User).tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
-			if (reproSteps) reportEmbed.addField('Steps to Reproduce the Bug:', reproSteps)
-			if (gameMode) reportEmbed.addField('Game Mode/Map/Difficulty:', gameMode)
-
-			const embedArray = [reportEmbed]
-			const otherLinks = []
-			if (reportLinks){
-				for (let i = 0; i < reportLinks.length; i++){
-					if (!reportLinks[i]) continue
-					if (embedArray.length > 9 || !await isImage(reportLinks[i])) {otherLinks.push(reportLinks[i]); continue}
-					if (!reportEmbed.image) {reportEmbed.setImage(reportLinks[i]); continue}
-					const reportImageEmbed = new MessageEmbed()
-						.setURL(i > 3 ? parentMessageLink+'/' : parentMessageLink) // Adding the slash is necessary to split up the embeds so that they technically use different links
-						.setImage(reportLinks[i])
-						.setColor('ORANGE')
-					if (i === 4) reportImageEmbed.setTitle('Additional Images:')
-					embedArray.push(reportImageEmbed)
-				}
-			}
-			if (otherLinks.length > 0) reportEmbed.addField('Relevant Links:', otherLinks.join('\n'))
-			
-			reportEmbed.addField('\u200b', `[Click Here to vote on this ${isFeedback ? 'feedback' : 'bug report'}](${parentMessageLink})`)
-			thread.send({embeds: embedArray})
-			const threadMessage = (client.channels.cache.get(interaction.channelId!) as TextChannel).messages.cache.get(thread.id)
-			threadMessage?.react('<:thumbs_up:745501111015833632>')
-			threadMessage?.react('<:thumbs_sideways:745501110403465318>')
-			threadMessage?.react('<:thumbs_down:745501108075626578>')
-			
-			if (isFeedback) return
-			await bugReportDoc.sheetsByTitle[`${ddGame} Discord Reports`].addRow([
-				dateToString(new Date(interaction.createdTimestamp), 'EST', true),
-				interaction.user.tag,
-				interaction.user.id,
-				title,
-				description,
-				reproSteps || '',
-				gameMode || '',
-				reportLinks ? reportLinks.join('\n') : ''
-			])
-		})
-	}
-
-	// Handle Auction Creation
-	if (interaction.customId === 'Auction Modal'){
-		const title = interaction.fields.getTextInputValue('Title')
-		const description = interaction.fields.getTextInputValue('Description')
-		let minBid = interaction.fields.getTextInputValue('Minimum Bid')
-		if (!(minBid.includes('gold') || /^[\d\s.]+(?:[tbmk]{1})?$/i.test(minBid))) return interaction.reply({content: 'Setting the minimum bid to a non-gold value is currently not supported.', ephemeral: true})
-		if (/^[\d\s.]+(?:[tbmk]{1})?$/i.test(minBid)) minBid += ' gold'
-		minBid = abbreviateAllNumbers(minBid)
-		const duration = interaction.fields.getTextInputValue('Duration')
-		if (timeToUnix(duration) < 3600000 || timeToUnix(duration) > 604800000) return interaction.reply({content: 'Auction duration cannot be lower than 1 hour or greater than 7 days.', ephemeral: true})
-		const endDate = new Date(new Date().getTime() + timeToUnix(duration))
-		const links = interaction.fields.getTextInputValue('Links')
-		const parsedLinks = (links && /https?:\/\/.+?(?=$|http)/.test(links)) ? links.match(/https?:\/\/.+?(?=$|http)/gm)! : ['']
-		const imgurLinks = parsedLinks.filter(link => link.includes('imgur.com'))
-		if (imgurLinks) imgurLinks.forEach(async link => {
-			parsedLinks.splice(parsedLinks.indexOf(link), 1)
-			parsedLinks.push(...await getDirectImgurLinks(link))
-		})
-
-		const channelLink = `https://discord.com/channels/${interaction.guildId}/${interaction.channelId!}`
-		const auctionEmbed = new MessageEmbed()
-			.setAuthor({name: `Auction by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
-			.setTitle(`${title}`)
-			.setDescription(description)
-			.addField('Minimum Bid:', minBid.replace(/gold/ig, '<:gold:460345588911833088>'), true)
-			.addField('Top Bidder:', 'None', true)
-			.addField('Time Remaining:', `Ends <t:${Math.ceil(endDate.getTime()/1000)}:R>`, true)
-			.setColor('ORANGE')
-			.setURL(channelLink)
-			.setFooter({text: 'Ends'})
-			.setTimestamp(endDate)
+// 		const auctionInputs = new MessageActionRow()
+// 			.addComponents(
+// 				new MessageButton()
+// 					.setCustomId('Auction Bid Button')
+// 					.setLabel(`Place Bid`)
+// 					.setStyle('PRIMARY')
+// 			)
+// 			.addComponents(
+// 				new MessageButton()
+// 					.setCustomId('Retract Bid Button')
+// 					.setLabel(`Retract Bid`)
+// 					.setStyle('DANGER')
+// 			)
+// 			.addComponents(
+// 				new MessageButton()
+// 					.setCustomId('Cancel Auction Button')
+// 					.setLabel(`Cancel Auction`)
+// 					.setStyle('DANGER')
+// 			)
 		
-		const embedArray = [auctionEmbed]
-		if (parsedLinks){
-			for (let i = 0; i < parsedLinks.length; i++){
-				if (i > 3) break // Limit to 4 images
-				if (!parsedLinks[i]) continue
-				if (!auctionEmbed.image) {auctionEmbed.setImage(parsedLinks[i]); continue}
-				const auctionImageEmbed = new MessageEmbed()
-					.setURL(channelLink)
-					.setImage(parsedLinks[i])
-					.setColor('ORANGE')
-				embedArray.push(auctionImageEmbed)
-			}
-		}
+// 		let DMSuccess = true
+// 		const userMessage = await interaction.user.send({content: "You've started an auction! Here's an overview:"}).catch(() => {
+// 			DMSuccess = false
+// 			interaction.reply({content: 'You must enable direct messages to start an auction!', ephemeral: true})
+// 		})
+// 		if (!DMSuccess) return
 
-		const auctionInputs = new MessageActionRow()
-			.addComponents(
-				new MessageButton()
-					.setCustomId('Auction Bid Button')
-					.setLabel(`Place Bid`)
-					.setStyle('PRIMARY')
-			)
-			.addComponents(
-				new MessageButton()
-					.setCustomId('Retract Bid Button')
-					.setLabel(`Retract Bid`)
-					.setStyle('DANGER')
-			)
-			.addComponents(
-				new MessageButton()
-					.setCustomId('Cancel Auction Button')
-					.setLabel(`Cancel Auction`)
-					.setStyle('DANGER')
-			)
-		
-		let DMSuccess = true
-		const userMessage = await interaction.user.send({content: "You've started an auction! Here's an overview:"}).catch(() => {
-			DMSuccess = false
-			interaction.reply({content: 'You must enable direct messages to start an auction!', ephemeral: true})
-		})
-		if (!DMSuccess) return
+// 		const auctionMessage = await interaction.reply({embeds: embedArray, components: [auctionInputs], fetchReply: true}) as Message
+// 		const auctionOverviewEmbed = new MessageEmbed()
+// 			.setAuthor({name: `Auction by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
+// 			.setTitle(`${title}`)
+// 			.setDescription(description)
+// 			.addField('Minimum Bid:', minBid.replace(/gold/ig, '<:gold:460345588911833088>'), true)
+// 			.addField('Time Remaining:', `Ends <t:${Math.ceil(endDate.getTime()/1000)}:R>`, true)
+// 			.addField('Direct Link:', `[Click Here](${channelLink}/${auctionMessage.id})`, true)
+// 			.setColor('ORANGE')
+// 			.setURL(`${channelLink}/${auctionMessage.id}`)
+// 			.setFooter({text: 'Ends'})
+// 			.setTimestamp(endDate)
+// 		await (userMessage as Message).edit({embeds: [auctionOverviewEmbed]})
 
-		const auctionMessage = await interaction.reply({embeds: embedArray, components: [auctionInputs], fetchReply: true}) as Message
-		const auctionOverviewEmbed = new MessageEmbed()
-			.setAuthor({name: `Auction by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
-			.setTitle(`${title}`)
-			.setDescription(description)
-			.addField('Minimum Bid:', minBid.replace(/gold/ig, '<:gold:460345588911833088>'), true)
-			.addField('Time Remaining:', `Ends <t:${Math.ceil(endDate.getTime()/1000)}:R>`, true)
-			.addField('Direct Link:', `[Click Here](${channelLink}/${auctionMessage.id})`, true)
-			.setColor('ORANGE')
-			.setURL(`${channelLink}/${auctionMessage.id}`)
-			.setFooter({text: 'Ends'})
-			.setTimestamp(endDate)
-		await (userMessage as Message).edit({embeds: [auctionOverviewEmbed]})
+// 		const auction = await privateDB.sheetsByTitle['Auctions'].addRow({
+// 			auctioneerID: interaction.user.id,
+// 			auctionID: auctionMessage.id,
+// 			title: title,
+// 			startDate: new Date().toString(),
+// 			endDate: endDate.toString(),
+// 			bids: JSON.stringify([{bidder: null, bid: minBid, status: 'Accepted', timestamp: new Date().toString()}]),
+// 			status: 'Running'
+// 		})
+// 		auctions.push(auction)
 
-		const auction = await privateDB.sheetsByTitle['Auctions'].addRow({
-			auctioneerID: interaction.user.id,
-			auctionID: auctionMessage.id,
-			title: title,
-			startDate: new Date().toString(),
-			endDate: endDate.toString(),
-			bids: JSON.stringify([{bidder: null, bid: minBid, status: 'Accepted', timestamp: new Date().toString()}]),
-			status: 'Running'
-		})
-		auctions.push(auction)
+// 		scheduleJob(endDate, async function(msgID: string, channelID: string){
+// 			const message = await client.channels.fetch(channelID).then(channel => (channel as TextChannel).messages.fetch(msgID))
+// 			const auctionEntry = auctions.find(entry => entry.auctionID === message.id)!
+// 			const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted')
+// 			const topBid = auctionBids.reverse()[0]
+// 			auctionEntry.status = 'Concluded'
+// 			await auctionEntry.save()
 
-		scheduleJob(endDate, async function(msgID: string, channelID: string){
-			const message = await client.channels.fetch(channelID).then(channel => (channel as TextChannel).messages.fetch(msgID))
-			const auctionEntry = auctions.find(entry => entry.auctionID === message.id)!
-			const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted')
-			const topBid = auctionBids.reverse()[0]
-			auctionEntry.status = 'Concluded'
-			await auctionEntry.save()
+// 			const auctionEmbed = message.embeds[0]
+// 			auctionEmbed.fields[2].value = 'Ended'
+// 			auctionEmbed.setFooter({text: 'Ended'})
+// 			auctionEmbed.setColor('RED')
+// 			auctionEmbed.setTimestamp(null)
+// 			await message.edit({embeds: [auctionEmbed], components: []})
 
-			const auctionEmbed = message.embeds[0]
-			auctionEmbed.fields[2].value = 'Ended'
-			auctionEmbed.setFooter({text: 'Ended'})
-			auctionEmbed.setColor('RED')
-			auctionEmbed.setTimestamp(null)
-			await message.edit({embeds: [auctionEmbed], components: []})
+// 			client.users.fetch(auctionEntry.auctioneerID).then(async user => {
+// 				const auctionWinner = await client.users.fetch(topBid.bidder)
+// 				const auctionEndEmbed = new MessageEmbed()
+// 					.setTitle('Auction Concluded')
+// 					.setDescription(`Your auction for [${auctionEntry.title}](${auctionEmbed.url}/${message.id}) has ended! Contact the winner to set up the transaction!`)
+// 					.addField('Winner:', `<@${topBid.bidder}> (${auctionWinner.tag})`)
+// 					.addField('Winning bid:', topBid.bid)
+// 					.setURL(`${auctionEmbed.url}/${message.id}`)
+// 					.setColor('ORANGE')
 
-			client.users.fetch(auctionEntry.auctioneerID).then(async user => {
-				const auctionWinner = await client.users.fetch(topBid.bidder)
-				const auctionEndEmbed = new MessageEmbed()
-					.setTitle('Auction Concluded')
-					.setDescription(`Your auction for [${auctionEntry.title}](${auctionEmbed.url}/${message.id}) has ended! Contact the winner to set up the transaction!`)
-					.addField('Winner:', `<@${topBid.bidder}> (${auctionWinner.tag})`)
-					.addField('Winning bid:', topBid.bid)
-					.setURL(`${auctionEmbed.url}/${message.id}`)
-					.setColor('ORANGE')
+// 				const auctionFailEmbed = new MessageEmbed()
+// 					.setTitle('Auction Concluded')
+// 					.setDescription(`Your auction for [${auctionEntry.title}](${auctionEmbed.url}/${message.id}) has ended, but no bids were placed.`)
+// 					.setURL(`${auctionEmbed.url}/${message.id}`)
+// 					.setColor('ORANGE')
+// 				user.send({embeds: [topBid.bidder ? auctionEndEmbed : auctionFailEmbed]})
+// 			})
 
-				const auctionFailEmbed = new MessageEmbed()
-					.setTitle('Auction Concluded')
-					.setDescription(`Your auction for [${auctionEntry.title}](${auctionEmbed.url}/${message.id}) has ended, but no bids were placed.`)
-					.setURL(`${auctionEmbed.url}/${message.id}`)
-					.setColor('ORANGE')
-				user.send({embeds: [topBid.bidder ? auctionEndEmbed : auctionFailEmbed]})
-			})
+// 			if (!topBid?.bidder) return
+// 			const auctioneer = await client.users.fetch(auctionEntry.auctioneerID)
+// 			const auctionWinEmbed = new MessageEmbed()
+// 				.setDescription(`You won an auction by ${auctioneer} (${auctioneer.tag}) for [${auctionEntry.title}](${auctionEmbed.url}/${message.id})! Contact them to set up the transaction!`)
+// 				.setColor('ORANGE')
+// 			client.users.fetch(topBid.bidder).then(user => user.send({embeds: [auctionWinEmbed]}))
+// 		}.bind(null, auctionMessage.id, auctionMessage.channelId))
+// 	}
 
-			if (!topBid?.bidder) return
-			const auctioneer = await client.users.fetch(auctionEntry.auctioneerID)
-			const auctionWinEmbed = new MessageEmbed()
-				.setDescription(`You won an auction by ${auctioneer} (${auctioneer.tag}) for [${auctionEntry.title}](${auctionEmbed.url}/${message.id})! Contact them to set up the transaction!`)
-				.setColor('ORANGE')
-			client.users.fetch(topBid.bidder).then(user => user.send({embeds: [auctionWinEmbed]}))
-		}.bind(null, auctionMessage.id, auctionMessage.channelId))
-	}
+// 	// Auction Bids
+// 	if (interaction.customId === 'Auction Bid Modal'){
+// 		const auction = (interaction.message as Message)
+// 		const auctionEntry = auctions.find(entry => entry.auctionID === auction.id)!
+// 		const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids)
+// 		const filteredBids = auctionBids.filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
+// 		const currentBid = filteredBids[filteredBids.length - 1] ?? auctionBids[0]
+// 		let incomingBid = interaction.fields.getTextInputValue('Auction Bid')
+// 		if (/^[\d\s.]+(?:[tbmk]{1})?$/i.test(incomingBid)) incomingBid += ' gold'
+// 		let bidStatus: string
 
-	// Auction Bids
-	if (interaction.customId === 'Auction Bid Modal'){
-		const auction = (interaction.message as Message)
-		const auctionEntry = auctions.find(entry => entry.auctionID === auction.id)!
-		const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids)
-		const filteredBids = auctionBids.filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
-		const currentBid = filteredBids[filteredBids.length - 1] ?? auctionBids[0]
-		let incomingBid = interaction.fields.getTextInputValue('Auction Bid')
-		if (/^[\d\s.]+(?:[tbmk]{1})?$/i.test(incomingBid)) incomingBid += ' gold'
-		let bidStatus: string
+// 		// Determines whether or not the bid is an amount of gold and nothing else
+// 		const onlyGold = (bid: string | number) => /^[\d\s.]+(?:[tbmk]{1})?\s?gold$/i.test(String(bid).trim())
 
-		// Determines whether or not the bid is an amount of gold and nothing else
-		const onlyGold = (bid: string | number) => /^[\d\s.]+(?:[tbmk]{1})?\s?gold$/i.test(String(bid).trim())
+// 		if (onlyGold(currentBid.bid) && onlyGold(incomingBid)){
+// 			const minBid = getNumber(currentBid.bid) * 1.1
+// 			const maxBid = getNumber(currentBid.bid) * 10
+// 			if (getNumber(incomingBid) > maxBid) return interaction.reply({content: `You cannot bid more than 10x the current top bid!`, ephemeral: true})
+// 			if (getNumber(incomingBid) < minBid && currentBid.bidder){
+// 				return interaction.reply({content: `To outbid the current top bidder, you must bid at least ${minBid} (${getAbbreviatedNumber(minBid)}) gold!`, ephemeral: true})
+// 			}
+// 			if (getNumber(incomingBid) < getNumber(currentBid.bid)) {
+// 				return interaction.reply({content: `You must bid at least ${getNumber(currentBid.bid)} (${getAbbreviatedNumber(getNumber(currentBid.bid))}) gold!`, ephemeral: true})
+// 			}
+// 			auction.embeds[0].fields[0].name = 'Top Bid:'
+// 			auction.embeds[0].fields[0].value = abbreviateAllNumbers(incomingBid).replace(/gold/i, '<:gold:460345588911833088>')
+// 			auction.embeds[0].fields[1].value = String(interaction.user)
+// 			await auction.edit({embeds: [auction.embeds[0]]})
+// 			bidStatus = 'Accepted'
+// 			if (currentBid.bidder && interaction.user.id !== currentBid.bidder){
+// 				const outbidEmbed = new MessageEmbed()
+// 					.setDescription(`You have been outbid in the auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id})!`)
+// 					.setColor('ORANGE')
+// 				client.users.fetch(currentBid.bidder).then(user => user.send({embeds: [outbidEmbed]}))
+// 			}
+// 			interaction.reply({content: 'Bid successful!', ephemeral: true})
+// 		} else {
+// 			// Do something else here
+// 			bidStatus = 'Pending'
+// 			return interaction.reply({content: 'Bidding with items other than gold is not currently supported.', ephemeral: true})
+// 		}
 
-		if (onlyGold(currentBid.bid) && onlyGold(incomingBid)){
-			const minBid = getNumber(currentBid.bid) * 1.1
-			const maxBid = getNumber(currentBid.bid) * 10
-			if (getNumber(incomingBid) > maxBid) return interaction.reply({content: `You cannot bid more than 10x the current top bid!`, ephemeral: true})
-			if (getNumber(incomingBid) < minBid && currentBid.bidder){
-				return interaction.reply({content: `To outbid the current top bidder, you must bid at least ${minBid} (${getAbbreviatedNumber(minBid)}) gold!`, ephemeral: true})
-			}
-			if (getNumber(incomingBid) < getNumber(currentBid.bid)) {
-				return interaction.reply({content: `You must bid at least ${getNumber(currentBid.bid)} (${getAbbreviatedNumber(getNumber(currentBid.bid))}) gold!`, ephemeral: true})
-			}
-			auction.embeds[0].fields[0].name = 'Top Bid:'
-			auction.embeds[0].fields[0].value = abbreviateAllNumbers(incomingBid).replace(/gold/i, '<:gold:460345588911833088>')
-			auction.embeds[0].fields[1].value = String(interaction.user)
-			await auction.edit({embeds: [auction.embeds[0]]})
-			bidStatus = 'Accepted'
-			if (currentBid.bidder && interaction.user.id !== currentBid.bidder){
-				const outbidEmbed = new MessageEmbed()
-					.setDescription(`You have been outbid in the auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id})!`)
-					.setColor('ORANGE')
-				client.users.fetch(currentBid.bidder).then(user => user.send({embeds: [outbidEmbed]}))
-			}
-			interaction.reply({content: 'Bid successful!', ephemeral: true})
-		} else {
-			// Do something else here
-			bidStatus = 'Pending'
-			return interaction.reply({content: 'Bidding with items other than gold is not currently supported.', ephemeral: true})
-		}
-
-		const userBid = filteredBids.find((bid: auctionBid) => bid.bidder === interaction.user.id)
-		if (userBid) auctionBids.splice(auctionBids.indexOf(userBid), 1, {...userBid, status: 'Replaced'})
-		auctionBids.push({
-			bidder: interaction.user.id,
-			bid: incomingBid,
-			status: bidStatus,
-			timestamp: new Date().toString()
-		})
-		const auctionIndex = auctions.indexOf(auctionEntry)
-		auctionEntry.bids = JSON.stringify(auctionBids)
-		auctions.splice(auctionIndex, 1, auctionEntry)
-		auctionEntry.save()
-	}
-})
+// 		const userBid = filteredBids.find((bid: auctionBid) => bid.bidder === interaction.user.id)
+// 		if (userBid) auctionBids.splice(auctionBids.indexOf(userBid), 1, {...userBid, status: 'Replaced'})
+// 		auctionBids.push({
+// 			bidder: interaction.user.id,
+// 			bid: incomingBid,
+// 			status: bidStatus,
+// 			timestamp: new Date().toString()
+// 		})
+// 		const auctionIndex = auctions.indexOf(auctionEntry)
+// 		auctionEntry.bids = JSON.stringify(auctionBids)
+// 		auctions.splice(auctionIndex, 1, auctionEntry)
+// 		auctionEntry.save()
+// 	}
+// })
 
 // Handle Buttons
-client.on('interactionCreate', async interaction => {
-	if (!interaction.isButton() || (interaction.user.id === '251458435554607114' && botSettings.developerMode)) return
+// client.on('interactionCreate', async interaction => {
+// 	if (!interaction.isButton() || (interaction.user.id === '251458435554607114' && botSettings.developerMode)) return
 
-	if (interaction.customId === 'Auction Bid Button'){
-		const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
-		const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
-		if (interaction.user.id === auctionEntry.auctioneerID) return interaction.reply({content: 'You cannot bid on your own auction!', ephemeral: true})
-		if (interaction.user.id === filteredBids.reverse()[0].bidder) return interaction.reply({content: 'You are already the top bidder!', ephemeral: true})
-		if (new Date() > new Date(auctionEntry.endDate)) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
+// 	if (interaction.customId === 'Auction Bid Button'){
+// 		const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
+// 		const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
+// 		if (interaction.user.id === auctionEntry.auctioneerID) return interaction.reply({content: 'You cannot bid on your own auction!', ephemeral: true})
+// 		if (interaction.user.id === filteredBids.reverse()[0].bidder) return interaction.reply({content: 'You are already the top bidder!', ephemeral: true})
+// 		if (new Date() > new Date(auctionEntry.endDate)) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
 
-		const bidModal = new Modal()
-			.setCustomId(`Auction Bid Modal`)
-			.setTitle('Place a Bid')
+// 		const bidModal = new Modal()
+// 			.setCustomId(`Auction Bid Modal`)
+// 			.setTitle('Place a Bid')
 		
-		const bid = new MessageActionRow<ModalActionRowComponent>().addComponents(
-			new TextInputComponent()
-				.setCustomId('Auction Bid')
-				.setLabel('Your Bid')
-				.setStyle('SHORT')
-				.setMaxLength(100)
-				.setRequired(true)
-		)
+// 		const bid = new MessageActionRow<ModalActionRowComponent>().addComponents(
+// 			new TextInputComponent()
+// 				.setCustomId('Auction Bid')
+// 				.setLabel('Your Bid')
+// 				.setStyle('SHORT')
+// 				.setMaxLength(100)
+// 				.setRequired(true)
+// 		)
 
-		bidModal.addComponents(bid)
-		await interaction.showModal(bidModal)
-	}
+// 		bidModal.addComponents(bid)
+// 		await interaction.showModal(bidModal)
+// 	}
 
-	if (interaction.customId === 'Retract Bid Button'){
-		const auction = (interaction.message as Message)
-		const auctionEntry = auctions.find(entry => entry.auctionID === auction.id)!
-		const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids)
-		const filteredBids = auctionBids.filter(bid => bid.status === 'Accepted' || bid.status === 'Pending')
-		if (filteredBids.filter(bid => bid.bidder === interaction.user.id && bid.status === 'Retracted').length > 2){ // Limit of 2 retractions per user per auction
-			return interaction.reply({content: 'You can no longer retract any more bids in this auction.', ephemeral: true})
-		}
-		const userBid = filteredBids.find((bid: auctionBid) => bid.bidder === interaction.user.id)
-		const endDate = new Date(auctionEntry.endDate)
-		if (new Date() > endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
-		if (!userBid) return interaction.reply({content: 'You currently have no bids to retract!', ephemeral: true})
-		if ((endDate.getTime() - new Date().getTime() < 3.6e+6) || (new Date().getTime() - new Date(userBid.timestamp).getTime() > 1.8e+6)){ // If there is less than 1 hour left in the auction or the bid was placed more than 30 minutes ago
-			return interaction.reply({content: 'Your bid can no longer be retracted at this time.', ephemeral: true})
-		}
+// 	if (interaction.customId === 'Retract Bid Button'){
+// 		const auction = (interaction.message as Message)
+// 		const auctionEntry = auctions.find(entry => entry.auctionID === auction.id)!
+// 		const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids)
+// 		const filteredBids = auctionBids.filter(bid => bid.status === 'Accepted' || bid.status === 'Pending')
+// 		if (filteredBids.filter(bid => bid.bidder === interaction.user.id && bid.status === 'Retracted').length > 2){ // Limit of 2 retractions per user per auction
+// 			return interaction.reply({content: 'You can no longer retract any more bids in this auction.', ephemeral: true})
+// 		}
+// 		const userBid = filteredBids.find((bid: auctionBid) => bid.bidder === interaction.user.id)
+// 		const endDate = new Date(auctionEntry.endDate)
+// 		if (new Date() > endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
+// 		if (!userBid) return interaction.reply({content: 'You currently have no bids to retract!', ephemeral: true})
+// 		if ((endDate.getTime() - new Date().getTime() < 3.6e+6) || (new Date().getTime() - new Date(userBid.timestamp).getTime() > 1.8e+6)){ // If there is less than 1 hour left in the auction or the bid was placed more than 30 minutes ago
+// 			return interaction.reply({content: 'Your bid can no longer be retracted at this time.', ephemeral: true})
+// 		}
 		
-		auctionBids.splice(auctionBids.indexOf(userBid), 1, {...userBid, status: 'Retracted', timestamp: new Date().toString()})
-		const auctionIndex = auctions.indexOf(auctionEntry)
-		auctionEntry.bids = JSON.stringify(auctionBids)
-		auctions.splice(auctionIndex, 1, auctionEntry)
-		await auctionEntry.save()
+// 		auctionBids.splice(auctionBids.indexOf(userBid), 1, {...userBid, status: 'Retracted', timestamp: new Date().toString()})
+// 		const auctionIndex = auctions.indexOf(auctionEntry)
+// 		auctionEntry.bids = JSON.stringify(auctionBids)
+// 		auctions.splice(auctionIndex, 1, auctionEntry)
+// 		await auctionEntry.save()
 
-		const prevHighestBid = auctionBids.reverse().find(bid => bid.status !== 'Retracted') ?? auctionBids[auctionBids.length - 1]
-		auction.embeds[0].fields[0].value = abbreviateAllNumbers(prevHighestBid.bid).replace(/gold/i, '<:gold:460345588911833088>')
-		auction.embeds[0].fields[1].value = prevHighestBid.bidder ? `<@${prevHighestBid.bidder}>` : 'None'
-		await auction.edit({embeds: [auction.embeds[0]]})
-		interaction.reply({content: 'Bid retracted.', ephemeral: true})
-	}
+// 		const prevHighestBid = auctionBids.reverse().find(bid => bid.status !== 'Retracted') ?? auctionBids[auctionBids.length - 1]
+// 		auction.embeds[0].fields[0].value = abbreviateAllNumbers(prevHighestBid.bid).replace(/gold/i, '<:gold:460345588911833088>')
+// 		auction.embeds[0].fields[1].value = prevHighestBid.bidder ? `<@${prevHighestBid.bidder}>` : 'None'
+// 		await auction.edit({embeds: [auction.embeds[0]]})
+// 		interaction.reply({content: 'Bid retracted.', ephemeral: true})
+// 	}
 
-	if (interaction.customId === 'Cancel Auction Button'){
-		const auction = interaction.message
-		const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
-		const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
-		const topBid = filteredBids[filteredBids.length - 1]
-		if (new Date() > auctionEntry.endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
-		if (!(interaction.user.id === auctionEntry.auctioneerID || interaction.memberPermissions?.has('MANAGE_MESSAGES'))){
-			return interaction.reply({content: 'You do not have permission to cancel this auction.', ephemeral: true})
-		}
-		if ((new Date((interaction.message as Message).createdTimestamp).getTime() - new Date().getTime() > 3600000) && !interaction.memberPermissions?.has('MANAGE_MESSAGES')){
-			return interaction.reply({content: 'You cannot cancel an auction after it has been running for over an hour.', ephemeral: true})
-		}
-		(interaction.message as Message).delete()
+// 	if (interaction.customId === 'Cancel Auction Button'){
+// 		const auction = interaction.message
+// 		const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
+// 		const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
+// 		const topBid = filteredBids[filteredBids.length - 1]
+// 		if (new Date() > auctionEntry.endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
+// 		if (!(interaction.user.id === auctionEntry.auctioneerID || interaction.memberPermissions?.has('MANAGE_MESSAGES'))){
+// 			return interaction.reply({content: 'You do not have permission to cancel this auction.', ephemeral: true})
+// 		}
+// 		if ((new Date((interaction.message as Message).createdTimestamp).getTime() - new Date().getTime() > 3600000) && !interaction.memberPermissions?.has('MANAGE_MESSAGES')){
+// 			return interaction.reply({content: 'You cannot cancel an auction after it has been running for over an hour.', ephemeral: true})
+// 		}
+// 		(interaction.message as Message).delete()
 		
-		const auctionIndex = auctions.indexOf(auctionEntry)
-		auctionEntry.status = 'Cancelled'
-		auctions.splice(auctionIndex, 1, auctionEntry)
-		await auctionEntry.save()
-		const cancelledEmbed = new MessageEmbed()
-			.setDescription(`The auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id}) has been cancelled.`)
-			.setColor('ORANGE')
-		if (topBid?.bidder) client.users.fetch(topBid.bidder).then(user => user.send({embeds: [cancelledEmbed]}))
-		interaction.reply({content: 'Auction cancelled.', ephemeral: true})
-	}
-})
+// 		const auctionIndex = auctions.indexOf(auctionEntry)
+// 		auctionEntry.status = 'Cancelled'
+// 		auctions.splice(auctionIndex, 1, auctionEntry)
+// 		await auctionEntry.save()
+// 		const cancelledEmbed = new MessageEmbed()
+// 			.setDescription(`The auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id}) has been cancelled.`)
+// 			.setColor('ORANGE')
+// 		if (topBid?.bidder) client.users.fetch(topBid.bidder).then(user => user.send({embeds: [cancelledEmbed]}))
+// 		interaction.reply({content: 'Auction cancelled.', ephemeral: true})
+// 	}
+// })
 
 client.on('messageCreate', async (message: Message) => {
 	if (message.channelId !== '343306253587709952') return
