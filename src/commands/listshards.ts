@@ -38,24 +38,24 @@ module.exports = {
 		// Possible Filters
 		if (diff){
 			dropFilter = diff.match(/\b(?:Campaign|Chaos \d+)\b/ig)!
-			output = output.filter(shard => dropFilter?.some(drop => capitalize(drop) === shard.drop))
+			output = output.filter(shard => dropFilter?.some(drop => capitalize(drop) === shard.get('drop')))
 		}
 	
 		if (hero){
 			heroFilter = hero.match(/\b(?:All|Squire|Apprentice|Huntress|Monk|Abyss Lord|EV2|Gunwitch|Lavamancer|Mystic|Dryad|Initiate|Adept|Barbarian|Mercenary|Countess|Engineer|Hunter)\b/ig)!
-			output = output.filter(shard => heroFilter?.some(hero => shard.hero?.includes(capitalize(hero))))
+			output = output.filter(shard => heroFilter?.some(hero => shard.get('hero')?.includes(capitalize(hero))))
 		}
 	
 		if (slot){
 			typeFilter = slot.match(/\b(?:Relic|Weapon|Shield|Armor|Helmet|Chestplate|Gloves|Boots)\b/ig)!
-			output = output.filter(shard => typeFilter?.some(type => capitalize(type) === shard.type))
+			output = output.filter(shard => typeFilter?.some(type => capitalize(type) === shard.get('type')))
 		}
 	
 		if (customFilter){ //If there are additional parameters remaining, search the description
-			output = output.filter(shard => shard.description?.toLowerCase().includes(customFilter!.toLowerCase()))
+			output = output.filter(shard => shard.get('description')?.toLowerCase().includes(customFilter!.toLowerCase()))
 		}
 	
-		let shardlist = output.filter(shard => !shard.name?.includes('(removed)')).map(shard => shard.name)
+		let shardlist = output.filter(shard => !shard.get('name')?.includes('(removed)')).map(shard => shard.get('name'))
 		if (shardlist.length >= 55){
 			const length = shardlist.length - 55
 			shardlist = shardlist.slice(0, 55)

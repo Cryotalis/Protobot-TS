@@ -8,6 +8,7 @@ import Parser from 'rss-parser'
 import axios from 'axios'
 import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library'
 import { registerFont } from 'canvas'
+import { JWT } from 'google-auth-library'
 
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages], rest: {timeout: 60000}})
 
@@ -61,7 +62,7 @@ export async function registerCommands() {
 
 	const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN!)
 	rest.put(Routes.applicationCommands('521180443958181889'), { body: commands })
-		.then(() => console.log('Successfully registered application commands globally.'))
+		.then(() => console.log('Successfully registered application commands globally'))
 		.catch(console.error)
 
 	rest.put(Routes.applicationGuildCommands('521180443958181889', '379501550097399810'), { body: privateCommands })
@@ -97,21 +98,17 @@ export let ddgrReports: Array<GoogleSpreadsheetRow>
 export let ddaReports: Array<GoogleSpreadsheetRow>
 export let dd2Reports: Array<GoogleSpreadsheetRow>
 
-const serviceAccountCredentials = {client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!, private_key: process.env.GOOGLE_PRIVATE_KEY!}
+const serviceAccountAuth = new JWT({
+	email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+	key: process.env.GOOGLE_PRIVATE_KEY,
+	scopes: ['https://www.googleapis.com/auth/spreadsheets']
+})
 export async function connectToDB () {
-    publicDB = new GoogleSpreadsheet('1yOjZhkn9z8dJ8HMD0YSUl7Ijgd9o1KJ62Ecf4SgyTdU')
-    privateDB = new GoogleSpreadsheet(process.env.PRIVATE_DB_ID)
-	bugReportDoc = new GoogleSpreadsheet(process.env.CG_BUGREPORT_DOC_ID)
+    publicDB = new GoogleSpreadsheet('1yOjZhkn9z8dJ8HMD0YSUl7Ijgd9o1KJ62Ecf4SgyTdU', serviceAccountAuth)
+    privateDB = new GoogleSpreadsheet(process.env.PRIVATE_DB_ID!, serviceAccountAuth)
+	await Promise.all([publicDB.loadInfo(), privateDB.loadInfo()])
 
-	await Promise.all([
-		publicDB.useServiceAccountAuth(serviceAccountCredentials),
-		privateDB.useServiceAccountAuth(serviceAccountCredentials),
-		bugReportDoc.useServiceAccountAuth(serviceAccountCredentials)
-	])
-	await Promise.all([publicDB.loadInfo(), privateDB.loadInfo(), bugReportDoc.loadInfo()]);
-
-	[
-		auctions,
+	;[
 		userLogs,
 		youtubeChannels,
 		twitchChannels,
@@ -125,7 +122,6 @@ export async function connectToDB () {
 		links,
 		contributors,
 	] = await Promise.all([
-		privateDB.sheetsByTitle['Auctions'].getRows(),
 		privateDB.sheetsByTitle['User Logs'].getRows(),
 		privateDB.sheetsByTitle['Youtube Post Notifications'].getRows(),
 		privateDB.sheetsByTitle['Twitch Live Notifications'].getRows(),
@@ -139,8 +135,8 @@ export async function connectToDB () {
 		publicDB.sheetsByTitle['Links'].getRows(),
 		publicDB.sheetsByTitle['Contributors'].getRows(),
 	])
-	councilMemberIDs = contributors.map(contributor => contributor.id)
-	blacklistedIDs = blacklist.map(user => user.id)
+	councilMemberIDs = contributors.map(contributor => contributor.get('id'))
+	blacklistedIDs = blacklist.map(user => user.get('id'))
 
 	console.log('Database connection successful')
 }
@@ -149,8 +145,7 @@ connectToDB().then(() => registerCommands())
 export let defenseBuildData: defenseObject[] = []
 export interface defenseObject {name: string, role: string, tertiary: string, shards: string[], mods: {name: string, qualibean: string}[], relic: string}
 export async function loadDefenseBuilds(){
-	defenseBuilds = new GoogleSpreadsheet('1sjBA60Fr9ryVnw4FUIMU2AVXbKw395Tdz7j--EAUA1A')
-    await defenseBuilds.useServiceAccountAuth(serviceAccountCredentials)
+	defenseBuilds = new GoogleSpreadsheet('1sjBA60Fr9ryVnw4FUIMU2AVXbKw395Tdz7j--EAUA1A', serviceAccountAuth)
     await defenseBuilds.loadInfo()
 	defenseImages = await defenseBuilds.sheetsByTitle['Data'].getRows()
 
@@ -164,18 +159,18 @@ export async function loadDefenseBuilds(){
 			for (let x = 1; x < sheet.columnCount; x += 5){
 				if (x >= sheet.columnCount || !sheet.getCell(y + 1, x + 2).value) continue
 				buildData.push({
-					name: sheet.getCell(y + 1, x + 2).value?.toString(),
-					role: sheet.getCell(y + 4, x + 2).value?.toString(),
-					tertiary: sheet.getCell(y + 5, x + 2).value?.toString(),
+					name: sheet.getCell(y + 1, x + 2).value?.toString() ?? '',
+					role: sheet.getCell(y + 4, x + 2).value?.toString() ?? '',
+					tertiary: sheet.getCell(y + 5, x + 2).value?.toString() ?? '',
 					shards: [
-						sheet.getCell(y + 6, x + 2).value?.toString(),
-						sheet.getCell(y + 8, x + 2).value?.toString(),
-						sheet.getCell(y + 10, x + 2).value?.toString()
+						sheet.getCell(y + 6, x + 2).value?.toString() ?? '',
+						sheet.getCell(y + 8, x + 2).value?.toString() ?? '',
+						sheet.getCell(y + 10, x + 2).value?.toString() ?? ''
 					],
 					mods: [
-						{name: sheet.getCell(y + 12, x + 2).value?.toString(), qualibean: sheet.getCell(y + 12, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
-						{name: sheet.getCell(y + 14, x + 2).value?.toString(), qualibean: sheet.getCell(y + 14, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
-						{name: sheet.getCell(y + 16, x + 2).value?.toString(), qualibean: sheet.getCell(y + 16, x + 1).formula?.match(/\d+/)?.toString() || "0"}
+						{name: sheet.getCell(y + 12, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 12, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
+						{name: sheet.getCell(y + 14, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 14, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
+						{name: sheet.getCell(y + 16, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 16, x + 1).formula?.match(/\d+/)?.toString() || "0"}
 					],
 					relic: sheet.getCell(y + 12, x).formula?.match(/(?<=").+(?=")/)?.toString() || ""
 				})
@@ -284,7 +279,7 @@ client.on('messageCreate', async (message: Message) => {
 		message.author.send({content: `${violation} Please review the Looking-For-Trade channel rules here:`, embeds: dmEmbeds})
 	}
 	
-	const user: any = userLogs.find(user => user.authorID === message.author.id) || {lastMsgID: '', authorID: '', time: new Date(message.createdTimestamp).toString(), warnings: 0}
+	const user: any = userLogs.find(user => user.get('authorID') === message.author.id) || {lastMsgID: '', authorID: '', time: new Date(message.createdTimestamp).toString(), warnings: 0}
 	if (user.authorID !== "" && new Date(message.createdTimestamp).getTime() - Date.parse(user.time) < 8.28e+7){ //If the user is logged and their last message was within 23 hours, send a warning
 		try{
 			message.delete()
@@ -306,7 +301,7 @@ client.on('messageCreate', async (message: Message) => {
 
 	user.lastMsgID = message.id
 	user.authorID = `'${message.author.id}`
-	if (!userLogs.find(user => user.authorID === message.author.id)){
+	if (!userLogs.find(user => user.get('authorID') === message.author.id)){
 		user.authorTag = message.author.tag
 		await privateDB.sheetsByTitle['User Logs'].addRow(user)
 		userLogs = await privateDB.sheetsByTitle['User Logs'].getRows()
@@ -317,12 +312,12 @@ client.on('messageCreate', async (message: Message) => {
 schedule('* * * * *', () => {
 	if (!youtubeChannels) return
 	youtubeChannels.forEach(async channel => {
-		const discordChannel = client.channels.cache.get(channel.discordChannelID) as TextChannel
-		const feed = await new Parser().parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channel.youtubeID}`).catch(() => undefined) // Parse the RSS Feed for the channel, ignore any 404 errors if the rss feed is unavailable
+		const discordChannel = client.channels.cache.get(channel.get('discordChannelID')) as TextChannel
+		const feed = await new Parser().parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channel.get('youtubeID')}`).catch(() => undefined) // Parse the RSS Feed for the channel, ignore any 404 errors if the rss feed is unavailable
 		if (!feed) return
 
 		const newVideo = feed.items[0] // The most recently published video
-		const recentVideos: string[] = channel.recentVideos ? JSON.parse(channel.recentVideos) : []
+		const recentVideos: string[] = channel.get('recentVideos') ? JSON.parse(channel.get('recentVideos')) : []
 		if (recentVideos.includes(newVideo.link!)) return
 
 		const {data} = await axios.get(newVideo.link!)
@@ -334,7 +329,7 @@ schedule('* * * * *', () => {
 		}
 		if (recentVideos.length >= 5) recentVideos.shift() // Only store the 5 most recent videos
 		recentVideos.push(newVideo.link!)
-		channel.recentVideos = JSON.stringify(recentVideos) // Store the video so that it doesn't get posted again
+		channel.set('recentVideos', JSON.stringify(recentVideos)) // Store the video so that it doesn't get posted again
 		channel.save()
 		
 	})
@@ -345,20 +340,20 @@ export interface channelConfig {id: string, message: string | null, categories: 
 schedule('* * * * *', () => {
 	if (!twitchChannels) return
 	twitchChannels.forEach(async channel => {
-		const configs: channelConfig[] = JSON.parse(channel.configs || '[]')
+		const configs: channelConfig[] = JSON.parse(channel.get('configs') || '[]')
 		if (configs.length === 0) return
 		const [streamInfo, userInfo] = await Promise.all([
-			getTwitchUserInfo(channel.username, 1) as unknown as streamInfo,
-			getTwitchUserInfo(channel.username, 0) as unknown as userInfo
+			getTwitchUserInfo(channel.get('username'), 1) as unknown as streamInfo,
+			getTwitchUserInfo(channel.get('username'), 0) as unknown as userInfo
 		])
 		if (!streamInfo || !userInfo) return
-		const recentStreamIDs: string[] = JSON.parse(channel.recentStreamIDs || '[]')
+		const recentStreamIDs: string[] = JSON.parse(channel.get('recentStreamIDs') || '[]')
 		if (recentStreamIDs.includes(streamInfo.id)) return
 
 		const twitchStreamEmbed = new EmbedBuilder()
 			.setAuthor({name: 'Twitch', iconURL: 'https://cdn.icon-icons.com/icons2/3041/PNG/512/twitch_logo_icon_189242.png'})
 			.setTitle(`${streamInfo.user_name} is now playing ${streamInfo.game_name}!`)
-			.setURL(`https://www.twitch.tv/${channel.username}`)
+			.setURL(`https://www.twitch.tv/${channel.get('username')}`)
 			.setDescription(streamInfo.title)
 			.setThumbnail(userInfo.profile_image_url)
 			.setColor('Purple')
@@ -370,7 +365,7 @@ schedule('* * * * *', () => {
 
 		if (recentStreamIDs.length >= 5) recentStreamIDs.shift() // Only store the 5 most recent stream IDs
 		recentStreamIDs.push(streamInfo.id)
-		channel.recentStreamIDs = JSON.stringify(recentStreamIDs) // Store the stream ID so that it doesn't get posted again
+		channel.set('recentStreamIDs', JSON.stringify(recentStreamIDs)) // Store the stream ID so that it doesn't get posted again
 		channel.save()
 	})
 })
@@ -402,8 +397,8 @@ schedule('* * * * *', async () => {
 	const wikiChangesChannel = client.channels.cache.get('1072236073515745451') as TextChannel
 	const response = await axios.get('https://wiki.dungeondefenders2.com/api.php?action=query&list=recentchanges&rcprop=user|title|timestamp|comment|loginfo|ids&rclimit=5&format=json')
     const {data: {query: {recentchanges}}} = response
-	const recentChangeIDsInfo = variables.find(v => v.name === 'recentChangeIDs')!
-	const recentChangeIDs = JSON.parse(recentChangeIDsInfo.value || '[]')
+	const recentChangeIDsInfo = variables.find(v => v.get('name') === 'recentChangeIDs')!
+	const recentChangeIDs = JSON.parse(recentChangeIDsInfo.get('value') || '[]')
 	const changes: wikiChange[] = recentchanges.reverse()
 
 	for (const change of changes){
@@ -432,8 +427,8 @@ schedule('* * * * *', async () => {
 
 		wikiChangesChannel.send({embeds: [wikiChangeEmbed]})
 	}
-	if (recentChangeIDsInfo.value === JSON.stringify(recentChangeIDs.slice(-10))) return
-	recentChangeIDsInfo.value = JSON.stringify(recentChangeIDs.slice(-10)) // Store the recent change IDs to prevent duplicates
+	if (recentChangeIDsInfo.get('value') === JSON.stringify(recentChangeIDs.slice(-10))) return
+	recentChangeIDsInfo.set('value', JSON.stringify(recentChangeIDs.slice(-10))) // Store the recent change IDs to prevent duplicates
 	await recentChangeIDsInfo.save()
 })
 
@@ -750,6 +745,6 @@ client.on('messageCreate', async (message: Message) => {
 
 client.login(process.env.BOT_TOKEN)
 
-// process.on('uncaughtException', error => {
-// 	errorChannel?.send({files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]})
-// })
+process.on('uncaughtException', error => {
+	errorChannel?.send({files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]})
+})

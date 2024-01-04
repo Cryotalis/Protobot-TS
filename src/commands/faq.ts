@@ -10,13 +10,13 @@ module.exports = {
 				.setName('faq')
 				.setDescription('The alias for the frequently asked question')
 				.setRequired(true)
-				.addChoices(...faq.map(({name}) => ({name: name, value: name})))
+				.addChoices(...faq.map(faq => ({name: faq.get('name'), value: faq.get('name')})))
 		)
 		.addUserOption(option => option.setName('target').setDescription('The user to mention with this command'))
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
 		const userInput = interaction.options.getString('faq')!
 		const targettedUser = interaction.options.getUser('target')!
-		await interaction.reply((targettedUser ? `*Answer for ${targettedUser}:*\n` : '') + faq.find(faq => faq.name === userInput)?.value)
+		await interaction.reply((targettedUser ? `*Answer for ${targettedUser}:*\n` : '') + faq.find(faq => faq.get('name') === userInput)?.get('value'))
 	}
 }

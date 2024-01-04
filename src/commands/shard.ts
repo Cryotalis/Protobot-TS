@@ -10,22 +10,22 @@ module.exports = {
     ,
 	async execute(interaction: ChatInputCommandInteraction) {
         const userInput = interaction.options.getString('name')!
-		const shardNames = shards.map(shard => shard.name)
-        const modNames = mods.map(mod => mod.name)
+		const shardNames = shards.map(shard => shard.get('name'))
+        const modNames = mods.map(mod => mod.get('name'))
         const shardBestMatch = findBestCIMatch(userInput, shardNames).bestMatch
         const modBestMatch = findBestCIMatch(userInput, modNames).bestMatch
-        const shard = shards.find(shard => shard.name === shardBestMatch.target)!
+        const shard = shards.find(shard => shard.get('name') === shardBestMatch.target)!
 
         const shardEmbed = new EmbedBuilder()
             .setColor('Blue')
-            .setAuthor({name: shard.name, iconURL: shard.dropURL})
-            .setThumbnail(shard.image)
-            .setDescription(shard.description)
+            .setAuthor({name: shard.get('name'), iconURL: shard.get('dropURL')})
+            .setThumbnail(shard.get('image'))
+            .setDescription(shard.get('description'))
             .addFields([
-                {name: 'Gilded: ', value: shard.gilded, inline: false},
-                {name: 'Usable by:', value: shard.hero.split(', ').map((hero: string) => heroEmotes[hero]).join(''), inline: false}
+                {name: 'Gilded: ', value: shard.get('gilded'), inline: false},
+                {name: 'Usable by:', value: shard.get('hero').split(', ').map((hero: string) => heroEmotes[hero]).join(''), inline: false}
             ])
-            .setFooter({text: `Upgrade Levels: ${shard.upgradeLevels} | ${shard.type} | ${shard.drop}`})
+            .setFooter({text: `Upgrade Levels: ${shard.get('upgradeLevels')} | ${shard.get('type')} | ${shard.get('drop')}`})
 
         const suggestionButton = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(
@@ -39,7 +39,7 @@ module.exports = {
             if (modBestMatch.rating <= shardBestMatch.rating) return
             const collector = interaction.channel?.createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.member?.user.id === msg.member?.user.id, time: 30000})
             collector?.on('collect', async () => {
-                await interaction.editReply({content: `/mod name: ${modBestMatch.target}`, embeds: [], components: [], allowedMentions: {repliedUser: false}})
+                await interaction.editReply({content: '```/mod name: ' + modBestMatch.target + '```', embeds: [], components: [], allowedMentions: {repliedUser: false}})
                 const command = require('../messageCommands/mod')
                 command.run(client, msg, '/', [modBestMatch.target]) 
             })

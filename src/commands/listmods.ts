@@ -43,24 +43,24 @@ module.exports = {
 		// Possible Filters
 		if (diff){
 			dropFilter = diff.match(/\b(?:Campaign|Chaos \d+)\b/ig)!
-			output = output.filter(mod => dropFilter?.some(drop => (capitalize(drop) === mod.drop) || (decodeDiff(drop) >= decodeDiff(mod.drop.split('-')[0]) && decodeDiff(drop) <= decodeDiff(mod.drop.split('-')[1]))))
+			output = output.filter(mod => dropFilter?.some(drop => (capitalize(drop) === mod.get('drop')) || (decodeDiff(drop) >= decodeDiff(mod.get('drop').split('-')[0]) && decodeDiff(drop) <= decodeDiff(mod.get('drop').split('-')[1]))))
 		}
 
 		if (hero){
 			heroFilter = hero.match(/\b(?:All|Squire|Apprentice|Huntress|Monk|Abyss Lord|EV2|Gunwitch|Lavamancer|Mystic|Dryad|Initiate|Adept|Barbarian|Mercenary|Countess|Engineer|Hunter)\b/ig)!
-			output = output.filter(mod => heroFilter?.some(hero => mod.hero?.includes(capitalize(hero))))
+			output = output.filter(mod => heroFilter?.some(hero => mod.get('hero')?.includes(capitalize(hero))))
 		}
 
 		if (slot){
 			typeFilter = slot.match(/\b(?:Armor|Relic|Weapon)\b/ig)!
-			output = output.filter(mod => typeFilter?.some(type => capitalize(type) === mod.type))
+			output = output.filter(mod => typeFilter?.some(type => capitalize(type) === mod.get('type')))
 		}
 
 		if (customFilter){ //If there are additional parameters remaining, search the description
-			output = output.filter(mod => mod.description?.toLowerCase().includes(customFilter!.toLowerCase()))
+			output = output.filter(mod => mod.get('description')?.toLowerCase().includes(customFilter!.toLowerCase()))
 		}
 
-		let modlist = output.filter(mod => !mod.name?.includes('(removed)')).map(mod => mod.name)
+		let modlist = output.filter(mod => !mod.get('name')?.includes('(removed)')).map(mod => mod.get('name'))
 		if (modlist.length >= 55){
 			const length = modlist.length - 55
 			modlist = modlist.slice(0, 55)

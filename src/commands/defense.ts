@@ -21,7 +21,7 @@ module.exports = {
 			ctx.fillRect(0, 0, 326, 378)
 	
 			/* Drawing the Defense Image */
-			const defenseImage = await loadImage(defenseImages.find(def => def.defenseName === defense.name)?.defenseURL.toString())
+			const defenseImage = await loadImage(defenseImages.find(def => def.get('defenseName') === defense.name)?.get('defenseURL').toString())
 			ctx.drawImage(defenseImage, 0, 0, 126, 126)
 	
 			/* Drawing the horizontal grey line */
@@ -46,9 +46,9 @@ module.exports = {
 			/* Drawing the Shards and Shard Icons */
 			let shardDropIcon1, shardDropIcon2, shardDropIcon3
 			const textStyles: CanvasTextInfo = {ctx: ctx, textAlign: 'left', font: '22px Arial Bold', strokeStyle: 'black', fillStyle: 'white'}
-			if (shards.find(shard => shard.name === defense.shards[0])) shardDropIcon1 = await loadImage(shards.find(shard => shard.name === defense.shards[0])?.dropURL.toString())
-			if (shards.find(shard => shard.name === defense.shards[1])) shardDropIcon2 = await loadImage(shards.find(shard => shard.name === defense.shards[1])?.dropURL.toString())
-			if (shards.find(shard => shard.name === defense.shards[2])) shardDropIcon3 = await loadImage(shards.find(shard => shard.name === defense.shards[2])?.dropURL.toString())
+			if (shards.find(shard => shard.get('name') === defense.shards[0])) shardDropIcon1 = await loadImage(shards.find(shard => shard.get('name') === defense.shards[0])?.get('dropURL').toString())
+			if (shards.find(shard => shard.get('name') === defense.shards[1])) shardDropIcon2 = await loadImage(shards.find(shard => shard.get('name') === defense.shards[1])?.get('dropURL').toString())
+			if (shards.find(shard => shard.get('name') === defense.shards[2])) shardDropIcon3 = await loadImage(shards.find(shard => shard.get('name') === defense.shards[2])?.get('dropURL').toString())
 			if (shardDropIcon1) ctx.drawImage(shardDropIcon1, 80, 132, 30, 30)
 			if (shardDropIcon2) ctx.drawImage(shardDropIcon2, 80, 174, 30, 30)
 			if (shardDropIcon3) ctx.drawImage(shardDropIcon3, 80, 216, 30, 30)
@@ -59,7 +59,7 @@ module.exports = {
 
 			/* Drawing the Mods and Qualibean Icons */
 			let qualibean1, qualibean2, qualibean3
-			const qualibeans = defenseImages.map(row => row.modURL)
+			const qualibeans = defenseImages.map(row => row.get('modURL'))
 			if (defense.mods[0].qualibean) qualibean1 = await loadImage(qualibeans[parseInt(defense.mods[0].qualibean)-1])
 			if (defense.mods[1].qualibean) qualibean2 = await loadImage(qualibeans[parseInt(defense.mods[1].qualibean)-1])
 			if (defense.mods[2].qualibean) qualibean3 = await loadImage(qualibeans[parseInt(defense.mods[2].qualibean)-1])

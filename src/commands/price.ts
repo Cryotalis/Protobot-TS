@@ -29,19 +29,19 @@ module.exports = {
 
 		if (/Medal|Mark|Orb|Totem/i.test(item)){item += '(Stats)'}
 		const validPets = ['Katkarot', 'Shinobi Kitty', 'Table Flipper', 'Evilwick', 'Autumeow', 'G4-T0', 'Headless Horseman', 'Kobold King', 'Kobold Bling King', 'Jackalope', 'Corrupted Jackalope', 'Dino', 'Haunted Ship']
-		const pcItemNames = prices.filter(i => i.pcPrice).map(i => i.pcItem)
-		const psItemNames = prices.filter(i => i.psPrice).map(i => i.psItem)
-		const xboxItemNames = prices.filter(i => i.xboxPrice).map(i => i.xboxItem)
-		const pcPetNames = prices.filter(p => p.pcRarity !== '#N/A').map(p => p.pcItem)
-		const psPetNames = prices.filter(p => p.psRarity !== '#N/A').map(p => p.psItem)
-		const xboxPetNames = prices.filter(p => p.xboxRarity !== '#N/A').map(p => p.xboxItem)
+		const pcItemNames = prices.filter(i => i.get('pcPrice')).map(i => i.get('pcItem'))
+		const psItemNames = prices.filter(i => i.get('psPrice')).map(i => i.get('psItem'))
+		const xboxItemNames = prices.filter(i => i.get('xboxPrice')).map(i => i.get('xboxItem'))
+		const pcPetNames = prices.filter(p => p.get('pcRarity') !== '#N/A').map(p => p.get('pcItem'))
+		const psPetNames = prices.filter(p => p.get('psRarity') !== '#N/A').map(p => p.get('psItem'))
+		const xboxPetNames = prices.filter(p => p.get('xboxRarity') !== '#N/A').map(p => p.get('xboxItem'))
 		const allPetNames = pcPetNames.concat(psPetNames, xboxPetNames)
 		let itemName = findBestCIMatch(item, pcItemNames.concat(psItemNames, xboxItemNames)).bestMatch.target
-		if (!chipType && mods.find(mod => mod.name === itemName.replace('Chip', 'Servo'))){itemName = itemName.replace('Chip', 'Servo')} //If no mod type was given, default to Servo (assuming a servo version exists)
+		if (!chipType && mods.find(mod => mod.get('name') === itemName.replace('Chip', 'Servo'))){itemName = itemName.replace('Chip', 'Servo')} //If no mod type was given, default to Servo (assuming a servo version exists)
 		if (/Pristine|Shiny|Plain/i.test(itemName) && !/Pristine|Shiny|Plain/i.test(item)){itemName = itemName.replace(/Shiny|Plain/i, 'Pristine')}
-		const pcItem = prices.find(i => i.pcItem === itemName)
-		const psItem = prices.find(i => i.psItem === itemName)
-		const xboxItem = prices.find(i => i.xboxItem === itemName)
+		const pcItem = prices.find(i => i.get('pcItem') === itemName)
+		const psItem = prices.find(i => i.get('psItem') === itemName)
+		const xboxItem = prices.find(i => i.get('xboxItem') === itemName)
 
 		function getPrice(price: string, platform: string){
 			if (/^-$|^\?$|^∞$/.test(price)) return price
@@ -51,12 +51,12 @@ module.exports = {
 			const multiplier: string = price.match(/k|m|b/i)?.toString()!
 			let newMultiplier = "", priceArr
 			priceArr = price.match(/[\d\.]+/g)?.map(p => parseFloat(p) * numAbbreviations[multiplier])!
-			if (mods.find(mod => mod.name === itemName)){ //If the item is a mod
+			if (mods.find(mod => mod.get('name') === itemName)){ //If the item is a mod
 				priceArr = priceArr.map(p => p * qualibeanMultiplier[qualibean])
 				itemPrefix = `${qualibean}/10 `
 			} else if (allPetNames.includes(itemName)){ //If the item is a pet
 				if (!rarity || !validPets.includes(itemName)){ //If a rarity was not provided or the pet does not have a lower rarity
-					rarity = prices.find(p => p.pcItem === itemName)?.pcRarity ?? prices.find(p => p.psItem === itemName)?.psRarity ?? prices.find(p => p.xboxItem === itemName)?.xboxRarity
+					rarity = prices.find(p => p.get('pcItem') === itemName)?.get('pcRarity') ?? prices.find(p => p.get('psItem') === itemName)?.get('psRarity') ?? prices.find(p => p.get('xboxItem') === itemName)?.get('xboxRarity')
 				} else {
 					switch (platform){
 						case 'PC': priceArr = priceArr.map(p => p * {Powerful: 0.1, Epic: 0.15, Mythical: 0.25, Legendary: 1}[rarity!]!); break
@@ -83,9 +83,9 @@ module.exports = {
 			return priceArr.join('-') + newMultiplier + (/\+/.test(price) ? '+' : "")
 		}
 
-		const pcPrice = pcItem ? getPrice(pcItem.pcPrice, 'PC') : '-'
-		const psPrice = psItem ? getPrice(psItem.psPrice, 'PS4') : '-'
-		const xboxPrice = xboxItem ? getPrice(xboxItem.xboxPrice, 'Xbox') : '-'
+		const pcPrice = pcItem ? getPrice(pcItem.get('pcPrice'), 'PC') : '-'
+		const psPrice = psItem ? getPrice(psItem.get('psPrice'), 'PS4') : '-'
+		const xboxPrice = xboxItem ? getPrice(xboxItem.get('xboxPrice'), 'Xbox') : '-'
 		itemName = itemName.replace(' (x1)', "")
 
 		const priceEmbed = new EmbedBuilder()

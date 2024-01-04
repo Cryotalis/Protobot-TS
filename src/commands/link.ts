@@ -12,15 +12,15 @@ module.exports = {
 	async execute(interaction: ChatInputCommandInteraction) {
 		const userInput = interaction.options.getString('link')!
 		const targettedUser = interaction.options.getUser('target')!
-		const key = findBestCIMatch(userInput, links.map(entry => entry.name)).bestMatch.target
-		const link = links.find(entry => entry.name === key)!
+		const key = findBestCIMatch(userInput, links.map(link => link.get('name'))).bestMatch.target
+		const link = links.find(link => link.get('name') === key)!
 
 		const linkEmbed = new EmbedBuilder()
 			.setColor('Blue')
-			.setAuthor({name: link.author})
-			.setTitle(link.name)
-			.setURL(link.link)
-			.setDescription(link.description)
+			.setAuthor({name: link.get('author')})
+			.setTitle(link.get('name'))
+			.setURL(link.get('link'))
+			.setDescription(link.get('description'))
 
 		await interaction.reply({content: targettedUser ? `*Link for ${targettedUser}:*` : undefined, embeds: [linkEmbed]})
 	}
