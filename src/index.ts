@@ -1,4 +1,4 @@
-import { ChannelType, Client, Collection, EmbedBuilder, GatewayIntentBits, Message, ModalActionRowComponent, REST, Routes, TextChannel, TextInputComponent, User } from 'discord.js'
+import { ChannelType, Client, Collection, EmbedBuilder, ForumChannel, GatewayIntentBits, Message, ModalActionRowComponent, REST, Routes, TextChannel, TextInputComponent, User } from 'discord.js'
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { schedule } from 'node-cron'
 import { inspect } from 'util'
@@ -741,6 +741,35 @@ client.on('messageCreate', async (message: Message) => {
 			.setTimestamp(new Date(Date.parse(message.embeds[0].timestamp!)))
 		modQueue.send({embeds: [susMemberEmbed]})
 	}
+})
+
+const forumIDs = [
+	'1183125378613657720', // bug-report-test
+	'1166774506002591765', // server-suggestions
+	'1167947531469201469', // role-requests
+]
+client.on('threadCreate', async thread => {
+	if (!forumIDs.includes(thread.parent?.id ?? '')) return
+	const firstMessage = await thread.fetchStarterMessage()
+	if (!firstMessage) return
+	await firstMessage.react('<:thumbs_up:745501111015833632>')
+	await firstMessage.react('<:thumbs_sideways:745501110403465318>')
+	await firstMessage.react('<:thumbs_down:745501108075626578>')
+})
+
+client.on('threadUpdate', (oldThread, newThread) => {
+	const oldTags = oldThread.appliedTags
+	const newTags = newThread.appliedTags
+	if (!forumIDs.includes(oldThread.parent?.id ?? '') || oldTags.join() === newTags.join()) return
+
+	const tags = (oldThread.parent as ForumChannel).availableTags
+	const tag = tags.find(tag => tag.id === (newTags.length > oldTags.length ? newTags.find(tag => !oldTags.includes(tag)) : oldTags.find(tag => !newTags.includes(tag))))!
+	const tagEmoji = tag.emoji 
+		? tag.emoji.id 
+			? `<:${tag.emoji.name}:${tag.emoji.id}> `
+			: tag.emoji.name + ' '
+		: ''
+	newThread.send(`<@${oldThread.ownerId}>, your post has been ${newTags.length > oldTags.length ? '' : 'un'}tagged as **${tagEmoji + tag.name}**.`)
 })
 
 client.login(process.env.BOT_TOKEN)
