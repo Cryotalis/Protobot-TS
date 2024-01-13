@@ -1,4 +1,4 @@
-import { ChannelType, Client, Collection, EmbedBuilder, ForumChannel, GatewayIntentBits, Message, ModalActionRowComponent, REST, Routes, TextChannel, TextInputComponent, User } from 'discord.js'
+import { ActionRowBuilder, ChannelType, Client, Collection, EmbedBuilder, ForumChannel, GatewayIntentBits, Message, ModalActionRowComponent, ModalBuilder, REST, Routes, TextChannel, TextInputBuilder, TextInputComponent, TextInputStyle, User } from 'discord.js'
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { schedule } from 'node-cron'
 import { inspect } from 'util'
@@ -200,7 +200,7 @@ client.on('ready', async () => {
 
 // Slash Command Handler
 client.on('interactionCreate', interaction => {
-    if ((!interaction.isCommand() && !interaction.isMessageContextMenuCommand()) || !interaction.channel) return
+    if ((!interaction.isCommand() && !interaction.isMessageContextMenuCommand())) return
 	if (blacklistedIDs?.includes(interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
 
 	const isModCommand = modCommands.includes(`${interaction.commandName}.js`)
@@ -635,87 +635,146 @@ schedule('* * * * *', async () => {
 // })
 
 // Handle Buttons
-// client.on('interactionCreate', async interaction => {
-// 	if (!interaction.isButton() || (interaction.user.id === '251458435554607114' && botSettings.developerMode)) return
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isButton()) return
 
-// 	if (interaction.customId === 'Auction Bid Button'){
-// 		const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
-// 		const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
-// 		if (interaction.user.id === auctionEntry.auctioneerID) return interaction.reply({content: 'You cannot bid on your own auction!', ephemeral: true})
-// 		if (interaction.user.id === filteredBids.reverse()[0].bidder) return interaction.reply({content: 'You are already the top bidder!', ephemeral: true})
-// 		if (new Date() > new Date(auctionEntry.endDate)) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
+	if (interaction.customId === 'Helper Application Button'){
+		const helperAppPart1 = new ModalBuilder()
+			.setCustomId('Helper Application Modal')
+			.setTitle('Helper Application')
+			.addComponents(
+				new ActionRowBuilder<TextInputBuilder>()
+				// .addComponents(
+				// 	new TextInputBuilder()
+				// 		.setCustomId('Age')
+				// 		.setLabel('Are you over the age of 16?')
+				// 		.setPlaceholder('Yes/No')
+				// 		.setStyle(TextInputStyle.Short)
+				// 		.setRequired(true)
+				// )
+				.addComponents(
+					new TextInputBuilder()
+						.setCustomId('Helper Reason')
+						.setLabel('Why are you interested in becoming a Helper?')
+						.setStyle(TextInputStyle.Paragraph)
+						.setMaxLength(1000)
+						.setRequired(true)
+				)
+				.addComponents(
+					new TextInputBuilder()
+						.setCustomId('DD Game')
+						.setLabel('Which DD Game are you most experienced with?')
+						.setPlaceholder('DD1 / DD2 / DDA / etc.')
+						.setStyle(TextInputStyle.Short)
+						.setRequired(true)
+				)
+				.addComponents(
+					new TextInputBuilder()
+						.setCustomId('DD Game Hours')
+						.setLabel('Around how many hours have you logged?')
+						.setPlaceholder('The approximate number of hours you\'ve spent in the DD game you\'re most experienced with.')
+						.setStyle(TextInputStyle.Short)
+						.setRequired(true)
+				)
+				.addComponents(
+					new TextInputBuilder()
+						.setCustomId('DD Game Solo')
+						.setLabel('What is the hardest content you can do solo?')
+						.setPlaceholder('The hardest content you can consistently solo in the DD game you\'re most experienced with.')
+						.setStyle(TextInputStyle.Short)
+						.setRequired(true)
+				)
+				.addComponents(
+					new TextInputBuilder()
+						.setCustomId('DD Game Knowledge')
+						.setLabel('Rate your knowledge of your chosen DD game.')
+						.setPlaceholder('Rate your knowledge on a scale from 0 to 10. 0 means you know nothing, 10 means you know everything.')
+						.setStyle(TextInputStyle.Short)
+						.setRequired(true)
+				)
+			)
 
-// 		const bidModal = new Modal()
-// 			.setCustomId(`Auction Bid Modal`)
-// 			.setTitle('Place a Bid')
+		await interaction.showModal(helperAppPart1)
+	}
+
+	// if (interaction.customId === 'Auction Bid Button'){
+	// 	const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
+	// 	const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
+	// 	if (interaction.user.id === auctionEntry.auctioneerID) {interaction.reply({content: 'You cannot bid on your own auction!', ephemeral: true}); return}
+	// 	if (interaction.user.id === filteredBids.reverse()[0].bidder) {interaction.reply({content: 'You are already the top bidder!', ephemeral: true}); return}
+	// 	if (new Date() > new Date(auctionEntry.endDate)) {interaction.reply({content: 'This auction has already ended!', ephemeral: true}); return}
+
+	// 	const bidModal = new Modal()
+	// 		.setCustomId(`Auction Bid Modal`)
+	// 		.setTitle('Place a Bid')
 		
-// 		const bid = new ActionRowBuilder<ModalActionRowComponent>().addComponents(
-// 			new TextInputComponent()
-// 				.setCustomId('Auction Bid')
-// 				.setLabel('Your Bid')
-// 				.setStyle('SHORT')
-// 				.setMaxLength(100)
-// 				.setRequired(true)
-// 		)
+	// 	const bid = new ActionRowBuilder<ModalActionRowComponent>().addComponents(
+	// 		new TextInputComponent()
+	// 			.setCustomId('Auction Bid')
+	// 			.setLabel('Your Bid')
+	// 			.setStyle('SHORT')
+	// 			.setMaxLength(100)
+	// 			.setRequired(true)
+	// 	)
 
-// 		bidModal.addComponents(bid)
-// 		await interaction.showModal(bidModal)
-// 	}
+	// 	bidModal.addComponents(bid)
+	// 	await interaction.showModal(bidModal)
+	// }
 
-// 	if (interaction.customId === 'Retract Bid Button'){
-// 		const auction = (interaction.message as Message)
-// 		const auctionEntry = auctions.find(entry => entry.auctionID === auction.id)!
-// 		const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids)
-// 		const filteredBids = auctionBids.filter(bid => bid.status === 'Accepted' || bid.status === 'Pending')
-// 		if (filteredBids.filter(bid => bid.bidder === interaction.user.id && bid.status === 'Retracted').length > 2){ // Limit of 2 retractions per user per auction
-// 			return interaction.reply({content: 'You can no longer retract any more bids in this auction.', ephemeral: true})
-// 		}
-// 		const userBid = filteredBids.find((bid: auctionBid) => bid.bidder === interaction.user.id)
-// 		const endDate = new Date(auctionEntry.endDate)
-// 		if (new Date() > endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
-// 		if (!userBid) return interaction.reply({content: 'You currently have no bids to retract!', ephemeral: true})
-// 		if ((endDate.getTime() - new Date().getTime() < 3.6e+6) || (new Date().getTime() - new Date(userBid.timestamp).getTime() > 1.8e+6)){ // If there is less than 1 hour left in the auction or the bid was placed more than 30 minutes ago
-// 			return interaction.reply({content: 'Your bid can no longer be retracted at this time.', ephemeral: true})
-// 		}
+	// if (interaction.customId === 'Retract Bid Button'){
+	// 	const auction = (interaction.message as Message)
+	// 	const auctionEntry = auctions.find(entry => entry.auctionID === auction.id)!
+	// 	const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids)
+	// 	const filteredBids = auctionBids.filter(bid => bid.status === 'Accepted' || bid.status === 'Pending')
+	// 	if (filteredBids.filter(bid => bid.bidder === interaction.user.id && bid.status === 'Retracted').length > 2){ // Limit of 2 retractions per user per auction
+	// 		return interaction.reply({content: 'You can no longer retract any more bids in this auction.', ephemeral: true})
+	// 	}
+	// 	const userBid = filteredBids.find((bid: auctionBid) => bid.bidder === interaction.user.id)
+	// 	const endDate = new Date(auctionEntry.endDate)
+	// 	if (new Date() > endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
+	// 	if (!userBid) return interaction.reply({content: 'You currently have no bids to retract!', ephemeral: true})
+	// 	if ((endDate.getTime() - new Date().getTime() < 3.6e+6) || (new Date().getTime() - new Date(userBid.timestamp).getTime() > 1.8e+6)){ // If there is less than 1 hour left in the auction or the bid was placed more than 30 minutes ago
+	// 		return interaction.reply({content: 'Your bid can no longer be retracted at this time.', ephemeral: true})
+	// 	}
 		
-// 		auctionBids.splice(auctionBids.indexOf(userBid), 1, {...userBid, status: 'Retracted', timestamp: new Date().toString()})
-// 		const auctionIndex = auctions.indexOf(auctionEntry)
-// 		auctionEntry.bids = JSON.stringify(auctionBids)
-// 		auctions.splice(auctionIndex, 1, auctionEntry)
-// 		await auctionEntry.save()
+	// 	auctionBids.splice(auctionBids.indexOf(userBid), 1, {...userBid, status: 'Retracted', timestamp: new Date().toString()})
+	// 	const auctionIndex = auctions.indexOf(auctionEntry)
+	// 	auctionEntry.bids = JSON.stringify(auctionBids)
+	// 	auctions.splice(auctionIndex, 1, auctionEntry)
+	// 	await auctionEntry.save()
 
-// 		const prevHighestBid = auctionBids.reverse().find(bid => bid.status !== 'Retracted') ?? auctionBids[auctionBids.length - 1]
-// 		auction.embeds[0].fields[0].value = abbreviateAllNumbers(prevHighestBid.bid).replace(/gold/i, '<:gold:460345588911833088>')
-// 		auction.embeds[0].fields[1].value = prevHighestBid.bidder ? `<@${prevHighestBid.bidder}>` : 'None'
-// 		await auction.edit({embeds: [auction.embeds[0]]})
-// 		interaction.reply({content: 'Bid retracted.', ephemeral: true})
-// 	}
+	// 	const prevHighestBid = auctionBids.reverse().find(bid => bid.status !== 'Retracted') ?? auctionBids[auctionBids.length - 1]
+	// 	auction.embeds[0].fields[0].value = abbreviateAllNumbers(prevHighestBid.bid).replace(/gold/i, '<:gold:460345588911833088>')
+	// 	auction.embeds[0].fields[1].value = prevHighestBid.bidder ? `<@${prevHighestBid.bidder}>` : 'None'
+	// 	await auction.edit({embeds: [auction.embeds[0]]})
+	// 	interaction.reply({content: 'Bid retracted.', ephemeral: true})
+	// }
 
-// 	if (interaction.customId === 'Cancel Auction Button'){
-// 		const auction = interaction.message
-// 		const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
-// 		const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
-// 		const topBid = filteredBids[filteredBids.length - 1]
-// 		if (new Date() > auctionEntry.endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
-// 		if (!(interaction.user.id === auctionEntry.auctioneerID || interaction.memberPermissions?.has('MANAGE_MESSAGES'))){
-// 			return interaction.reply({content: 'You do not have permission to cancel this auction.', ephemeral: true})
-// 		}
-// 		if ((new Date((interaction.message as Message).createdTimestamp).getTime() - new Date().getTime() > 3600000) && !interaction.memberPermissions?.has('MANAGE_MESSAGES')){
-// 			return interaction.reply({content: 'You cannot cancel an auction after it has been running for over an hour.', ephemeral: true})
-// 		}
-// 		(interaction.message as Message).delete()
+	// if (interaction.customId === 'Cancel Auction Button'){
+	// 	const auction = interaction.message
+	// 	const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
+	// 	const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
+	// 	const topBid = filteredBids[filteredBids.length - 1]
+	// 	if (new Date() > auctionEntry.endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
+	// 	if (!(interaction.user.id === auctionEntry.auctioneerID || interaction.memberPermissions?.has('MANAGE_MESSAGES'))){
+	// 		return interaction.reply({content: 'You do not have permission to cancel this auction.', ephemeral: true})
+	// 	}
+	// 	if ((new Date((interaction.message as Message).createdTimestamp).getTime() - new Date().getTime() > 3600000) && !interaction.memberPermissions?.has('MANAGE_MESSAGES')){
+	// 		return interaction.reply({content: 'You cannot cancel an auction after it has been running for over an hour.', ephemeral: true})
+	// 	}
+	// 	(interaction.message as Message).delete()
 		
-// 		const auctionIndex = auctions.indexOf(auctionEntry)
-// 		auctionEntry.status = 'Cancelled'
-// 		auctions.splice(auctionIndex, 1, auctionEntry)
-// 		await auctionEntry.save()
-// 		const cancelledEmbed = new EmbedBuilder()
-// 			.setDescription(`The auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id}) has been cancelled.`)
-// 			.setColor('Blue')
-// 		if (topBid?.bidder) client.users.fetch(topBid.bidder).then(user => user.send({embeds: [cancelledEmbed]}))
-// 		interaction.reply({content: 'Auction cancelled.', ephemeral: true})
-// 	}
-// })
+	// 	const auctionIndex = auctions.indexOf(auctionEntry)
+	// 	auctionEntry.status = 'Cancelled'
+	// 	auctions.splice(auctionIndex, 1, auctionEntry)
+	// 	await auctionEntry.save()
+	// 	const cancelledEmbed = new EmbedBuilder()
+	// 		.setDescription(`The auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id}) has been cancelled.`)
+	// 		.setColor('Blue')
+	// 	if (topBid?.bidder) client.users.fetch(topBid.bidder).then(user => user.send({embeds: [cancelledEmbed]}))
+	// 	interaction.reply({content: 'Auction cancelled.', ephemeral: true})
+	// }
+})
 
 client.on('messageCreate', async (message: Message) => {
 	if (message.channelId !== '343306253587709952') return
