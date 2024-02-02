@@ -23,12 +23,12 @@
   "dependencies": {
     "@canvas-fonts/arial": "^1.0.4",
     "@canvas-fonts/arial-bold": "^1.0.4",
-    "@google-cloud/translate": "^8.0.2",
-    "axios": "^1.6.4",
+    "@google-cloud/translate": "^8.0.3",
+    "axios": "^1.6.7",
     "canvas": "^2.11.2",
     "discord.js": "^14.14.1",
-    "dotenv": "^16.3.1",
-    "google-auth-library": "^9.4.1",
+    "dotenv": "^16.4.1",
+    "google-auth-library": "^9.6.2",
     "google-spreadsheet": "^4.1.1",
     "html-entities": "^2.4.0",
     "node-cron": "^3.0.3",
@@ -39,7 +39,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.10.6",
+    "@types/node": "^20.11.16",
     "@types/node-cron": "^3.0.11",
     "@types/string-similarity": "^4.0.2",
     "typescript": "^5.3.3"
