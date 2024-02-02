@@ -644,14 +644,6 @@ client.on('interactionCreate', async interaction => {
 			.setTitle('Helper Application')
 			.addComponents(
 				new ActionRowBuilder<TextInputBuilder>()
-				// .addComponents(
-				// 	new TextInputBuilder()
-				// 		.setCustomId('Age')
-				// 		.setLabel('Are you over the age of 16?')
-				// 		.setPlaceholder('Yes/No')
-				// 		.setStyle(TextInputStyle.Short)
-				// 		.setRequired(true)
-				// )
 				.addComponents(
 					new TextInputBuilder()
 						.setCustomId('Helper Reason')
@@ -695,6 +687,29 @@ client.on('interactionCreate', async interaction => {
 			)
 
 		await interaction.showModal(helperAppPart1)
+	}
+
+	if (interaction.customId === 'Content Creator Button'){
+		const contentCreatorModal = new ModalBuilder()
+			.setCustomId('Content Creator Modal')
+			.setTitle('Content Creator Role Request')
+			.addComponents(
+				new ActionRowBuilder<TextInputBuilder>()
+				.addComponents(
+					new TextInputBuilder()
+						.setCustomId('Channel Link')
+						.setLabel('Please provide a link to your channel')
+						.setPlaceholder('YouTube/Twitch Channel Link')
+						.setStyle(TextInputStyle.Paragraph)
+						.setRequired(true)
+				)
+			)
+
+		await interaction.showModal(contentCreatorModal)
+	}
+
+	if (interaction.customId === 'Defender Role Button'){
+		
 	}
 
 	// if (interaction.customId === 'Auction Bid Button'){
