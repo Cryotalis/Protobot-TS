@@ -843,7 +843,12 @@ client.on('threadUpdate', (oldThread, newThread) => {
 			? `<:${tag.emoji.name}:${tag.emoji.id}> `
 			: tag.emoji.name + ' '
 		: ''
-	newThread.send(`<@${oldThread.ownerId}>, your post has been ${newTags.length > oldTags.length ? '' : 'un'}tagged as **${tagEmoji + tag.name}**.`)
+
+	if (newTags.length > oldTags.length) {
+		newThread.send(`<@${oldThread.ownerId}>, your post has been tagged as **${tagEmoji + tag.name}**.`)
+	} else {
+		newThread.send(`<@${oldThread.ownerId}>, the **${tagEmoji + tag.name}** has been removed from your post.`)
+	}
 })
 
 client.login(process.env.BOT_TOKEN)
