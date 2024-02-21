@@ -846,9 +846,9 @@ client.on('threadUpdate', (oldThread, newThread) => {
 		: ''
 
 	if (newTags.length > oldTags.length) {
-		newThread.send(`<@${oldThread.ownerId}>, your post has been tagged as **${tagEmoji + tag.name}**.`)
+		newThread.send({content: `<@${oldThread.ownerId}>, your post has been tagged as **${tagEmoji + tag.name}**.`, flags: ['SuppressNotifications']})
 	} else {
-		newThread.send(`<@${oldThread.ownerId}>, the **${tagEmoji + tag.name}** tag has been removed from your post.`)
+		newThread.send({content: `<@${oldThread.ownerId}>, the **${tagEmoji + tag.name}** tag has been removed from your post.`, flags: ['SuppressNotifications']})
 	}
 })
 
