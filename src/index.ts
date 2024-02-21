@@ -824,11 +824,12 @@ const forumIDs = [
 ]
 client.on('threadCreate', async thread => {
 	if (!forumIDs.includes(thread.parent?.id ?? '')) return
-	const firstMessage = await thread.fetchStarterMessage()
-	if (!firstMessage) return
-	await firstMessage.react('<:thumbs_up:745501111015833632>')
-	await firstMessage.react('<:thumbs_sideways:745501110403465318>')
-	await firstMessage.react('<:thumbs_down:745501108075626578>')
+	const messages = await thread.awaitMessages({max: 1, time: 5000})
+	const starterMessage = messages.first()
+	if (!starterMessage) return
+	await starterMessage.react('<:thumbs_up:745501111015833632>')
+	await starterMessage.react('<:thumbs_sideways:745501110403465318>')
+	await starterMessage.react('<:thumbs_down:745501108075626578>')
 })
 
 client.on('threadUpdate', (oldThread, newThread) => {
