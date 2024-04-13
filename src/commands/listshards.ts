@@ -15,7 +15,7 @@ module.exports = {
 				'All', 			'Monk', 		'Apprentice', 	'Huntress', 	'Squire', 
 				'Ev2', 			'Lavamancer', 	'Abyss Lord', 	'Adept', 		'Gunwitch', 
 				'Initiate', 	'Dryad', 		'Barbarian', 	'Mystic', 		'Mercenary', 
-				'Countess', 	'Engineer', 	'Hunter'
+				'Countess', 	'Engineer', 	'Hunter',		'Aquarion'
 			].map(e => ({name: e, value: e}))))
 		.addStringOption(option => option.setName('slot')
 			.setDescription('The slot to filter the list by')
