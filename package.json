@@ -1,7 +1,7 @@
 {
   "name": "protobot-ts",
   "version": "1.0.0",
-  "description": "A DD2 Discord bot written in Typescript with Discord.js.",
+  "description": "General Purpose DD2 Discord bot written in Typescript with Discord.js.",
   "main": "./prod/index.js",
   "scripts": {
     "build": "tsc",
@@ -14,7 +14,7 @@
     "url": "git+https://github.com/Cryotalis/Protobot-TS.git"
   },
   "keywords": [],
-  "author": "Cryo",
+  "author": "Hywell",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/Cryotalis/Protobot-TS/issues"
