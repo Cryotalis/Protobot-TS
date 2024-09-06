@@ -39,7 +39,7 @@ module.exports = {
 		
 		await interaction.reply({embeds: [modEmbed], components: shardBestMatch.rating > modBestMatch.rating ? [suggestionButton] : [], fetchReply: true}).then(async msg => {
 			if (shardBestMatch.rating <= modBestMatch.rating) return
-			const collector = (await interaction.fetchReply()).createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.member?.user.id === msg.member?.user.id, time: 30000})
+			const collector = (await interaction.fetchReply()).createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.user.id === interaction.user.id, time: 30000})
 			collector?.on('collect', async () => {
 				await interaction.editReply({content: '```/shard name: ' + shardBestMatch.target + '```', embeds: [], components: []})
 				const command = require('../messageCommands/shard')
