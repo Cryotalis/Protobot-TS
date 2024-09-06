@@ -35,9 +35,9 @@ module.exports = {
                     .setStyle(ButtonStyle.Primary)
             )
         
-        await interaction.reply({embeds: [shardEmbed], components: modBestMatch.rating > shardBestMatch.rating ? [suggestionButton] : [], fetchReply: true}).then(msg => {
+        await interaction.reply({embeds: [shardEmbed], components: modBestMatch.rating > shardBestMatch.rating ? [suggestionButton] : [], fetchReply: true}).then(async msg => {
             if (modBestMatch.rating <= shardBestMatch.rating) return
-            const collector = interaction.channel?.createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.member?.user.id === msg.member?.user.id, time: 30000})
+            const collector = (await interaction.fetchReply()).createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.member?.user.id === msg.member?.user.id, time: 30000})
             collector?.on('collect', async () => {
                 await interaction.editReply({content: '```/mod name: ' + modBestMatch.target + '```', embeds: [], components: [], allowedMentions: {repliedUser: false}})
                 const command = require('../messageCommands/mod')

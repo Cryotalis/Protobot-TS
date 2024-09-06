@@ -90,8 +90,8 @@ module.exports = {
 						.setPlaceholder('Select a build')
 						.addOptions(roleOptions.map((option: string) => ({label: option, value: option})))
 				)
-			await interaction.reply({content: 'Please select a build:', components: [menu]}).then(() => {
-				const collector = interaction.channel?.createMessageComponentCollector({componentType: ComponentType.StringSelect, filter: msg => msg.member?.user.id === interaction.member?.user.id, time: 30000, max: 1})
+			await interaction.reply({content: 'Please select a build:', components: [menu]}).then(async () => {
+				const collector = (await interaction.fetchReply()).createMessageComponentCollector({componentType: ComponentType.StringSelect, filter: msg => msg.member?.user.id === interaction.member?.user.id, time: 30000, max: 1})
 				collector?.on('collect', async i => {
 					defenseRole = i.values[0]
 					await interaction.editReply({content: null, components: [], files: [await generateBuildImage()]})
