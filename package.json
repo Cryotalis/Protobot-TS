@@ -26,9 +26,9 @@
     "@google-cloud/translate": "^8.5.0",
     "axios": "^1.7.7",
     "canvas": "^2.11.2",
-    "discord.js": "^14.16.1",
+    "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
-    "google-auth-library": "^9.14.1",
+    "google-auth-library": "^9.14.2",
     "google-spreadsheet": "^4.1.4",
     "html-entities": "^2.5.2",
     "node-cron": "^3.0.3",
@@ -36,12 +36,12 @@
     "rss-parser": "^3.13.0",
     "string-similarity": "^4.0.4",
     "unescape": "^1.0.1",
-    "uuid": "^10.0.0"
+    "uuid": "^11.0.2"
   },
   "devDependencies": {
-    "@types/node": "^22.5.4",
+    "@types/node": "^22.8.7",
     "@types/node-cron": "^3.0.11",
     "@types/string-similarity": "^4.0.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.6.3"
   }
 }
