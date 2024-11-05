@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { prices, mods } from '../index'
-import { findBestCIMatch } from '../library'
+import { prices, mods } from '../index.js'
+import { findBestCIMatch } from '../library.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()

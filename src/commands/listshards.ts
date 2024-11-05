@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { shards } from '../index'
-import { capitalize } from '../library'
+import { shards } from '../index.js'
+import { capitalize } from '../library.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()

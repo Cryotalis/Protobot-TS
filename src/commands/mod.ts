@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ComponentType, ButtonStyle, SlashCommandBuilder } from 'discord.js'
-import { shards, mods, client } from '../index'
-import { findBestCIMatch, heroEmotes } from '../library'
+import { shards, mods, client } from '../index.js'
+import { findBestCIMatch, heroEmotes } from '../library.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -42,7 +42,7 @@ module.exports = {
 			const collector = (await interaction.fetchReply()).createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.user.id === interaction.user.id, time: 30000})
 			collector?.on('collect', async () => {
 				await interaction.editReply({content: '```/shard name: ' + shardBestMatch.target + '```', embeds: [], components: []})
-				const command = require('../messageCommands/shard')
+				const command = require('../messageCommands/shard.js')
 				command.run(client, msg, '/', [shardBestMatch.target]) 
 			})
 		})

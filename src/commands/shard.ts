@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, EmbedBuilder, ComponentType, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from 'discord.js'
-import { shards, mods, client } from '../index'
-import { findBestCIMatch, heroEmotes } from '../library'
+import { shards, mods, client } from '../index.js'
+import { findBestCIMatch, heroEmotes } from '../library.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -40,7 +40,7 @@ module.exports = {
             const collector = (await interaction.fetchReply()).createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.user.id === interaction.member?.user.id, time: 30000})
             collector?.on('collect', async () => {
                 await interaction.editReply({content: '```/mod name: ' + modBestMatch.target + '```', embeds: [], components: [], allowedMentions: {repliedUser: false}})
-                const command = require('../messageCommands/mod')
+                const command = require('../messageCommands/mod.js')
                 command.run(client, msg, '/', [modBestMatch.target]) 
             })
         })

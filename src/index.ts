@@ -2,11 +2,11 @@ import { ActionRowBuilder, ChannelType, Client, Collection, EmbedBuilder, ForumC
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { schedule } from 'node-cron'
 import { inspect } from 'util'
-import parse from 'node-html-parser'
+import { parse } from 'node-html-parser'
 import fs from 'node:fs'
 import Parser from 'rss-parser'
 import axios from 'axios'
-import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library'
+import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library.js'
 import { registerFont } from 'canvas'
 import { JWT } from 'google-auth-library'
 

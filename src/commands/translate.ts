@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { Translate } from '@google-cloud/translate/build/src/v2'
-import { findBestCIMatch, languageCodes } from '../library'
+import { findBestCIMatch, languageCodes } from '../library.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { channelConfig, privateDB, twitchChannels } from '..'
-import { getTwitchUserInfo, userInfo } from '../library'
+import { channelConfig, privateDB, twitchChannels } from '../index.js'
+import { getTwitchUserInfo, userInfo } from '../library.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()

@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { images } from '../index'
+import { images } from '../index.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()

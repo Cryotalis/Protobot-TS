@@ -1,8 +1,8 @@
 import { Client, Message, EmbedBuilder } from 'discord.js'
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { findBestMatch } from 'string-similarity'
-import { heroEmotes } from '../library'
-import { mods } from '../index'
+import { heroEmotes } from '../library.js'
+import { mods } from '../index.js'
 
 exports.run = async (client: Client, message: Message, prefix: string, args: string[]) => {
     const modNames = mods.map(mod => mod.get('name'))

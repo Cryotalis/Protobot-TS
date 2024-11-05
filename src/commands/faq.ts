@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { faq } from '../index'
+import { faq } from '../index.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()

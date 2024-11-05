@@ -1,5 +1,5 @@
 import { Message, MessageContextMenuCommandInteraction, ContextMenuCommandBuilder } from 'discord.js'
-import { councilMemberIDs } from '..'
+import { councilMemberIDs } from '../index.js'
 
 module.exports = {
 	data: new ContextMenuCommandBuilder()

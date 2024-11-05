@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, SlashCommandBuilder, ComponentType, StringSelectMenuBuilder, AttachmentBuilder } from 'discord.js'
 import { createCanvas, loadImage } from 'canvas'
-import { defenseBuildData, defenseImages, shards } from '../index'
-import { wrapText, drawCentered, findBestCIMatch, CanvasTextInfo } from '../library'
+import { defenseBuildData, defenseImages, shards } from '../index.js'
+import { wrapText, drawCentered, findBestCIMatch, CanvasTextInfo } from '../library.js'
 
 module.exports = {
 	data: new SlashCommandBuilder()
