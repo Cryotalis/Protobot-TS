@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, Interaction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('minasc')
 		.setDescription('Calculate your minimum ascension and talent caps')

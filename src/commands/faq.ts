@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { faq } from '../index.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('faq')
 		.setDescription('Fetch an answer to a frequently asked question')

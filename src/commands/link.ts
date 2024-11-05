@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from '
 import { links } from '../index.js'
 import { findBestCIMatch } from '../library.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('link')
 		.setDescription('Fetch a link for a commonly referenced resource')

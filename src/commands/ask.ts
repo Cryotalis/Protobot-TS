@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { capFirstLetter } from '../library.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('ask')
 		.setDescription('Ask Protobot a yes or no question')

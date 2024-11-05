@@ -1,8 +1,8 @@
 import { MessageContextMenuCommandInteraction, EmbedBuilder, ContextMenuCommandBuilder } from 'discord.js'
-import { Translate } from '@google-cloud/translate/build/src/v2'
+import { Translate } from '@google-cloud/translate/build/src/v2/index.js'
 import { languageCodes } from '../library.js'
 
-module.exports = {
+export const command = {
 	data: new ContextMenuCommandBuilder()
 		.setName('translate text')
 		.setType(3)

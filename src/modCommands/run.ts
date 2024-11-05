@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { connectToDB, loadDefenseBuilds, registerCommands, councilMemberIDs } from '../index.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('run')
 		.setDescription('Run administrator level Protobot commands (reserved for Council Members only)')

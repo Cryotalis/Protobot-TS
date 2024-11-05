@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('drunk')
 		.setDescription('Convfrt text joto erunk text')

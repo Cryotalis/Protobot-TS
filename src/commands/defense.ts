@@ -3,7 +3,7 @@ import { createCanvas, loadImage } from 'canvas'
 import { defenseBuildData, defenseImages, shards } from '../index.js'
 import { wrapText, drawCentered, findBestCIMatch, CanvasTextInfo } from '../library.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('defense')
 		.setDescription('Fetch a build from the DD2 Defense Build Guides spreadsheet')

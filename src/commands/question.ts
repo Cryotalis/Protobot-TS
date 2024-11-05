@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { decode } from 'html-entities'
 import axios from 'axios'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('question')
 		.setDescription('Generate a random conversation starter question')

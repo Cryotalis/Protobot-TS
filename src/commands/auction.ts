@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, ModalActionRowComponent, TextInputComponent, SlashCommandBuilder } from 'discord.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('auction')
 		.setDescription('Start an auction')

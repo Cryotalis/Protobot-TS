@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import { findLastWord, dateToString, dateStringToUnix, findTimeZone } from '../library.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('time')
 		.setDescription('Display the current time in Gainesville, Florida')

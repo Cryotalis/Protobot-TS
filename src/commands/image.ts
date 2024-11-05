@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { images } from '../index.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('image')
 		.setDescription('Fetch a commonly referenced image')

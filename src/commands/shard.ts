@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, ActionRowBuilder, EmbedBuilder, ComponentT
 import { shards, mods, client } from '../index.js'
 import { findBestCIMatch, heroEmotes } from '../library.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('shard')
 		.setDescription('Fetch information about a shard in DD2')

@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel } from 'discord.js'
 import { client } from '../index.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('say')
 		.setDescription('Send a message to a channel')

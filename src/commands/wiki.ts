@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from '
 import axios from 'axios'
 import { parse } from 'node-html-parser'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('wiki')
 		.setDescription('Search the wiki')

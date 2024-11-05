@@ -1,7 +1,7 @@
 import { Message, MessageContextMenuCommandInteraction, ContextMenuCommandBuilder } from 'discord.js'
 import { councilMemberIDs } from '../index.js'
 
-module.exports = {
+export const command = {
 	data: new ContextMenuCommandBuilder()
 		.setName('delete')
 		.setType(3)

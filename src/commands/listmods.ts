@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from '
 import { mods } from '../index.js'
 import { capitalize } from '../library.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('listmods')
 		.setDescription('List all mods equippable on a given slot for a given hero from a given difficulty')

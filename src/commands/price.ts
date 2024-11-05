@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from '
 import { prices, mods } from '../index.js'
 import { findBestCIMatch } from '../library.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('price')
 		.setDescription('Find recommended prices for an item in DD2')

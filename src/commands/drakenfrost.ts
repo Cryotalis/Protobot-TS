@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('drakenfrost')
 		.setDescription('Show the weapons and mods that are currently in rotation in Drakenfrost Keep')

@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuil
 import { compareTwoStrings } from 'string-similarity'
 import axios from 'axios'
 
-module.exports = {
+export const command = {
 	data: new SlashCommandBuilder()
 		.setName('player')
 		.setDescription('Search for a player on the leaderboard')
