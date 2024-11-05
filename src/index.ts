@@ -12,8 +12,8 @@ import { JWT } from 'google-auth-library'
 
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], rest: {timeout: 60000}})
 
-registerFont(require('@canvas-fonts/arial'), {family: 'Arial'})
-registerFont(require('@canvas-fonts/arial-bold'), {family: 'Arial Bold'})
+registerFont('assets/Arial.ttf', {family: 'Arial'})
+registerFont('assets/Arial Bold.ttf', {family: 'Arial Bold'})
 
 const privateCommandFiles = ['run.js', 'say.js']
 const gameCommandNames = ['defense', 'drakenfrost', 'faq', 'image', 'link', 'listmods', 'listshards', 'minasc', 'mod', 'price', 'rate', 'shard', 'wiki']
