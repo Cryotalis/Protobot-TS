@@ -2,6 +2,7 @@
   "name": "protobot-ts",
   "version": "1.0.0",
   "description": "General Purpose DD2 Discord bot written in Typescript with Discord.js.",
+  "type": "module",
   "main": "./prod/index.js",
   "scripts": {
     "build": "tsc",
