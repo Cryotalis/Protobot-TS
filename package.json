@@ -24,7 +24,7 @@
   "dependencies": {
     "@google-cloud/translate": "^8.5.0",
     "axios": "^1.7.7",
-    "canvas": "^2.11.2",
+    "canvas": "^3.0.0-rc2",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
     "google-auth-library": "^9.14.2",
