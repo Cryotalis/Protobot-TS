@@ -3,7 +3,7 @@ import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { schedule } from 'node-cron'
 import { inspect } from 'util'
 import { parse } from 'node-html-parser'
-import fs from 'node:fs'
+import { readdirSync } from 'node:fs'
 import Parser from 'rss-parser'
 import axios from 'axios'
 import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library.js'
@@ -15,50 +15,28 @@ export const client: Client<boolean> & {commands?: Collection<unknown, unknown>}
 registerFont('assets/Arial.ttf', {family: 'Arial'})
 registerFont('assets/Arial Bold.ttf', {family: 'Arial Bold'})
 
-const privateCommandFiles = ['run.js', 'say.js']
-const gameCommandNames = ['defense', 'drakenfrost', 'faq', 'image', 'link', 'listmods', 'listshards', 'minasc', 'mod', 'price', 'rate', 'shard', 'wiki']
-
-export const regCommands = fs.readdirSync('./prod/commands').filter(file => file.endsWith('.js'))
-export const modCommands = fs.readdirSync('./prod/modCommands').filter(file => file.endsWith('.js'))
-const commandFiles = regCommands.concat(modCommands)
+export const privateCommandFiles = ['run.js', 'say.js']
+export const regCommands = readdirSync('./prod/commands').filter(file => file.endsWith('.js'))
+export const modCommands = readdirSync('./prod/modCommands').filter(file => file.endsWith('.js'))
+export const commandFiles = regCommands.concat(modCommands)
 
 export async function registerCommands() {
 	const commands = []
 	const privateCommands = [] // Administrator level commands only usable by privileged users
-	const commandInfo = [] // Contains name, type, and description for each command, for use with the Database and website
 	client.commands = new Collection()
 
 	for (const file of commandFiles) {
-		const command = regCommands.includes(file) ? require(`./commands/${file}`) : require(`./modCommands/${file}`)
-		if (privateCommandFiles.includes(file)) privateCommands.push(command.data.toJSON())
-		else {
+		const { command } = regCommands.includes(file) 
+			? await import(`./commands/${file}`) 
+			: await import(`./modCommands/${file}`)
+
+		if (privateCommandFiles.includes(file)) 
+			privateCommands.push(command.data.toJSON())
+		else 
 			commands.push(command.data.toJSON())
-			commandInfo.push([
-				command.data.name, 
-				command.data.description, 
-				gameCommandNames.includes(command.data.name) 
-					? 'game' 
-					: modCommands.includes(`${command.data.name}.js`) 
-						? 'moderator' 
-						: 'regular'
-			])
-		}
+
 		client.commands.set(command.data.name, command)
 	}
-
-	for (const command of commandInfo) { // Custom command descriptions for context commands, for use in the Database and the website
-		if (/delete/.test(command[0])) {
-			command[1] = 'Deletes Protobot messages. Reserved for Protobot Council members only'
-			command[2] += ' context'
-		}
-		if (/translate text/.test(command[0])) {
-			command[1] = 'Translates text to your own language'
-			command[2] += ' context'
-		}
-	}
-
-	await publicDB.sheetsByTitle['Commands'].clearRows()
-	await publicDB.sheetsByTitle['Commands'].addRows(commandInfo)
 
 	const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN!)
 	rest.put(Routes.applicationCommands('521180443958181889'), { body: commands })
