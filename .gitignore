@@ -1,11 +1,7 @@
 node_modules
 prod
 .env
-gsheets_client_secret.json
-test.js
-test.ts
-test.json
-settings.ts
+*test*
 
 # For use with Fly.io
 .dockerignore
