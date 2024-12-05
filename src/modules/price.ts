@@ -5,13 +5,16 @@ import { priceData, rarityName } from "../data/database.js";
 function parsePrice(price: string) {
     price = price.replace(/💡|💬/, '').trim()
     const suffix = price.match(/\+/)?.[0] ?? ''
-
-    if (/\d/.test(price)) {
-        const multiplier = { k: 1000, m: 1000000, b: 1000000000 }[price.match(/k|m|b/i)![0]]!
-        return [...price.match(/[\d\.]+/g)!.map(p => parseFloat(p) * multiplier), suffix]
-    } else {
-        return [price, suffix]
-    }
+    
+    if (!/\d/.test(price)) return [price, suffix]
+    return [
+        ...price.split('-').map(_price => {
+            const priceNum = parseFloat(_price.match(/[\d\.]+/)![0])
+            const multiplier = { k: 1000, m: 1000000, b: 1000000000 }[_price.match(/k|m|b/i)![0]]!
+            return priceNum * multiplier
+        }),
+        suffix
+    ]
 }
 
 function stringPrice(priceArr: (string | number)[]) {
