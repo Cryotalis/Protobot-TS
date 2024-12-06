@@ -6,9 +6,8 @@
   "main": "./prod/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node -r ./prod/index.js",
-    "postinstall": "npm run build",
-    "startup": "tsc && node -r dotenv/config ./prod/index.js"
+    "start": "tsc && node -r dotenv/config ./prod/index.js",
+    "postinstall": "npm run build"
   },
   "repository": {
     "type": "git",
