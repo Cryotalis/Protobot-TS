@@ -10,7 +10,8 @@ function parsePrice(price: string) {
     return [
         ...price.split('-').map(_price => {
             const priceNum = parseFloat(_price.match(/[\d\.]+/)![0])
-            const multiplier = { k: 1000, m: 1000000, b: 1000000000 }[_price.match(/k|m|b/i)![0]]!
+            const abbreviation = _price.match(/k|m|b/i)?.[0] ?? price.match(/k|m|b/i)![0]
+            const multiplier = { k: 1000, m: 1000000, b: 1000000000 }[abbreviation]!
             return priceNum * multiplier
         }),
         suffix
