@@ -8,14 +8,14 @@ export const command = {
 		.setDescription('List all mods equippable on a given slot for a given hero from a given difficulty')
 		.addStringOption(option => option.setName('difficulty')
 			.setDescription('The difficulty to filter the list by')
-			.addChoices(...['Campaign', 'Chaos 1', 'Chaos 2', 'Chaos 3', 'Chaos 4', 'Chaos 5', 'Chaos 6', 'Chaos 7', 'Chaos 8', 'Chaos 9', 'Chaos 10'].map(e => ({name: e, value: e}))))
+			.addChoices(...['Campaign', 'Chaos 1', 'Chaos 2', 'Chaos 3', 'Chaos 4', 'Chaos 5', 'Chaos 6', 'Chaos 7', 'Chaos 8', 'Chaos 9', 'Chaos 10', 'Survival'].map(e => ({name: e, value: e}))))
 		.addStringOption(option => option.setName('hero')
 			.setDescription('The hero to filter the list by')
 			.addChoices(...[
 				'All', 			'Monk', 		'Apprentice', 	'Huntress', 	'Squire', 
 				'Ev2', 			'Lavamancer', 	'Abyss Lord', 	'Adept', 		'Gunwitch', 
 				'Initiate', 	'Dryad', 		'Barbarian', 	'Mystic', 		'Mercenary', 
-				'Countess', 	'Engineer', 	'Hunter',		'Aquarion'
+				'Countess', 	'Engineer', 	'Hunter',		'Aquarion',		'Frostweaver'
 			].map(e => ({name: e, value: e}))))
 		.addStringOption(option => option.setName('slot')
 			.setDescription('The slot to filter the list by')

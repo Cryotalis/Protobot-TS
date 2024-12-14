@@ -21,7 +21,8 @@ export const heroEmotes: {[char: string]: string} = {
     'Countess': '<:Countess:981719805784629308>',
     'Engineer': '<:Engineer:1090841647383859230>',
     'Hunter': '<:Hunter:1167149310119510046>',
-    'Aquarion': '<:Aquarion:1223299224268181555>'
+    'Aquarion': '<:Aquarion:1223299224268181555>',
+    'Frostweaver': '<:Frostweaver:1317314894454063176>'
 }
 
 export const timeZoneOffsets = [
