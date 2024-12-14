@@ -42,12 +42,12 @@ export const command = {
 
 		// Possible Filters
 		if (diff){
-			dropFilter = diff.match(/\b(?:Campaign|Chaos \d+)\b/ig)!
+			dropFilter = diff.match(/\b(?:Campaign|Survival|Chaos \d+)\b/ig)!
 			output = output.filter(mod => dropFilter?.some(drop => (capitalize(drop) === mod.get('drop')) || (decodeDiff(drop) >= decodeDiff(mod.get('drop').split('-')[0]) && decodeDiff(drop) <= decodeDiff(mod.get('drop').split('-')[1]))))
 		}
 
 		if (hero){
-			heroFilter = hero.match(/\b(?:All|Squire|Apprentice|Huntress|Monk|Abyss Lord|EV2|Gunwitch|Lavamancer|Mystic|Dryad|Initiate|Adept|Barbarian|Mercenary|Countess|Engineer|Hunter)\b/ig)!
+			heroFilter = hero.match(/\b(?:All|Squire|Apprentice|Huntress|Monk|Abyss Lord|EV2|Gunwitch|Lavamancer|Mystic|Dryad|Initiate|Adept|Barbarian|Mercenary|Countess|Engineer|Hunter|Aquarion|Frostweaver)\b/ig)!
 			output = output.filter(mod => heroFilter?.some(hero => mod.get('hero')?.includes(capitalize(hero))))
 		}
 
