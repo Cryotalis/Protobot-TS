@@ -21,14 +21,14 @@
   },
   "homepage": "https://github.com/Cryotalis/Protobot-TS#readme",
   "dependencies": {
-    "@google-cloud/translate": "^8.5.1",
-    "axios": "^1.8.1",
+    "@google-cloud/translate": "^9.0.1",
+    "axios": "^1.8.4",
     "canvas": "^3.1.0",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
     "google-auth-library": "^9.15.1",
     "google-spreadsheet": "^4.1.4",
-    "html-entities": "^2.5.2",
+    "html-entities": "^2.6.0",
     "node-cron": "^3.0.3",
     "node-html-parser": "^7.0.1",
     "rss-parser": "^3.13.0",
@@ -37,9 +37,9 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/node": "^22.13.9",
+    "@types/node": "^22.14.0",
     "@types/node-cron": "^3.0.11",
     "@types/string-similarity": "^4.0.2",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   }
 }
