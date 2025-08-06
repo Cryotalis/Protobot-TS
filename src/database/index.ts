@@ -20,8 +20,10 @@ const publicDB = new GoogleSpreadsheet('1yOjZhkn9z8dJ8HMD0YSUl7Ijgd9o1KJ62Ecf4Sg
 const privateDB = new GoogleSpreadsheet(process.env.PRIVATE_DB_ID!, serviceAccountAuth)
 
 export async function connectDatabase() {
-    loadDatabase(publicDB, publicDatabaseConfig)
-    loadDatabase(privateDB, privateDatabaseConfig)
+    await Promise.all([
+        loadDatabase(publicDB, publicDatabaseConfig),
+        loadDatabase(privateDB, privateDatabaseConfig)
+    ])
 }
 
 type DatabaseConfig = { [key: string]: { name: string, type: any } }
