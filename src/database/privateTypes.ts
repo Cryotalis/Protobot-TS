@@ -29,9 +29,9 @@ export const privateDatabaseConfig = {
     blacklist: { name: 'Blacklist', type: {} as BlacklistInfo },
 } as const
 
-type dbConfigKey = keyof typeof privateDatabaseConfig
+type dbConfigKeys = keyof typeof privateDatabaseConfig
 export type PrivateDatabaseSchema = {
-    [K in dbConfigKey as `${K}Table`]: GoogleSpreadsheetWorksheet
+    [K in dbConfigKeys as `${K}Table`]: GoogleSpreadsheetWorksheet
 } & {
-    [K in dbConfigKey]: Array<GoogleSpreadsheetRow<typeof privateDatabaseConfig[K]['type']>>
+    [K in dbConfigKeys]: Array<GoogleSpreadsheetRow<typeof privateDatabaseConfig[K]['type']>>
 }

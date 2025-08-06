@@ -35,9 +35,9 @@ export const publicDatabaseConfig = {
     contributors: { name: 'Contributors', type: {} as ContributorInfo },
 } as const
 
-type dbConfigKey = keyof typeof publicDatabaseConfig
+type dbConfigKeys = keyof typeof publicDatabaseConfig
 export type PublicDatabaseSchema = {
-    [K in dbConfigKey as `${K}Table`]: GoogleSpreadsheetWorksheet
+    [K in dbConfigKeys as `${K}Table`]: GoogleSpreadsheetWorksheet
 } & {
-    [K in dbConfigKey]: Array<GoogleSpreadsheetRow<typeof publicDatabaseConfig[K]['type']>>
+    [K in dbConfigKeys]: Array<GoogleSpreadsheetRow<typeof publicDatabaseConfig[K]['type']>>
 }
