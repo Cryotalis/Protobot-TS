@@ -1,13 +1,11 @@
 # Protobot-TS
 General Purpose Discord bot for Dungeon Defenders 2. Written in TypeScript with Discord.js.
 
-- Any information you may be looking for can most likely be found on Protobot's Website.
-- I currently use Fly.io to host Protobot. 
-- If you wish to contact me, please visit Protobot's support server. I am very open to sharing information about how I make my bots and how I host them.
+- Protobot is currently hosted on a laptop running Ubuntu Server at home (West Coast US).
+- If you wish to contact me, please visit Protobot's support server. I'm always open to sharing my knowledge on Discord bot development.
 
 
 # Links
-* [Invite Protobot to your Discord Server](https://discord.com/oauth2/authorize?client_id=521180443958181889&permissions=2147798080&scope=applications.commands%20bot)
-* [Protobot's Website](https://cryotalis.github.io/Protobot/commands.html)
+* [Protobot's Website](https://cryotalis.github.io/Protobot)
 * [Protobot's Public Database](https://docs.google.com/spreadsheets/d/1yOjZhkn9z8dJ8HMD0YSUl7Ijgd9o1KJ62Ecf4SgyTdU)
-* [Protobot's Support Discord Server](https://discordapp.com/invite/YtwzVSp)
+* [Protobot's Support Discord Server](https://discord.gg/YtwzVSp)
