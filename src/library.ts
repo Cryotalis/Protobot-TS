@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { CanvasRenderingContext2D } from 'canvas'
+import { CanvasGradient, CanvasPattern, CanvasRenderingContext2D, CanvasTextAlign } from 'canvas'
 import { findBestMatch } from 'string-similarity'
 
 export const heroEmotes: {[char: string]: string} = {
