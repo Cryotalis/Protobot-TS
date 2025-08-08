@@ -1,4 +1,4 @@
-import { Message, MessageContextMenuCommandInteraction, ContextMenuCommandBuilder } from 'discord.js'
+import { MessageContextMenuCommandInteraction, ContextMenuCommandBuilder, MessageFlags } from 'discord.js'
 import { database } from '../database/index.js'
 import { botID } from '../index.js'
 
@@ -8,9 +8,20 @@ export const command = {
 		.setType(3)
 	,
 	async execute(interaction: MessageContextMenuCommandInteraction) {
-		if (!database.contributors.find(u => u.get('id') === interaction.user.id)) return interaction.reply({content: 'Only Protobot Council members may use this command.', ephemeral: true})
-		if (interaction.targetMessage.author.id !== botID) return interaction.reply({content: 'You do not have permission to delete that message!', ephemeral: true})
-		await (interaction.targetMessage as Message).delete()
-		interaction.reply({content: 'Message deleted.', ephemeral: true})
+		const isBotMessage = interaction.targetMessage.author.id === botID
+		const isContributor = database.contributors.find(u => u.get('id') === interaction.user.id)
+		/** Whether the target message is the result of a command issued by the user. */
+		const isOGCommandUser = interaction.user === interaction.targetMessage.interactionMetadata?.user
+
+		let msgContent: string
+		if (isBotMessage && (isContributor || isOGCommandUser)) {
+			msgContent = 'Message deleted.'
+			await interaction.targetMessage.delete()
+		} else {
+			msgContent = 'You do not have permission to delete that message!'
+		}
+
+		interaction.reply({content: msgContent, flags: MessageFlags.Ephemeral})
+		
 	}
 }
