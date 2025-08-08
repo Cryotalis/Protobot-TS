@@ -8,7 +8,6 @@ import { parse } from 'node-html-parser'
 
 // DD2 Wiki Changes
 schedule('* * * * *', async () => {
-    console.log('wiki job running')
 	interface wikiChange {title: string, user: string, comment: string, timestamp: string, type: string, logaction: string, logtype: string, rcid: number, revid: number, logparams: {target_title: string, img_sha1: string}}
 	function getAction(change: wikiChange){
 		let action = ''

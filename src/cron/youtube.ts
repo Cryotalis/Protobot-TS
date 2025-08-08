@@ -7,7 +7,6 @@ import { client } from "../index.js"
 
 // Youtube Post Notifications
 schedule('* * * * *', () => {
-    console.log('youtube job running')
 	if (!database.youtubeChannels) return
 	database.youtubeChannels.forEach(async channel => {
 		const discordChannel = client.channels.cache.get(channel.get('discordChannelID')) as TextChannel

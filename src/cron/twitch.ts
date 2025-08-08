@@ -7,7 +7,6 @@ import { getTwitchUserInfo, streamInfo, userInfo } from "../library.js"
 // Twitch Live Notifications
 export interface channelConfig {id: string, message: string | null, categories: string[]}
 schedule('* * * * *', () => {
-    console.log('twitch job running')
     if (!database.twitchChannels) return
     database.twitchChannels.forEach(async channel => {
         const configs: channelConfig[] = JSON.parse(channel.get('configs') || '[]')
