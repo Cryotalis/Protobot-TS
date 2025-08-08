@@ -9,9 +9,9 @@ export const command = {
 		const helpEmbed = new EmbedBuilder()
 			.setColor('Blue')
 			.setTitle('Protobot Command List')
-			.setDescription('The complete list of commands for Protobot can be found [here](https://cryotalis.github.io/Protobot/commands.html)')
+			.setDescription('The complete list of commands for Protobot can be found [here](https://cryotalis.github.io/Protobot)')
 			.setThumbnail('https://i.imgur.com/GkZIG4R.png')
-			.addFields({name: '\u200b', value: 'If you want to talk to my creator about anything, please join the [support server](https://discord.gg/YtwzVSp).'})
+			.addFields({name: '\u200b', value: 'If you\'d like to talk to my creator about anything, please join the [support server](https://discord.gg/YtwzVSp).'})
     	return interaction.reply({embeds: [helpEmbed]})
 	}
 }
