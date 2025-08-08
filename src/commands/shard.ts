@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, EmbedBuilder, ComponentType, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from 'discord.js'
-import { shards, mods, client } from '../index.js'
+import { client } from '../index.js'
 import { findBestCIMatch, heroEmotes } from '../library.js'
+import { database } from '../database/index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -10,11 +11,11 @@ export const command = {
     ,
 	async execute(interaction: ChatInputCommandInteraction) {
         const userInput = interaction.options.getString('name')!
-		const shardNames = shards.map(shard => shard.get('name'))
-        const modNames = mods.map(mod => mod.get('name'))
+		const shardNames = database.shards.map(shard => shard.get('name'))
+        const modNames = database.mods.map(mod => mod.get('name'))
         const shardBestMatch = findBestCIMatch(userInput, shardNames).bestMatch
         const modBestMatch = findBestCIMatch(userInput, modNames).bestMatch
-        const shard = shards.find(shard => shard.get('name') === shardBestMatch.target)!
+        const shard = database.shards.find(shard => shard.get('name') === shardBestMatch.target)!
 
         const shardEmbed = new EmbedBuilder()
             .setColor('Blue')
@@ -35,6 +36,7 @@ export const command = {
                     .setStyle(ButtonStyle.Primary)
             )
         
+        // TODO: This is deprecated
         await interaction.reply({embeds: [shardEmbed], components: modBestMatch.rating > shardBestMatch.rating ? [suggestionButton] : [], fetchReply: true}).then(async msg => {
             if (modBestMatch.rating <= shardBestMatch.rating) return
             const collector = (await interaction.fetchReply()).createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.user.id === interaction.member?.user.id, time: 30000})

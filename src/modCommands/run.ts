@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { connectToDB, loadDefenseBuilds, registerCommands, councilMemberIDs } from '../index.js'
+import { registerCommands } from '../index.js'
+import { connectDatabase, database, loadDefenseBuilds } from '../database/index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -27,46 +28,38 @@ export const command = {
 		)
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
-		if (!councilMemberIDs?.includes(interaction.user.id)) {
+		if (!database.contributors.find(u => u.get('id') === interaction.user.id)) {
 			return interaction.reply('This command is reserved for Protobot Council Members only.')
 		}
 
 		const command = interaction.options.getSubcommand()
 
 		if (command === 'startup'){
+			interaction.reply('Connecting to Database and Loading Defense Builds <a:loading:763160594974244874>'),
 			await Promise.all([
-				interaction.reply('Connecting to Database and Loading Defense Builds <a:loading:763160594974244874>'),
 				loadDefenseBuilds(),
-				connectToDB()
+				connectDatabase()
 			])
-			await Promise.all([
-				interaction.editReply('Registering Commands <a:loading:763160594974244874>'),
-				registerCommands()
-			])
+			interaction.editReply('Registering Commands <a:loading:763160594974244874>'),
+			await registerCommands()
 			interaction.editReply('Startup Completed.')
 		}
 
 		if (command === 'connect_database'){
-			await Promise.all([
-				interaction.reply('Connecting to Database <a:loading:763160594974244874>'),
-				connectToDB()
-			])
+			interaction.reply('Connecting to Database <a:loading:763160594974244874>'),
+			await connectDatabase()
 			interaction.editReply('Database Connection Successful.')
 		}
 
 		if (command === 'load_defenses'){
-			await Promise.all([
-				interaction.reply('Loading Defense Builds <a:loading:763160594974244874>'),
-				loadDefenseBuilds()
-			])
+			interaction.reply('Loading Defense Builds <a:loading:763160594974244874>'),
+			await loadDefenseBuilds()
 			interaction.editReply('Defense Builds Loaded.')
 		}
 
 		if (command === 'register_commands'){
-			await Promise.all([
-				interaction.reply('Registering Commands <a:loading:763160594974244874>'),
-				registerCommands()
-			])
+			interaction.reply('Registering Commands <a:loading:763160594974244874>'),
+			await registerCommands()
 			interaction.editReply('Commands Registered.')
 		}
 	}

@@ -1,8 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { prices, mods } from '../index.js'
 import { findBestCIMatch } from '../library.js'
-import { processItem } from '../modules/price.js'
-import { rarityName } from '../data/database.js'
+import { processItem } from '../commandHelpers/price.js'
+import { database, rarityName } from '../database/index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -36,14 +35,14 @@ export const command = {
 		const rarity = interaction.options.getString('rarity') as rarityName ?? undefined
 		const searchItem = interaction.options.getString('item')!
 		
-		let bestMatch = findBestCIMatch(searchItem, prices.map(i => i.get('name'))).bestMatch.target
+		let bestMatch = findBestCIMatch(searchItem, database.prices.map(i => i.get('name'))).bestMatch.target
 
 		// If no mod type was given, default to Servo if a Servo variant exists
-		if (!/Chip|Servo/i.test(searchItem) && mods.find(mod => mod.get('name') === bestMatch.replace('Chip', 'Servo'))) {
+		if (!/Chip|Servo/i.test(searchItem) && database.mods.find(mod => mod.get('name') === bestMatch.replace('Chip', 'Servo'))) {
 			bestMatch = bestMatch.replace('Chip', 'Servo')
 		}
 
-		const itemResult = prices.find(i => i.get('name') === bestMatch)!
+		const itemResult = database.prices.find(i => i.get('name') === bestMatch)!
 		const { name, pcPrice, psPrice, xboxPrice } = processItem(itemResult, amount, qualibean, rarity)
 
 		const priceEmbed = new EmbedBuilder()

@@ -1,13 +1,12 @@
 import { Client, Message, EmbedBuilder } from 'discord.js'
-import { GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { findBestMatch } from 'string-similarity'
 import { heroEmotes } from '../library.js'
-import { shards } from '../index.js'
+import { database } from '../database/index.js'
 
 exports.run = async (client: Client, message: Message, prefix: string, args: string[]) => {
-    const shardNames = shards.map(shard => shard.get('name'))
+    const shardNames = database.shards.map(shard => shard.get('name'))
     const shardBestMatch = findBestMatch(args.join(' '), shardNames).bestMatch
-    const shard: GoogleSpreadsheetRow = shards.find(shard => shard.get('name') === shardBestMatch.target)!
+    const shard = database.shards.find(shard => shard.get('name') === shardBestMatch.target)!
 
     const shardEmbed = new EmbedBuilder()
         .setColor('Blue')

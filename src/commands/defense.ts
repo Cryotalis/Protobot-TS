@@ -1,7 +1,8 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, SlashCommandBuilder, ComponentType, StringSelectMenuBuilder, AttachmentBuilder } from 'discord.js'
 import { createCanvas, loadImage } from 'canvas'
-import { defenseBuildData, defenseImages, shards } from '../index.js'
 import { wrapText, drawCentered, findBestCIMatch, CanvasTextInfo } from '../library.js'
+import { defenseBuildData, defenseImages } from '../database/defenseBuilds.js'
+import { database } from '../database/index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -12,6 +13,7 @@ export const command = {
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
 		async function generateBuildImage(){
+			const { shards } = database
 			let defense = defenseBuildData.find((defense: defenseObject) => defense.name === defenseName && defense.role === defenseRole)!
 			const canvas = createCanvas(326, 378)
 			const ctx = canvas.getContext('2d')

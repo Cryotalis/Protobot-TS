@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ComponentType, ButtonStyle, SlashCommandBuilder } from 'discord.js'
-import { shards, mods, client } from '../index.js'
+import { client } from '../index.js'
 import { findBestCIMatch, heroEmotes } from '../library.js'
+import { database } from '../database/index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -10,17 +11,17 @@ export const command = {
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
 		const userInput = interaction.options.getString('name')!
-		const shardNames = shards.map(shard => shard.get('name'))
-		const modNames = mods.map(mod => mod.get('name'))
+		const shardNames = database.shards.map(shard => shard.get('name'))
+		const modNames = database.mods.map(mod => mod.get('name'))
 		const shardBestMatch = findBestCIMatch(userInput, shardNames).bestMatch
 		const modBestMatch = findBestCIMatch(userInput, modNames).bestMatch
 		let target = modBestMatch.target
-		if (!/Chip|Servo/i.test(userInput) && mods.find(mod => mod.get('name') === target.replace('Chip', 'Servo'))) {target = target.replace('Chip', 'Servo')}
-		const mod = mods.find(mod => mod.get('name') === target)!
+		if (!/Chip|Servo/i.test(userInput) && database.mods.find(mod => mod.get('name') === target.replace('Chip', 'Servo'))) {target = target.replace('Chip', 'Servo')}
+		const mod = database.mods.find(mod => mod.get('name') === target)!
 
 		const modEmbed = new EmbedBuilder()
 			.setColor('Blue')
-			.setAuthor({name: mod.get('name'), iconURL: mod.get('dropURL')})
+			.setAuthor({name: mod.get('name')})
 			.setThumbnail(mod.get('image'))
 			.setDescription(mod.get('description'))
 			.addFields([
@@ -37,6 +38,7 @@ export const command = {
 					.setStyle(ButtonStyle.Primary)
 			)
 		
+		// TODO: This is deprecated
 		await interaction.reply({embeds: [modEmbed], components: shardBestMatch.rating > modBestMatch.rating ? [suggestionButton] : [], fetchReply: true}).then(async msg => {
 			if (shardBestMatch.rating <= modBestMatch.rating) return
 			const collector = (await interaction.fetchReply()).createMessageComponentCollector({componentType: ComponentType.Button, filter: msg => msg.user.id === interaction.user.id, time: 30000})

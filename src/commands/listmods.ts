@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { mods } from '../index.js'
 import { capitalize } from '../library.js'
+import { database } from '../database/index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -30,7 +30,7 @@ export const command = {
 		let dropFilter: RegExpMatchArray = ['']
 		let heroFilter: RegExpMatchArray = ['']
 		let typeFilter: RegExpMatchArray = ['']
-		let output = mods
+		let output = database.mods
 
 		if (!hero && !slot && !diff && !customFilter) return await interaction.reply('You must supply at least one parameter!')
 		

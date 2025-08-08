@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { links } from '../index.js'
 import { findBestCIMatch } from '../library.js'
+import { database } from '../database/index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -11,17 +11,17 @@ export const command = {
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
 		const userInput = interaction.options.getString('link')!
-		const targettedUser = interaction.options.getUser('target')!
-		const key = findBestCIMatch(userInput, links.map(link => link.get('name'))).bestMatch.target
-		const link = links.find(link => link.get('name') === key)!
+		const targettedUser = interaction.options.getUser('target') ?? undefined
+		const linkName = findBestCIMatch(userInput, database.links.map(link => link.get('name'))).bestMatch.target
+		const linkInfo = database.links.find(link => link.get('name') === linkName)!
 
 		const linkEmbed = new EmbedBuilder()
 			.setColor('Blue')
-			.setAuthor({name: link.get('author')})
-			.setTitle(link.get('name'))
-			.setURL(link.get('link'))
-			.setDescription(link.get('description'))
+			.setAuthor({name: linkInfo.get('author')})
+			.setTitle(linkInfo.get('name'))
+			.setURL(linkInfo.get('link'))
+			.setDescription(linkInfo.get('description'))
 
-		await interaction.reply({content: targettedUser ? `*Link for ${targettedUser}:*` : undefined, embeds: [linkEmbed]})
+		await interaction.reply({content: targettedUser && `*Link for ${targettedUser}:*`, embeds: [linkEmbed]})
 	}
 }

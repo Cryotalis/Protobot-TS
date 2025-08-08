@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { channelConfig, privateDB, twitchChannels } from '../index.js'
+// import { channelConfig, privateDB, twitchChannels } from '../index.js'
 import { getTwitchUserInfo, userInfo } from '../library.js'
 
 export const command = {
