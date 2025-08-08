@@ -9,8 +9,13 @@ import axios from 'axios'
 import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library.js'
 import { registerFont } from 'canvas'
 import { JWT } from 'google-auth-library'
+import { connectDatabase, database } from './database/index.js'
+import { loadDefenseBuilds } from './database/defenseBuilds.js'
 
+const devMode = true
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], rest: {timeout: 60000}})
+export const botID = devMode ? '631961435051917362' : '521180443958181889'
+const botToken = devMode ? process.env.DEV_TOKEN! : process.env.BOT_TOKEN!
 
 registerFont('assets/Arial.ttf', {family: 'Arial'})
 registerFont('assets/Arial Bold.ttf', {family: 'Arial Bold'})
@@ -38,126 +43,15 @@ export async function registerCommands() {
 		client.commands.set(command.data.name, command)
 	}
 
-	const rest = new REST({ version: '9' }).setToken(process.env.BOT_TOKEN!)
-	rest.put(Routes.applicationCommands('521180443958181889'), { body: commands })
+	const rest = new REST({ version: '9' }).setToken(botToken)
+	rest.put(Routes.applicationCommands(botID), { body: commands })
 		.then(() => console.log('Successfully registered application commands globally'))
 		.catch(console.error)
 
-	rest.put(Routes.applicationGuildCommands('521180443958181889', '379501550097399810'), { body: privateCommands })
+	rest.put(Routes.applicationGuildCommands(botID, '379501550097399810'), { body: privateCommands })
 }
 
-// Connecting to the Database
-export let publicDB: GoogleSpreadsheet
-export let privateDB: GoogleSpreadsheet
-
-export let defenseBuilds: GoogleSpreadsheet
-export let defenseImages: Array<GoogleSpreadsheetRow>
-
-export let auctions: Array<GoogleSpreadsheetRow>
-export let userLogs: Array<GoogleSpreadsheetRow>
-export let youtubeChannels: Array<GoogleSpreadsheetRow>
-export let twitchChannels: Array<GoogleSpreadsheetRow>
-export let variables: Array<GoogleSpreadsheetRow>
-export let blacklist: Array<GoogleSpreadsheetRow>
-export let blacklistedIDs: Array<string>
-
-export let shards: Array<GoogleSpreadsheetRow>
-export let mods: Array<GoogleSpreadsheetRow>
-export let prices: Array<GoogleSpreadsheetRow>
-export let images: Array<GoogleSpreadsheetRow>
-export let faq: Array<GoogleSpreadsheetRow>
-export let links: Array<GoogleSpreadsheetRow>
-export let contributors: Array<GoogleSpreadsheetRow>
-export let councilMemberIDs: Array<string>
-
-// Connecting to CG Bug Reporting Sheet
-export let bugReportDoc: GoogleSpreadsheet
-export let ddgrReports: Array<GoogleSpreadsheetRow>
-export let ddaReports: Array<GoogleSpreadsheetRow>
-export let dd2Reports: Array<GoogleSpreadsheetRow>
-
-const serviceAccountAuth = new JWT({
-	email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-	key: process.env.GOOGLE_PRIVATE_KEY,
-	scopes: ['https://www.googleapis.com/auth/spreadsheets']
-})
-export async function connectToDB () {
-    publicDB = new GoogleSpreadsheet('1yOjZhkn9z8dJ8HMD0YSUl7Ijgd9o1KJ62Ecf4SgyTdU', serviceAccountAuth)
-    privateDB = new GoogleSpreadsheet(process.env.PRIVATE_DB_ID!, serviceAccountAuth)
-	await Promise.all([publicDB.loadInfo(), privateDB.loadInfo()])
-
-	;[
-		userLogs,
-		youtubeChannels,
-		twitchChannels,
-		variables,
-		blacklist,
-		shards,
-		mods,
-		prices,
-		images,
-		faq,
-		links,
-		contributors,
-	] = await Promise.all([
-		privateDB.sheetsByTitle['User Logs'].getRows(),
-		privateDB.sheetsByTitle['Youtube Post Notifications'].getRows(),
-		privateDB.sheetsByTitle['Twitch Live Notifications'].getRows(),
-		privateDB.sheetsByTitle['Variables'].getRows(),
-		privateDB.sheetsByTitle['Blacklist'].getRows(),
-		publicDB.sheetsByTitle['Shards'].getRows(),
-		publicDB.sheetsByTitle['Mods'].getRows(),
-		publicDB.sheetsByTitle['Prices'].getRows(),
-		publicDB.sheetsByTitle['Images'].getRows(),
-		publicDB.sheetsByTitle['FAQ'].getRows(),
-		publicDB.sheetsByTitle['Links'].getRows(),
-		publicDB.sheetsByTitle['Contributors'].getRows(),
-	])
-	councilMemberIDs = contributors.map(contributor => contributor.get('id'))
-	blacklistedIDs = blacklist.map(user => user.get('id'))
-
-	console.log('Database connection successful')
-}
-connectToDB().then(() => registerCommands())
-
-export let defenseBuildData: defenseObject[] = []
-export interface defenseObject {name: string, role: string, tertiary: string, shards: string[], mods: {name: string, qualibean: string}[], relic: string}
-export async function loadDefenseBuilds(){
-	defenseBuilds = new GoogleSpreadsheet('1sjBA60Fr9ryVnw4FUIMU2AVXbKw395Tdz7j--EAUA1A', serviceAccountAuth)
-    await defenseBuilds.loadInfo()
-	defenseImages = await defenseBuilds.sheetsByTitle['Data'].getRows()
-
-	let buildData: defenseObject[] = []
-	for (let i = 2; i < defenseBuilds.sheetCount-2; i++){
-		let sheet = defenseBuilds.sheetsByIndex[i]
-		await sheet.loadCells()
-
-		for (let y = 2; y < sheet.rowCount; y += 20){
-			if (y >= sheet.rowCount) continue
-			for (let x = 1; x < sheet.columnCount; x += 5){
-				if (x >= sheet.columnCount || !sheet.getCell(y + 1, x + 2).value) continue
-				buildData.push({
-					name: sheet.getCell(y + 1, x + 2).value?.toString() ?? '',
-					role: sheet.getCell(y + 4, x + 2).value?.toString() ?? '',
-					tertiary: sheet.getCell(y + 5, x + 2).value?.toString() ?? '',
-					shards: [
-						sheet.getCell(y + 6, x + 2).value?.toString() ?? '',
-						sheet.getCell(y + 8, x + 2).value?.toString() ?? '',
-						sheet.getCell(y + 10, x + 2).value?.toString() ?? ''
-					],
-					mods: [
-						{name: sheet.getCell(y + 12, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 12, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
-						{name: sheet.getCell(y + 14, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 14, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
-						{name: sheet.getCell(y + 16, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 16, x + 1).formula?.match(/\d+/)?.toString() || "0"}
-					],
-					relic: sheet.getCell(y + 12, x).formula?.match(/(?<=").+(?=")/)?.toString() || ""
-				})
-			}
-		}	
-	}
-	defenseBuildData = buildData
-	console.log('Defense Build Data compiled')
-}
+connectDatabase().then(() => registerCommands())
 loadDefenseBuilds()
 
 export let logChannel: TextChannel
@@ -179,12 +73,12 @@ client.on('ready', async () => {
 // Slash Command Handler
 client.on('interactionCreate', interaction => {
     if ((!interaction.isCommand() && !interaction.isMessageContextMenuCommand())) return
-	if (blacklistedIDs?.includes(interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
+	if (database.blacklist.find(user => user.get('id') === interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
 
 	const isModCommand = modCommands.includes(`${interaction.commandName}.js`)
     const command: any = client.commands?.get(interaction.commandName)
 	if (!command) {interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true}); return}
-	if (isModCommand && !(interaction.memberPermissions?.has('ManageMessages') || councilMemberIDs?.includes(interaction.user.id))){
+	if (isModCommand && !(interaction.memberPermissions?.has('ManageMessages') || database.contributors.find(user => user.get('id') === interaction.user.id))){
 		interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true}); return
 	} 
 
@@ -202,37 +96,14 @@ client.on('interactionCreate', interaction => {
 	}
 })
 
-// Message Command Handler, for testing only
-// const prefix = 'dd!'
-// client.on('messageCreate', (message: Message) => {
-// 	if (message.author.id !== '251458435554607114' || message.author.bot || !message.content.startsWith(prefix)) return
-
-// 	const args = message.content.slice(prefix.length).trim().split(' ')
-// 	const command: string = args?.shift()?.toLowerCase()!
- 
-// 	try {
-// 		const commands = require(`./messageCommands/${command}.js`)
-// 		commands.run(client, message, prefix, args)
-// 	} catch (error) {
-// 		console.error(error)
-// 		errorChannel.send({
-// 			content: `🚫  **${message.author.tag}** ran the command \`${command}\` in **${message.guild?.name ?? 'Direct Messages'}** (${message.guildId ?? message.channelId})`,
-// 			files: [new MessageAttachment(Buffer.from(inspect(error, {depth: null}), 'utf-8'), 'error.ts')]
-// 		})
-// 		message.channel.send('There was an error while executing this command!')
-// 	} finally {
-// 		logChannel?.send(`:scroll:  **${message.author.tag}** ran the command \`${command}\` in **${message.guild?.name ?? 'Direct Messages'}** (${message.guildId ?? message.channelId})`)
-// 	}
-// })
-
 // Looking-For-Trade Chat Automod (Dungeon Defenders Server only)
 let AMLogChannel: TextChannel // The channel to send log messages to (Auto Mod Log Channel)
 client.on('ready', async () => {AMLogChannel = client.channels.cache.get('916495567037816853') as TextChannel})
-
+	
 const tradeRules = '1. Follow the trading format below.\n2. One trade per line, no more than 1 image per message.\n3. Do not discuss trades here. See market-discussion.\n4. If a trade has been completed, delete or edit the original post.\n5. Do not post advertisements more than once every 23 hours.\n\n[**H**] = **Have**\n[**W**] = **Want**\nYou must include one of the above in your listing!\n\nExample Trades:\n[H]  99 Pristine Motes   [W] 3m <:gold:460345588911833088>\n[W] 99 Shiny Motes   [H] 3m <:gold:460345588911833088>\n\nTrade Format(copy & paste):\n```[H] item-name  [W] :gold:\n[W] item-name  [H] :gold:```'
 client.on('messageCreate', async (message: Message) => {
 	const LFTAutomodChannels = ['460339922231099402', '460340670960500737', '460340942990475264'] // The channels that should be automodded
-	if (message.channel.type === ChannelType.DM || !LFTAutomodChannels.includes(message.channelId) || !AMLogChannel || message.author.bot || !userLogs) return
+	if (message.channel.type === ChannelType.DM || !LFTAutomodChannels.includes(message.channelId) || !AMLogChannel || message.author.bot || !database.userLogs) return
 
 	function createDelMsgEmbed(reason: string){
 		if (!message.content){message.content = 'No Content'}
@@ -257,7 +128,7 @@ client.on('messageCreate', async (message: Message) => {
 		message.author.send({content: `${violation} Please review the Looking-For-Trade channel rules here:`, embeds: dmEmbeds})
 	}
 	
-	const user: any = userLogs.find(user => user.get('authorID') === message.author.id) || {lastMsgID: '', authorID: '', time: new Date(message.createdTimestamp).toString(), warnings: 0}
+	const user: any = database.userLogs.find(user => user.get('authorID') === message.author.id) || {lastMsgID: '', authorID: '', time: new Date(message.createdTimestamp).toString(), warnings: 0}
 	if (user.authorID !== "" && new Date(message.createdTimestamp).getTime() - Date.parse(user.time) < 8.28e+7){ //If the user is logged and their last message was within 23 hours, send a warning
 		try{
 			message.delete()
@@ -279,17 +150,19 @@ client.on('messageCreate', async (message: Message) => {
 
 	user.lastMsgID = message.id
 	user.authorID = `'${message.author.id}`
-	if (!userLogs.find(user => user.get('authorID') === message.author.id)){
+	if (!database.userLogs.find(user => user.get('authorID') === message.author.id)){
 		user.authorTag = message.author.tag
-		await privateDB.sheetsByTitle['User Logs'].addRow(user)
-		userLogs = await privateDB.sheetsByTitle['User Logs'].getRows()
+		await database.userLogsTable.addRow(user)
+		// TODO: Is this actually necessary?
+		// If so, the row could just be added to the table via push to database.userLogs
+		database.userLogs = await database.userLogsTable.getRows()
 	} else {await user.save()}
 })
 
 // Youtube Post Notifications
 schedule('* * * * *', () => {
-	if (!youtubeChannels) return
-	youtubeChannels.forEach(async channel => {
+	if (!database.youtubeChannels) return
+	database.youtubeChannels.forEach(async channel => {
 		const discordChannel = client.channels.cache.get(channel.get('discordChannelID')) as TextChannel
 		const feed = await new Parser().parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channel.get('youtubeID')}`).catch(() => undefined) // Parse the RSS Feed for the channel, ignore any 404 errors if the rss feed is unavailable
 		if (!feed) return
@@ -316,8 +189,8 @@ schedule('* * * * *', () => {
 // Twitch Live Notifications
 export interface channelConfig {id: string, message: string | null, categories: string[]}
 schedule('* * * * *', () => {
-	if (!twitchChannels) return
-	twitchChannels.forEach(async channel => {
+	if (!database.twitchChannels) return
+	database.twitchChannels.forEach(async channel => {
 		const configs: channelConfig[] = JSON.parse(channel.get('configs') || '[]')
 		if (configs.length === 0) return
 		const [streamInfo, userInfo] = await Promise.all([
@@ -375,7 +248,7 @@ schedule('* * * * *', async () => {
 	const wikiChangesChannel = client.channels.cache.get('1072236073515745451') as TextChannel
 	const response = await axios.get('https://wiki.dungeondefenders2.com/api.php?action=query&list=recentchanges&rcprop=user|title|timestamp|comment|loginfo|ids&rclimit=5&format=json')
     const {data: {query: {recentchanges}}} = response
-	const recentChangeIDsInfo = variables.find(v => v.get('name') === 'recentChangeIDs')!
+	const recentChangeIDsInfo = database.variables.find(v => v.get('name') === 'recentChangeIDs')!
 	const recentChangeIDs = JSON.parse(recentChangeIDsInfo.get('value') || '[]')
 	const changes: wikiChange[] = recentchanges.reverse()
 
@@ -409,208 +282,6 @@ schedule('* * * * *', async () => {
 	recentChangeIDsInfo.set('value', JSON.stringify(recentChangeIDs.slice(-10))) // Store the recent change IDs to prevent duplicates
 	await recentChangeIDsInfo.save()
 })
-
-// Handle modals
-// interface auctionBid {bidder: string, bid: string, status: string, timestamp: string}
-// client.on('interactionCreate', async interaction => {
-// 	if (!interaction.isModalSubmit() || (interaction.user.id === '251458435554607114' && botSettings.developerMode)) return
-
-// 	// Handle Auction Creation
-// 	if (interaction.customId === 'Auction Modal'){
-// 		const title = interaction.fields.getTextInputValue('Title')
-// 		const description = interaction.fields.getTextInputValue('Description')
-// 		let minBid = interaction.fields.getTextInputValue('Minimum Bid')
-// 		if (!(minBid.includes('gold') || /^[\d\s.]+(?:[tbmk]{1})?$/i.test(minBid))) return interaction.reply({content: 'Setting the minimum bid to a non-gold value is currently not supported.', ephemeral: true})
-// 		if (/^[\d\s.]+(?:[tbmk]{1})?$/i.test(minBid)) minBid += ' gold'
-// 		minBid = abbreviateAllNumbers(minBid)
-// 		const duration = interaction.fields.getTextInputValue('Duration')
-// 		if (timeToUnix(duration) < 3600000 || timeToUnix(duration) > 604800000) return interaction.reply({content: 'Auction duration cannot be lower than 1 hour or greater than 7 days.', ephemeral: true})
-// 		const endDate = new Date(new Date().getTime() + timeToUnix(duration))
-// 		const links = interaction.fields.getTextInputValue('Links')
-// 		const parsedLinks = (links && /https?:\/\/.+?(?=$|http)/.test(links)) ? links.match(/https?:\/\/.+?(?=$|http)/gm)! : ['']
-// 		const imgurLinks = parsedLinks.filter(link => link.includes('imgur.com'))
-// 		if (imgurLinks) imgurLinks.forEach(async link => {
-// 			parsedLinks.splice(parsedLinks.indexOf(link), 1)
-// 			parsedLinks.push(...await getDirectImgurLinks(link))
-// 		})
-
-// 		const channelLink = `https://discord.com/channels/${interaction.guildId}/${interaction.channelId!}`
-// 		const auctionEmbed = new EmbedBuilder()
-// 			.setAuthor({name: `Auction by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
-// 			.setTitle(`${title}`)
-// 			.setDescription(description)
-// 			.addField('Minimum Bid:', minBid.replace(/gold/ig, '<:gold:460345588911833088>'), true)
-// 			.addField('Top Bidder:', 'None', true)
-// 			.addField('Time Remaining:', `Ends <t:${Math.ceil(endDate.getTime()/1000)}:R>`, true)
-// 			.setColor('Blue')
-// 			.setURL(channelLink)
-// 			.setFooter({text: 'Ends'})
-// 			.setTimestamp(endDate)
-		
-// 		const embedArray = [auctionEmbed]
-// 		if (parsedLinks){
-// 			for (let i = 0; i < parsedLinks.length; i++){
-// 				if (i > 3) break // Limit to 4 images
-// 				if (!parsedLinks[i]) continue
-// 				if (!auctionEmbed.image) {auctionEmbed.setImage(parsedLinks[i]); continue}
-// 				const auctionImageEmbed = new EmbedBuilder()
-// 					.setURL(channelLink)
-// 					.setImage(parsedLinks[i])
-// 					.setColor('Blue')
-// 				embedArray.push(auctionImageEmbed)
-// 			}
-// 		}
-
-// 		const auctionInputs = new ActionRowBuilder()
-// 			.addComponents(
-// 				new ButtonBuilder()
-// 					.setCustomId('Auction Bid Button')
-// 					.setLabel(`Place Bid`)
-// 					.setStyle(ButtonStyle.Primary)
-// 			)
-// 			.addComponents(
-// 				new ButtonBuilder()
-// 					.setCustomId('Retract Bid Button')
-// 					.setLabel(`Retract Bid`)
-// 					.setStyle('DANGER')
-// 			)
-// 			.addComponents(
-// 				new ButtonBuilder()
-// 					.setCustomId('Cancel Auction Button')
-// 					.setLabel(`Cancel Auction`)
-// 					.setStyle('DANGER')
-// 			)
-		
-// 		let DMSuccess = true
-// 		const userMessage = await interaction.user.send({content: "You've started an auction! Here's an overview:"}).catch(() => {
-// 			DMSuccess = false
-// 			interaction.reply({content: 'You must enable direct messages to start an auction!', ephemeral: true})
-// 		})
-// 		if (!DMSuccess) return
-
-// 		const auctionMessage = await interaction.reply({embeds: embedArray, components: [auctionInputs], fetchReply: true}) as Message
-// 		const auctionOverviewEmbed = new EmbedBuilder()
-// 			.setAuthor({name: `Auction by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL({format: 'png'})})
-// 			.setTitle(`${title}`)
-// 			.setDescription(description)
-// 			.addField('Minimum Bid:', minBid.replace(/gold/ig, '<:gold:460345588911833088>'), true)
-// 			.addField('Time Remaining:', `Ends <t:${Math.ceil(endDate.getTime()/1000)}:R>`, true)
-// 			.addField('Direct Link:', `[Click Here](${channelLink}/${auctionMessage.id})`, true)
-// 			.setColor('Blue')
-// 			.setURL(`${channelLink}/${auctionMessage.id}`)
-// 			.setFooter({text: 'Ends'})
-// 			.setTimestamp(endDate)
-// 		await (userMessage as Message).edit({embeds: [auctionOverviewEmbed]})
-
-// 		const auction = await privateDB.sheetsByTitle['Auctions'].addRow({
-// 			auctioneerID: interaction.user.id,
-// 			auctionID: auctionMessage.id,
-// 			title: title,
-// 			startDate: new Date().toString(),
-// 			endDate: endDate.toString(),
-// 			bids: JSON.stringify([{bidder: null, bid: minBid, status: 'Accepted', timestamp: new Date().toString()}]),
-// 			status: 'Running'
-// 		})
-// 		auctions.push(auction)
-
-// 		scheduleJob(endDate, async function(msgID: string, channelID: string){
-// 			const message = await client.channels.fetch(channelID).then(channel => (channel as TextChannel).messages.fetch(msgID))
-// 			const auctionEntry = auctions.find(entry => entry.auctionID === message.id)!
-// 			const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted')
-// 			const topBid = auctionBids.reverse()[0]
-// 			auctionEntry.status = 'Concluded'
-// 			await auctionEntry.save()
-
-// 			const auctionEmbed = message.embeds[0]
-// 			auctionEmbed.fields[2].value = 'Ended'
-// 			auctionEmbed.setFooter({text: 'Ended'})
-// 			auctionEmbed.setColor('RED')
-// 			auctionEmbed.setTimestamp(null)
-// 			await message.edit({embeds: [auctionEmbed], components: []})
-
-// 			client.users.fetch(auctionEntry.auctioneerID).then(async user => {
-// 				const auctionWinner = await client.users.fetch(topBid.bidder)
-// 				const auctionEndEmbed = new EmbedBuilder()
-// 					.setTitle('Auction Concluded')
-// 					.setDescription(`Your auction for [${auctionEntry.title}](${auctionEmbed.url}/${message.id}) has ended! Contact the winner to set up the transaction!`)
-// 					.addField('Winner:', `<@${topBid.bidder}> (${auctionWinner.tag})`)
-// 					.addField('Winning bid:', topBid.bid)
-// 					.setURL(`${auctionEmbed.url}/${message.id}`)
-// 					.setColor('Blue')
-
-// 				const auctionFailEmbed = new EmbedBuilder()
-// 					.setTitle('Auction Concluded')
-// 					.setDescription(`Your auction for [${auctionEntry.title}](${auctionEmbed.url}/${message.id}) has ended, but no bids were placed.`)
-// 					.setURL(`${auctionEmbed.url}/${message.id}`)
-// 					.setColor('Blue')
-// 				user.send({embeds: [topBid.bidder ? auctionEndEmbed : auctionFailEmbed]})
-// 			})
-
-// 			if (!topBid?.bidder) return
-// 			const auctioneer = await client.users.fetch(auctionEntry.auctioneerID)
-// 			const auctionWinEmbed = new EmbedBuilder()
-// 				.setDescription(`You won an auction by ${auctioneer} (${auctioneer.tag}) for [${auctionEntry.title}](${auctionEmbed.url}/${message.id})! Contact them to set up the transaction!`)
-// 				.setColor('Blue')
-// 			client.users.fetch(topBid.bidder).then(user => user.send({embeds: [auctionWinEmbed]}))
-// 		}.bind(null, auctionMessage.id, auctionMessage.channelId))
-// 	}
-
-// 	// Auction Bids
-// 	if (interaction.customId === 'Auction Bid Modal'){
-// 		const auction = (interaction.message as Message)
-// 		const auctionEntry = auctions.find(entry => entry.auctionID === auction.id)!
-// 		const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids)
-// 		const filteredBids = auctionBids.filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
-// 		const currentBid = filteredBids[filteredBids.length - 1] ?? auctionBids[0]
-// 		let incomingBid = interaction.fields.getTextInputValue('Auction Bid')
-// 		if (/^[\d\s.]+(?:[tbmk]{1})?$/i.test(incomingBid)) incomingBid += ' gold'
-// 		let bidStatus: string
-
-// 		// Determines whether or not the bid is an amount of gold and nothing else
-// 		const onlyGold = (bid: string | number) => /^[\d\s.]+(?:[tbmk]{1})?\s?gold$/i.test(String(bid).trim())
-
-// 		if (onlyGold(currentBid.bid) && onlyGold(incomingBid)){
-// 			const minBid = getNumber(currentBid.bid) * 1.1
-// 			const maxBid = getNumber(currentBid.bid) * 10
-// 			if (getNumber(incomingBid) > maxBid) return interaction.reply({content: `You cannot bid more than 10x the current top bid!`, ephemeral: true})
-// 			if (getNumber(incomingBid) < minBid && currentBid.bidder){
-// 				return interaction.reply({content: `To outbid the current top bidder, you must bid at least ${minBid} (${getAbbreviatedNumber(minBid)}) gold!`, ephemeral: true})
-// 			}
-// 			if (getNumber(incomingBid) < getNumber(currentBid.bid)) {
-// 				return interaction.reply({content: `You must bid at least ${getNumber(currentBid.bid)} (${getAbbreviatedNumber(getNumber(currentBid.bid))}) gold!`, ephemeral: true})
-// 			}
-// 			auction.embeds[0].fields[0].name = 'Top Bid:'
-// 			auction.embeds[0].fields[0].value = abbreviateAllNumbers(incomingBid).replace(/gold/i, '<:gold:460345588911833088>')
-// 			auction.embeds[0].fields[1].value = String(interaction.user)
-// 			await auction.edit({embeds: [auction.embeds[0]]})
-// 			bidStatus = 'Accepted'
-// 			if (currentBid.bidder && interaction.user.id !== currentBid.bidder){
-// 				const outbidEmbed = new EmbedBuilder()
-// 					.setDescription(`You have been outbid in the auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id})!`)
-// 					.setColor('Blue')
-// 				client.users.fetch(currentBid.bidder).then(user => user.send({embeds: [outbidEmbed]}))
-// 			}
-// 			interaction.reply({content: 'Bid successful!', ephemeral: true})
-// 		} else {
-// 			// Do something else here
-// 			bidStatus = 'Pending'
-// 			return interaction.reply({content: 'Bidding with items other than gold is not currently supported.', ephemeral: true})
-// 		}
-
-// 		const userBid = filteredBids.find((bid: auctionBid) => bid.bidder === interaction.user.id)
-// 		if (userBid) auctionBids.splice(auctionBids.indexOf(userBid), 1, {...userBid, status: 'Replaced'})
-// 		auctionBids.push({
-// 			bidder: interaction.user.id,
-// 			bid: incomingBid,
-// 			status: bidStatus,
-// 			timestamp: new Date().toString()
-// 		})
-// 		const auctionIndex = auctions.indexOf(auctionEntry)
-// 		auctionEntry.bids = JSON.stringify(auctionBids)
-// 		auctions.splice(auctionIndex, 1, auctionEntry)
-// 		auctionEntry.save()
-// 	}
-// })
 
 // Handle Buttons
 client.on('interactionCreate', async interaction => {
@@ -689,84 +360,6 @@ client.on('interactionCreate', async interaction => {
 	if (interaction.customId === 'Defender Role Button'){
 		
 	}
-
-	// if (interaction.customId === 'Auction Bid Button'){
-	// 	const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
-	// 	const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
-	// 	if (interaction.user.id === auctionEntry.auctioneerID) {interaction.reply({content: 'You cannot bid on your own auction!', ephemeral: true}); return}
-	// 	if (interaction.user.id === filteredBids.reverse()[0].bidder) {interaction.reply({content: 'You are already the top bidder!', ephemeral: true}); return}
-	// 	if (new Date() > new Date(auctionEntry.endDate)) {interaction.reply({content: 'This auction has already ended!', ephemeral: true}); return}
-
-	// 	const bidModal = new Modal()
-	// 		.setCustomId(`Auction Bid Modal`)
-	// 		.setTitle('Place a Bid')
-		
-	// 	const bid = new ActionRowBuilder<ModalActionRowComponent>().addComponents(
-	// 		new TextInputComponent()
-	// 			.setCustomId('Auction Bid')
-	// 			.setLabel('Your Bid')
-	// 			.setStyle('SHORT')
-	// 			.setMaxLength(100)
-	// 			.setRequired(true)
-	// 	)
-
-	// 	bidModal.addComponents(bid)
-	// 	await interaction.showModal(bidModal)
-	// }
-
-	// if (interaction.customId === 'Retract Bid Button'){
-	// 	const auction = (interaction.message as Message)
-	// 	const auctionEntry = auctions.find(entry => entry.auctionID === auction.id)!
-	// 	const auctionBids: auctionBid[] = JSON.parse(auctionEntry.bids)
-	// 	const filteredBids = auctionBids.filter(bid => bid.status === 'Accepted' || bid.status === 'Pending')
-	// 	if (filteredBids.filter(bid => bid.bidder === interaction.user.id && bid.status === 'Retracted').length > 2){ // Limit of 2 retractions per user per auction
-	// 		return interaction.reply({content: 'You can no longer retract any more bids in this auction.', ephemeral: true})
-	// 	}
-	// 	const userBid = filteredBids.find((bid: auctionBid) => bid.bidder === interaction.user.id)
-	// 	const endDate = new Date(auctionEntry.endDate)
-	// 	if (new Date() > endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
-	// 	if (!userBid) return interaction.reply({content: 'You currently have no bids to retract!', ephemeral: true})
-	// 	if ((endDate.getTime() - new Date().getTime() < 3.6e+6) || (new Date().getTime() - new Date(userBid.timestamp).getTime() > 1.8e+6)){ // If there is less than 1 hour left in the auction or the bid was placed more than 30 minutes ago
-	// 		return interaction.reply({content: 'Your bid can no longer be retracted at this time.', ephemeral: true})
-	// 	}
-		
-	// 	auctionBids.splice(auctionBids.indexOf(userBid), 1, {...userBid, status: 'Retracted', timestamp: new Date().toString()})
-	// 	const auctionIndex = auctions.indexOf(auctionEntry)
-	// 	auctionEntry.bids = JSON.stringify(auctionBids)
-	// 	auctions.splice(auctionIndex, 1, auctionEntry)
-	// 	await auctionEntry.save()
-
-	// 	const prevHighestBid = auctionBids.reverse().find(bid => bid.status !== 'Retracted') ?? auctionBids[auctionBids.length - 1]
-	// 	auction.embeds[0].fields[0].value = abbreviateAllNumbers(prevHighestBid.bid).replace(/gold/i, '<:gold:460345588911833088>')
-	// 	auction.embeds[0].fields[1].value = prevHighestBid.bidder ? `<@${prevHighestBid.bidder}>` : 'None'
-	// 	await auction.edit({embeds: [auction.embeds[0]]})
-	// 	interaction.reply({content: 'Bid retracted.', ephemeral: true})
-	// }
-
-	// if (interaction.customId === 'Cancel Auction Button'){
-	// 	const auction = interaction.message
-	// 	const auctionEntry = auctions.find(entry => entry.auctionID === interaction.message.id)!
-	// 	const filteredBids: auctionBid[] = JSON.parse(auctionEntry.bids).filter((bid: auctionBid) => bid.status === 'Accepted' || bid.status === 'Pending')
-	// 	const topBid = filteredBids[filteredBids.length - 1]
-	// 	if (new Date() > auctionEntry.endDate) return interaction.reply({content: 'This auction has already ended!', ephemeral: true})
-	// 	if (!(interaction.user.id === auctionEntry.auctioneerID || interaction.memberPermissions?.has('MANAGE_MESSAGES'))){
-	// 		return interaction.reply({content: 'You do not have permission to cancel this auction.', ephemeral: true})
-	// 	}
-	// 	if ((new Date((interaction.message as Message).createdTimestamp).getTime() - new Date().getTime() > 3600000) && !interaction.memberPermissions?.has('MANAGE_MESSAGES')){
-	// 		return interaction.reply({content: 'You cannot cancel an auction after it has been running for over an hour.', ephemeral: true})
-	// 	}
-	// 	(interaction.message as Message).delete()
-		
-	// 	const auctionIndex = auctions.indexOf(auctionEntry)
-	// 	auctionEntry.status = 'Cancelled'
-	// 	auctions.splice(auctionIndex, 1, auctionEntry)
-	// 	await auctionEntry.save()
-	// 	const cancelledEmbed = new EmbedBuilder()
-	// 		.setDescription(`The auction for [${auctionEntry.title}](${auction.embeds[0].url}/${auction.id}) has been cancelled.`)
-	// 		.setColor('Blue')
-	// 	if (topBid?.bidder) client.users.fetch(topBid.bidder).then(user => user.send({embeds: [cancelledEmbed]}))
-	// 	interaction.reply({content: 'Auction cancelled.', ephemeral: true})
-	// }
 })
 
 client.on('messageCreate', async (message: Message) => {
@@ -830,7 +423,7 @@ client.on('threadUpdate', (oldThread, newThread) => {
 	}
 })
 
-client.login(process.env.BOT_TOKEN)
+client.login(botToken)
 
 process.on('uncaughtException', error => {
 	errorChannel?.send({files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]})

@@ -6,6 +6,7 @@ import { PrivateDatabaseSchema, privateDatabaseConfig } from './privateTypes.js'
 
 export * from './privateTypes.js'
 export * from './publicTypes.js'
+export * from './defenseBuilds.js'
 
 type DatabaseSchema = PublicDatabaseSchema & PrivateDatabaseSchema
 export const database = {} as DatabaseSchema
@@ -18,12 +19,15 @@ const serviceAccountAuth = new JWT({
 
 const publicDB = new GoogleSpreadsheet('1yOjZhkn9z8dJ8HMD0YSUl7Ijgd9o1KJ62Ecf4SgyTdU', serviceAccountAuth)
 const privateDB = new GoogleSpreadsheet(process.env.PRIVATE_DB_ID!, serviceAccountAuth)
+export const defenseBuilds = new GoogleSpreadsheet('1sjBA60Fr9ryVnw4FUIMU2AVXbKw395Tdz7j--EAUA1A', serviceAccountAuth)
 
 export async function connectDatabase() {
     await Promise.all([
         loadDatabase(publicDB, publicDatabaseConfig),
         loadDatabase(privateDB, privateDatabaseConfig)
     ])
+
+    console.log('Database connection successful')
 }
 
 type DatabaseConfig = { [key: string]: { name: string, type: any } }
@@ -57,8 +61,6 @@ async function loadDatabase<C extends DatabaseConfig>(
             ;(database as Record<TableKey, GoogleSpreadsheetWorksheet>)[tableKey] = table
             ;(database as { [K in keyType]: Array<typeof sheetConfig[keyType]['type']> })[key] = data
         })
-
-        console.log('Database loaded successfully.')
     } catch (error) {
         console.error('Failed to load database:', error)
         throw error
