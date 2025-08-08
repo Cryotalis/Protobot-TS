@@ -1,16 +1,11 @@
-import { ActionRowBuilder, ChannelType, Client, Collection, EmbedBuilder, ForumChannel, GatewayIntentBits, Message, ModalActionRowComponent, ModalBuilder, REST, Routes, TextChannel, TextInputBuilder, TextInputComponent, TextInputStyle, User } from 'discord.js'
-import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
-import { schedule } from 'node-cron'
+import { ActionRowBuilder, ChannelType, Client, Collection, EmbedBuilder, ForumChannel, GatewayIntentBits, Message, ModalBuilder, REST, Routes, TextChannel, TextInputBuilder, TextInputStyle } from 'discord.js'
 import { inspect } from 'util'
-import { parse } from 'node-html-parser'
 import { readdirSync } from 'node:fs'
-import Parser from 'rss-parser'
-import axios from 'axios'
-import { abbreviateAllNumbers, capFirstLetter, capitalize, dateToString, getAbbreviatedNumber, getDirectImgurLinks, getNumber, getTwitchAccessToken, getTwitchUserInfo, streamInfo, timeToUnix, userInfo } from './library.js'
 import { registerFont } from 'canvas'
-import { JWT } from 'google-auth-library'
 import { connectDatabase, database } from './database/index.js'
 import { loadDefenseBuilds } from './database/defenseBuilds.js'
+
+import './cron/index.js'
 
 const devMode = true
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], rest: {timeout: 60000}})
@@ -157,130 +152,6 @@ client.on('messageCreate', async (message: Message) => {
 		// If so, the row could just be added to the table via push to database.userLogs
 		database.userLogs = await database.userLogsTable.getRows()
 	} else {await user.save()}
-})
-
-// Youtube Post Notifications
-schedule('* * * * *', () => {
-	if (!database.youtubeChannels) return
-	database.youtubeChannels.forEach(async channel => {
-		const discordChannel = client.channels.cache.get(channel.get('discordChannelID')) as TextChannel
-		const feed = await new Parser().parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channel.get('youtubeID')}`).catch(() => undefined) // Parse the RSS Feed for the channel, ignore any 404 errors if the rss feed is unavailable
-		if (!feed) return
-
-		const newVideo = feed.items[0] // The most recently published video
-		const recentVideos: string[] = channel.get('recentVideos') ? JSON.parse(channel.get('recentVideos')) : []
-		if (recentVideos.includes(newVideo.link!)) return
-
-		const {data} = await axios.get(newVideo.link!)
-		if (/Scheduled\sfor/i.test(data)) return // Do not post if this is a scheduled stream (the user has not gone live)
-		if (/watching\snow/i.test(data)){
-			discordChannel.send(`${newVideo.author} is now live!\n${newVideo.link}`)
-		} else {
-			discordChannel.send(`${newVideo.author} has uploaded a new video!\n${newVideo.link}`)
-		}
-		if (recentVideos.length >= 5) recentVideos.shift() // Only store the 5 most recent videos
-		recentVideos.push(newVideo.link!)
-		channel.set('recentVideos', JSON.stringify(recentVideos)) // Store the video so that it doesn't get posted again
-		channel.save()
-		
-	})
-})
-
-// Twitch Live Notifications
-export interface channelConfig {id: string, message: string | null, categories: string[]}
-schedule('* * * * *', () => {
-	if (!database.twitchChannels) return
-	database.twitchChannels.forEach(async channel => {
-		const configs: channelConfig[] = JSON.parse(channel.get('configs') || '[]')
-		if (configs.length === 0) return
-		const [streamInfo, userInfo] = await Promise.all([
-			getTwitchUserInfo(channel.get('username'), 1) as unknown as streamInfo,
-			getTwitchUserInfo(channel.get('username'), 0) as unknown as userInfo
-		])
-		if (!streamInfo || !userInfo) return
-		const recentStreamIDs: string[] = JSON.parse(channel.get('recentStreamIDs') || '[]')
-		if (recentStreamIDs.includes(streamInfo.id)) return
-
-		const twitchStreamEmbed = new EmbedBuilder()
-			.setAuthor({name: 'Twitch', iconURL: 'https://cdn.icon-icons.com/icons2/3041/PNG/512/twitch_logo_icon_189242.png'})
-			.setTitle(`${streamInfo.user_name} is now playing ${streamInfo.game_name}!`)
-			.setURL(`https://www.twitch.tv/${channel.get('username')}`)
-			.setDescription(streamInfo.title)
-			.setThumbnail(userInfo.profile_image_url)
-			.setColor('Purple')
-
-		configs.forEach((config: channelConfig) => {
-			const discordChannel = client.channels.cache.get(config.id) as TextChannel
-			discordChannel.send({content: config.message!, embeds: [twitchStreamEmbed]})
-		})
-
-		if (recentStreamIDs.length >= 5) recentStreamIDs.shift() // Only store the 5 most recent stream IDs
-		recentStreamIDs.push(streamInfo.id)
-		channel.set('recentStreamIDs', JSON.stringify(recentStreamIDs)) // Store the stream ID so that it doesn't get posted again
-		channel.save()
-	})
-})
-
-// DD2 Wiki Changes
-schedule('* * * * *', async () => {
-	interface wikiChange {title: string, user: string, comment: string, timestamp: string, type: string, logaction: string, logtype: string, rcid: number, revid: number, logparams: {target_title: string, img_sha1: string}}
-	function getAction(change: wikiChange){
-		let action = ''
-		
-		if (change.type === 'log'){
-			switch(change.logaction){
-				case 'overwrite': 	action = 'Overwrote'; break
-				case 'rights': 		action = 'Changed User Rights for'; break
-				default: 			action = change.logaction.replace(/e$/, '') + 'ed'
-			}
-		} else {
-			action = change.type === 'edit' ? 'Edited' : 'Created'
-		}
-
-		action += ` "${change.title}"`
-
-		if (change.logaction === 'move') action += ` to "${change.logparams.target_title}"`
-		if (change.logtype === 'newusers') action = 'Created an Account'
-
-		return capFirstLetter(action)
-	}
-
-	const wikiChangesChannel = client.channels.cache.get('1072236073515745451') as TextChannel
-	const response = await axios.get('https://wiki.dungeondefenders2.com/api.php?action=query&list=recentchanges&rcprop=user|title|timestamp|comment|loginfo|ids&rclimit=5&format=json')
-    const {data: {query: {recentchanges}}} = response
-	const recentChangeIDsInfo = database.variables.find(v => v.get('name') === 'recentChangeIDs')!
-	const recentChangeIDs = JSON.parse(recentChangeIDsInfo.get('value') || '[]')
-	const changes: wikiChange[] = recentchanges.reverse()
-
-	for (const change of changes){
-		if (recentChangeIDs.includes(change.rcid)) continue
-		recentChangeIDs.push(change.rcid)
-		const url = `https://wiki.dungeondefenders2.com/index.php?title=${change.title}&diff=${change.revid}`.replace(/\s/g, '_')
-		const wikiChangeEmbed = new EmbedBuilder()
-			.setAuthor({name: change.user, url: `https://wiki.dungeondefenders2.com/wiki/User:${change.user.replace(/\s/g, '_')}`})
-			.setTitle(`${change.user} ${getAction(change)}`)
-			.setURL(`https://wiki.dungeondefenders2.com/wiki/${change.title.replace(/\s/g, '_')}`)
-			.addFields({name: 'Comment', value: change.comment || 'No Comment Provided'})
-			.setColor('Blue')
-			.setTimestamp(Date.parse(change.timestamp))
-
-		if (change.type === 'edit'){
-			const document = parse((await axios.get(url)).data)
-			const removed = document.querySelectorAll('.diff-deletedline').map(e => `- ${e.textContent}`).join('\n')
-			const added = document.querySelectorAll('.diff-addedline').map(e => `+ ${e.textContent}`).join('\n')
-			if (removed) wikiChangeEmbed.addFields({name: 'Removed', value: '```diff\n' + (removed.length > 950 ? `${removed.substring(0, 950)}\n- and more...` : removed) + '```'})
-			if (added) wikiChangeEmbed.addFields({name: 'Added', value: '```diff\n' + (added.length > 950 ? `${added.substring(0, 950)}\n+ and more...` : added) + '```'})
-		} else if (change.logparams?.img_sha1){
-			const document = parse((await axios.get(url)).data)
-			const imgURL = document.querySelector('img')!.getAttribute('src')!
-			if (!/poweredby_mediawiki/.test(imgURL)) wikiChangeEmbed.setImage(`https://wiki.dungeondefenders2.com${imgURL}`)
-		}
-
-		wikiChangesChannel.send({embeds: [wikiChangeEmbed]})
-	}
-	if (recentChangeIDsInfo.get('value') === JSON.stringify(recentChangeIDs.slice(-10))) return
-	recentChangeIDsInfo.set('value', JSON.stringify(recentChangeIDs.slice(-10))) // Store the recent change IDs to prevent duplicates
-	await recentChangeIDsInfo.save()
 })
 
 // Handle Buttons
