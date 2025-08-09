@@ -52,15 +52,21 @@ loadDefenseBuilds()
 export let logChannel: TextChannel
 export let errorChannel: TextChannel
 export let modQueue: TextChannel
+export let automodLogChannel: TextChannel // The channel to send log messages to (Auto Mod Log Channel)
 client.on('ready', async () => {
 	client.user?.setActivity('/help')
 	
 	logChannel = client.channels.cache.get('577636091834662915') as TextChannel
 	errorChannel = client.channels.cache.get('936833258149281862') as TextChannel
 	modQueue = client.channels.cache.get('791527921142988832') as TextChannel
+	automodLogChannel = client.channels.cache.get('916495567037816853') as TextChannel
 
 	console.log('Protobot is now online')
 	logChannel?.send('**:white_check_mark:  Protobot is now online**')
+
+	// Update Server Count every 30 minutes
+	const serverCountChannel = client.channels.cache.get('762948660983496715') as TextChannel
+	setInterval(() => serverCountChannel.edit({name: `Server Count: ${client.guilds.cache.size}`}), 1.8e+6)
 })
 
 // Handle Buttons
