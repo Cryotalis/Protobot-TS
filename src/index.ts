@@ -30,10 +30,9 @@ export async function registerCommands() {
 			? await import(`./commands/${file}`) 
 			: await import(`./modCommands/${file}`)
 
-		if (privateCommandFiles.includes(file)) 
-			privateCommands.push(command.data.toJSON())
-		else 
-			commands.push(command.data.toJSON())
+		privateCommandFiles.includes(file)
+			? privateCommands.push(command.data.toJSON())
+			: commands.push(command.data.toJSON())
 
 		client.commands.set(command.data.name, command)
 	}
