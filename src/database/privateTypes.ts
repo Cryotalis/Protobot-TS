@@ -2,8 +2,8 @@ import { GoogleSpreadsheetRow, GoogleSpreadsheetWorksheet } from 'google-spreads
 
 // Should change to username rather than authorTag
 // Should change to userID rather than authorID
-type UserLogKeys = 'lastMsgID' | 'authorTag' | 'authorID' | 'time' | 'warnings'
-type UserLogInfo = { [K in UserLogKeys]: string }
+type UserLogKeys = 'lastMsgID' | 'lastMsgTimestamp' | 'authorTag' | 'authorID' | 'warnings'
+export type UserLogInfo = { [K in UserLogKeys]: string }
 
 // YouTube Post Notifications
 // Probably should change to channelID rather than youtubeID
