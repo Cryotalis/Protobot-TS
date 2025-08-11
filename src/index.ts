@@ -9,7 +9,7 @@ import { onInteractionCreate, onMessageCreate, onThreadCreate, onThreadUpdate } 
 import './cron/index.js'
 import './events/index.js'
 
-const devMode = true
+const devMode = process.env.DEV_MODE === 'true'
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], rest: {timeout: 60000}})
 export const botID = devMode ? '631961435051917362' : '521180443958181889'
 const botToken = devMode ? process.env.DEV_TOKEN! : process.env.BOT_TOKEN!
