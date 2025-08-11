@@ -4,6 +4,7 @@ import { readdirSync } from 'node:fs'
 import { registerFont } from 'canvas'
 import { connectDatabase } from './database/index.js'
 import { loadDefenseBuilds } from './database/defenseBuilds.js'
+import { onInteractionCreate, onMessageCreate, onThreadCreate, onThreadUpdate } from './events/index.js'
 
 import './cron/index.js'
 import './events/index.js'
@@ -68,6 +69,11 @@ client.on('ready', async () => {
 	const serverCountChannel = client.channels.cache.get('762948660983496715') as TextChannel
 	setInterval(() => serverCountChannel.edit({name: `Server Count: ${client.guilds.cache.size}`}), 1.8e+6)
 })
+
+client.on('interactionCreate', onInteractionCreate)
+client.on('messageCreate', onMessageCreate)
+client.on('threadCreate', onThreadCreate)
+client.on('threadUpdate', onThreadUpdate)
 
 // Handle Buttons
 client.on('interactionCreate', async interaction => {

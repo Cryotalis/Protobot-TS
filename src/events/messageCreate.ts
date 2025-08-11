@@ -1,6 +1,6 @@
-import { Message } from "discord.js"
+import { Message, OmitPartialGroupDMChannel } from "discord.js"
 import { database, UserLogInfo } from "../database/index.js"
-import { automodLogChannel, client } from "../index.js"
+import { automodLogChannel } from "../index.js"
 import { createAMLogEntry, DMRules } from "./index.js"
 
 const LFTAutomodChannels = [
@@ -9,7 +9,7 @@ const LFTAutomodChannels = [
     '460340942990475264'    // #looking-for-trade-xbox
 ]
 
-client.on('messageCreate', async (message: Message) => {
+export async function onMessageCreate(message: OmitPartialGroupDMChannel<Message<boolean>>) {
     if (message.author.bot) return
 
     if (LFTAutomodChannels.includes(message.channelId) && database.userLogs) {
@@ -46,4 +46,4 @@ client.on('messageCreate', async (message: Message) => {
 
         user.save()
     }
-})
+}

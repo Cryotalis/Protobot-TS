@@ -1,4 +1,4 @@
-import { ForumChannel } from "discord.js"
+import { AnyThreadChannel, ForumChannel } from "discord.js"
 import { client } from "../index.js"
 
 const forumIDs = [
@@ -6,7 +6,7 @@ const forumIDs = [
     '1166774506002591765', // server-suggestions
     '1167947531469201469', // role-requests
 ]
-client.on('threadCreate', async thread => {
+export async function onThreadCreate(thread: AnyThreadChannel) {
     if (!forumIDs.includes(thread.parent?.id ?? '')) return
     const messages = await thread.awaitMessages({max: 1, time: 5000})
     const starterMessage = messages.first()
@@ -14,9 +14,9 @@ client.on('threadCreate', async thread => {
     await starterMessage.react('<:thumbs_up:745501111015833632>')
     await starterMessage.react('<:thumbs_sideways:745501110403465318>')
     await starterMessage.react('<:thumbs_down:745501108075626578>')
-})
+}
 
-client.on('threadUpdate', (oldThread, newThread) => {
+export function onThreadUpdate(oldThread: AnyThreadChannel, newThread: AnyThreadChannel) {
     const oldTags = oldThread.appliedTags
     const newTags = newThread.appliedTags
     if (!forumIDs.includes(oldThread.parent?.id ?? '') || oldTags.join() === newTags.join()) return
@@ -34,4 +34,4 @@ client.on('threadUpdate', (oldThread, newThread) => {
     } else {
         newThread.send({content: `<@${oldThread.ownerId}>, the **${tagEmoji + tag.name}** tag has been removed from your post.`, flags: ['SuppressNotifications']})
     }
-})
+}

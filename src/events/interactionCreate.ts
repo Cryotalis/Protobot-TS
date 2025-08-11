@@ -1,9 +1,10 @@
 import { inspect } from "util";
 import { database } from "../database/index.js";
 import { client, modCommands, errorChannel, logChannel } from "../index.js";
+import { CacheType, Interaction } from "discord.js";
 
 // Slash Command Handler
-client.on('interactionCreate', interaction => {
+export function onInteractionCreate(interaction: Interaction<CacheType>) {
     if ((!interaction.isCommand() && !interaction.isMessageContextMenuCommand())) return
     if (database.blacklist.find(user => user.get('id') === interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
 
@@ -26,4 +27,4 @@ client.on('interactionCreate', interaction => {
     } finally {
         logChannel?.send(`:scroll:  **${interaction.user.tag}** ran the ${isModCommand ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`)
     }
-})
+}
