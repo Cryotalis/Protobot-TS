@@ -17,7 +17,7 @@ export async function onMessageCreate(message: OmitPartialGroupDMChannel<Message
         if (!user) {
             const newUser = await database.userLogsTable.addRow({
                 lastMsgID: message.id,
-                lastMsgTimestamp: '',
+                lastMsgTimestamp: message.createdTimestamp.toString(),
                 authorTag: message.author.username,
                 authorID: message.author.id,
                 warnings: '0'
