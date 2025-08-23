@@ -1,5 +1,6 @@
-import { ActionRowBuilder, Client, Collection, EmbedBuilder, GatewayIntentBits, Message, ModalBuilder, REST, Routes, TextChannel, TextInputBuilder, TextInputStyle } from 'discord.js'
+import { Client, Collection, GatewayIntentBits, REST, Routes, TextChannel } from 'discord.js'
 import { inspect } from 'util'
+import { schedule } from 'node-cron'
 import { readdirSync } from 'node:fs'
 import { registerFont } from 'canvas'
 import { connectDatabase } from './database/index.js'
@@ -64,6 +65,11 @@ client.on('ready', async () => {
 
 	console.log('Protobot is now online')
 	logChannel?.send('**:white_check_mark:  Protobot is now online**')
+
+	schedule('0 * * * *', async () => {
+		await connectDatabase()
+		registerCommands()
+	})
 
 	// Update Server Count every 30 minutes
 	const serverCountChannel = client.channels.cache.get('762948660983496715') as TextChannel
