@@ -10,11 +10,11 @@ export function onInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isCommand() || interaction.isMessageContextMenuCommand()) {
         if (database.blacklist.find(user => user.get('id') === interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
     
-        const isModCommand = modCommands.includes(`${interaction.commandName}.js`)
+        const isModCmd = isModCommand(interaction.commandName)
         // TODO: REMOVE THIS ANY!!!
         const command: any = client.commands?.get(interaction.commandName)
         if (!command) {interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true}); return}
-        if (isModCommand && !(interaction.memberPermissions?.has('ManageMessages') || database.contributors.find(user => user.get('id') === interaction.user.id))){
+        if (isModCmd && !(interaction.memberPermissions?.has('ManageMessages') || database.contributors.find(user => user.get('id') === interaction.user.id))){
             interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true}); return
         } 
     

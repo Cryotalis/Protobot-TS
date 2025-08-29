@@ -3,10 +3,12 @@ import { readdirSync } from 'fs'
 import { client } from '../index.js'
 import { BOT_ID, BOT_TOKEN, HOME_SERVER_ID } from '../data/index.js'
 
-export const regCommands = readdirSync('./prod/commands')
-export const modCommands = readdirSync('./prod/modCommands')
-export const commandFiles = [...regCommands, ...modCommands]
-export const privateCommandFiles = ['run.js', 'say.js']
+const regCommands = readdirSync('./prod/commands')
+const modCommands = readdirSync('./prod/modCommands')
+const commandFiles = [...regCommands, ...modCommands]
+const privateCommandFiles = ['run.js', 'say.js']
+
+export function isModCommand(name: string) { return modCommands.includes(name) }
 
 export async function registerCommands() {
     const commands = []
