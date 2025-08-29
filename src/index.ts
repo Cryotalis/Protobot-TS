@@ -3,22 +3,24 @@ import { inspect } from 'util'
 import { schedule } from 'node-cron'
 import { registerFont } from 'canvas'
 import { connectDatabase, loadDefenseBuilds } from './database/index.js'
+import { BOT_TOKEN } from './data/index.js'
 import { registerCommands } from './utils/index.js'
 import { onInteractionCreate, onMessageCreate, onThreadCreate, onThreadUpdate } from './events/index.js'
 
 import './cron/index.js'
 import './events/index.js'
 
-const devMode = process.env.DEV_MODE === 'true'
-export const botID = devMode ? '631961435051917362' : '521180443958181889'
-export const botToken = devMode ? process.env.DEV_TOKEN! : process.env.BOT_TOKEN!
 export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], rest: {timeout: 60000}})
+
+async function runStartup() {
+	await connectDatabase()
+	registerCommands()
+	loadDefenseBuilds()
+}
+runStartup()
 
 registerFont('assets/Arial.ttf', {family: 'Arial'})
 registerFont('assets/Arial Bold.ttf', {family: 'Arial Bold'})
-
-connectDatabase().then(() => registerCommands())
-loadDefenseBuilds()
 
 export let logChannel: TextChannel
 export let errorChannel: TextChannel
@@ -33,10 +35,7 @@ client.on('ready', async () => {
 	console.log('Protobot is now online')
 	logChannel?.send('**:white_check_mark:  Protobot is now online**')
 
-	schedule('0 * * * *', async () => {
-		await connectDatabase()
-		registerCommands()
-	})
+	schedule('0 * * * *', runStartup)
 
 	// Update Server Count every 30 minutes
 	const serverCountChannel = client.channels.cache.get('762948660983496715') as TextChannel
@@ -48,7 +47,7 @@ client.on('messageCreate', onMessageCreate)
 client.on('threadCreate', onThreadCreate)
 client.on('threadUpdate', onThreadUpdate)
 
-client.login(botToken)
+client.login(BOT_TOKEN)
 
 process.on('uncaughtException', error => {
 	errorChannel?.send({files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]})

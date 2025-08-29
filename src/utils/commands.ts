@@ -1,8 +1,8 @@
 import { Collection, REST, Routes } from 'discord.js'
 import { readdirSync } from 'fs'
-import { client, botID, botToken } from '../index.js'
+import { client } from '../index.js'
+import { BOT_ID, BOT_TOKEN, HOME_SERVER_ID } from '../data/index.js'
 
-const homeServerID = '379501550097399810'
 export const regCommands = readdirSync('./prod/commands')
 export const modCommands = readdirSync('./prod/modCommands')
 export const commandFiles = [...regCommands, ...modCommands]
@@ -25,7 +25,7 @@ export async function registerCommands() {
         client.commands.set(command.data.name, command)
     }
 
-    const rest = new REST({ version: '9' }).setToken(botToken)
-    rest.put(Routes.applicationCommands(botID), { body: commands })
-    rest.put(Routes.applicationGuildCommands(botID, homeServerID), { body: privateCommands })
+    const rest = new REST({ version: '9' }).setToken(BOT_TOKEN)
+    rest.put(Routes.applicationCommands(BOT_ID), { body: commands })
+    rest.put(Routes.applicationGuildCommands(BOT_ID, HOME_SERVER_ID), { body: privateCommands })
 }

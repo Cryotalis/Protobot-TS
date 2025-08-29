@@ -1,0 +1,14 @@
+const MINTIE_ID = '631961435051917362'
+const EUROPA_ID = '521180443958181889'
+
+const devMode = process.env.DEV_MODE === 'true'
+export const BOT_ID = devMode ? MINTIE_ID : EUROPA_ID
+export const BOT_TOKEN = devMode ? process.env.DEV_TOKEN! : process.env.BOT_TOKEN!
+
+export const HOME_SERVER_ID = '379501550097399810'
+export const CHANNEL_IDS = {
+  LOG: '577636091834662915',
+  ERROR: '936833258149281862',
+  AUTOMOD: '916495567037816853',
+  SERVER_COUNT: '762948660983496715',
+}
