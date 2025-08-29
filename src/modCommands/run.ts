@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { registerCommands } from '../index.js'
 import { connectDatabase, database, loadDefenseBuilds } from '../database/index.js'
+import { registerCommands } from '../utils/index.js'
+import { runStartup } from '../index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -35,13 +36,8 @@ export const command = {
 		const command = interaction.options.getSubcommand()
 
 		if (command === 'startup'){
-			interaction.reply('Connecting to Database and Loading Defense Builds <a:loading:763160594974244874>'),
-			await Promise.all([
-				loadDefenseBuilds(),
-				connectDatabase()
-			])
-			interaction.editReply('Registering Commands <a:loading:763160594974244874>'),
-			await registerCommands()
+			interaction.reply('Running startup functions <a:loading:763160594974244874>'),
+			await runStartup()
 			interaction.editReply('Startup Completed.')
 		}
 
