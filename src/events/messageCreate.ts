@@ -1,7 +1,8 @@
 import { Message, OmitPartialGroupDMChannel } from "discord.js"
 import { database, UserLogInfo } from "../database/index.js"
-import { automodLogChannel } from "../index.js"
 import { createAMLogEntry, DMRules } from "./index.js"
+import { sendToChannel } from '../utils/index.js'
+import { CHANNEL_IDS } from '../data/index.js'
 
 const LFTAutomodChannels = [
     '460339922231099402',   // #looking-for-trade-pc
@@ -36,7 +37,10 @@ export async function onMessageCreate(message: OmitPartialGroupDMChannel<Message
             try {
                 await message.delete()
                 user.set('warnings', String(parseInt(user.get('warnings')) + 1))
-                await automodLogChannel.send({embeds: [createAMLogEntry(message, user.get('warnings'), violation)]})
+                await sendToChannel(
+                    CHANNEL_IDS.AUTOMOD,
+                    { embeds: [createAMLogEntry(message, user.get('warnings'), violation)] }
+                )
                 DMRules(violation, message, user)
             } catch (e){}
         } else {

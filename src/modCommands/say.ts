@@ -1,5 +1,6 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, TextChannel } from 'discord.js'
-import { client } from '../index.js'
+import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
+import { sendToChannel } from '../utils/index.js'
+import { BOT_OWNER_ID } from '../data/index.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -9,10 +10,13 @@ export const command = {
 		.addStringOption(option => option.setName('message').setDescription('The message to send').setRequired(true))
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
-		if (interaction.user.id !== '251458435554607114') return
+		if (interaction.user.id !== BOT_OWNER_ID) return
+
         const channelID = interaction.options.getString('channel')!
 		const message = interaction.options.getString('message')!
-        interaction.reply(`Message sent to <#${channelID}>.`)
-        return (client.channels.cache.get(channelID) as TextChannel).send(message)
+        
+		interaction.reply(`Message sent to <#${channelID}>.`)
+        
+		sendToChannel(channelID, message)
 	}
 }

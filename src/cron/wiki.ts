@@ -1,10 +1,11 @@
 import axios from "axios";
-import { TextChannel, EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { schedule } from "node-cron";
 import { database } from "../database/index.js";
-import { client } from "../index.js";
 import { capFirstLetter } from "../library.js";
 import { parse } from 'node-html-parser'
+import { sendToChannel } from '../utils/index.js';
+import { CHANNEL_IDS } from '../data/index.js';
 
 // DD2 Wiki Changes
 schedule('* * * * *', async () => {
@@ -30,7 +31,6 @@ schedule('* * * * *', async () => {
 		return capFirstLetter(action)
 	}
 
-	const wikiChangesChannel = client.channels.cache.get('1072236073515745451') as TextChannel
 	const response = await axios.get('https://wiki.dungeondefenders2.com/api.php?action=query&list=recentchanges&rcprop=user|title|timestamp|comment|loginfo|ids&rclimit=5&format=json')
     const {data: {query: {recentchanges}}} = response
 	const recentChangeIDsInfo = database.variables.find(v => v.get('name') === 'recentChangeIDs')!
@@ -61,7 +61,7 @@ schedule('* * * * *', async () => {
 			if (!/poweredby_mediawiki/.test(imgURL)) wikiChangeEmbed.setImage(`https://wiki.dungeondefenders2.com${imgURL}`)
 		}
 
-		wikiChangesChannel.send({embeds: [wikiChangeEmbed]})
+		sendToChannel(CHANNEL_IDS.WIKI_CHANGES, { embeds: [wikiChangeEmbed] })
 	}
 	if (recentChangeIDsInfo.get('value') === JSON.stringify(recentChangeIDs.slice(-10))) return
 	recentChangeIDsInfo.set('value', JSON.stringify(recentChangeIDs.slice(-10))) // Store the recent change IDs to prevent duplicates

@@ -1,7 +1,9 @@
 import { inspect } from "util";
 import { database } from "../database/index.js";
-import { client, modCommands, errorChannel, logChannel } from "../index.js";
+import { client } from "../index.js";
 import { CacheType, Interaction } from "discord.js";
+import { isModCommand, sendToChannel } from '../utils/index.js';
+import { CHANNEL_IDS } from '../data/index.js';
 
 // Slash Command Handler
 export function onInteractionCreate(interaction: Interaction<CacheType>) {
@@ -20,13 +22,13 @@ export function onInteractionCreate(interaction: Interaction<CacheType>) {
             command.execute(interaction)
         } catch (error) {
             console.error(error)
-            errorChannel.send({
-                content: `🚫  **${interaction.user.tag}** ran the ${isModCommand ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`,
+            sendToChannel(CHANNEL_IDS.ERROR, {
+                content: `🚫  **${interaction.user.tag}** ran the ${isModCmd ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`,
                 files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]
             })
             interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
         } finally {
-            logChannel?.send(`:scroll:  **${interaction.user.tag}** ran the ${isModCommand ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`)
+            sendToChannel(CHANNEL_IDS.LOG, `:scroll:  **${interaction.user.tag}** ran the ${isModCmd ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`)
         }
     }
 

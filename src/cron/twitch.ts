@@ -1,11 +1,11 @@
-import { EmbedBuilder, TextChannel } from "discord.js"
+import { EmbedBuilder } from "discord.js"
 import { schedule } from "node-cron"
 import { database } from "../database/index.js"
-import { client } from "../index.js"
 import { getTwitchUserInfo, streamInfo, userInfo } from "../library.js"
+import { sendToChannel } from '../utils/index.js'
 
 // Twitch Live Notifications
-export interface channelConfig {id: string, message: string | null, categories: string[]}
+export interface channelConfig {id: string, message: string | undefined, categories: string[]}
 schedule('* * * * *', () => {
     if (!database.twitchChannels) return
     database.twitchChannels.forEach(async channel => {
@@ -28,8 +28,7 @@ schedule('* * * * *', () => {
             .setColor('Purple')
 
         configs.forEach((config: channelConfig) => {
-            const discordChannel = client.channels.cache.get(config.id) as TextChannel
-            discordChannel.send({content: config.message!, embeds: [twitchStreamEmbed]})
+            sendToChannel(config.id, {content: config.message, embeds: [twitchStreamEmbed] })
         })
 
         if (recentStreamIDs.length >= 5) recentStreamIDs.shift() // Only store the 5 most recent stream IDs
