@@ -1,6 +1,6 @@
-import { EmbedBuilder, Message } from "discord.js"
-import { GoogleSpreadsheetRow } from "google-spreadsheet"
-import { UserLogInfo } from "../../database/privateTypes.js"
+import { EmbedBuilder, Message } from 'discord.js'
+import { GoogleSpreadsheetRow } from 'google-spreadsheet'
+import { UserLogInfo } from '../../database/privateTypes.js'
 
 const tradeRules = 
 `1. Follow the trading format below.

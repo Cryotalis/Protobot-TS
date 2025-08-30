@@ -1,5 +1,4 @@
-import { AnyThreadChannel, ForumChannel } from "discord.js"
-import { client } from "../index.js"
+import { AnyThreadChannel, ForumChannel } from 'discord.js'
 
 const forumIDs = [
     '1183125378613657720', // bug-report-test

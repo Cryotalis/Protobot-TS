@@ -1,7 +1,7 @@
-import { EmbedBuilder } from "discord.js"
-import { schedule } from "node-cron"
-import { database } from "../database/index.js"
-import { getTwitchUserInfo, streamInfo, userInfo } from "../library.js"
+import { EmbedBuilder } from 'discord.js'
+import { schedule } from 'node-cron'
+import { database } from '../database/index.js'
+import { getTwitchUserInfo, streamInfo, userInfo } from '../library.js'
 import { sendToChannel } from '../utils/index.js'
 
 // Twitch Live Notifications

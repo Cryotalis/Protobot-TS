@@ -1,9 +1,9 @@
-import { inspect } from "util";
-import { database } from "../database/index.js";
-import { client } from "../index.js";
-import { CacheType, Interaction } from "discord.js";
-import { isModCommand, sendToChannel } from '../utils/index.js';
-import { CHANNEL_IDS } from '../data/index.js';
+import { inspect } from 'util'
+import { database } from '../database/index.js'
+import { client } from '../index.js'
+import { CacheType, Interaction } from 'discord.js'
+import { isModCommand, sendToChannel } from '../utils/index.js'
+import { CHANNEL_IDS } from '../data/index.js'
 
 // Slash Command Handler
 export function onInteractionCreate(interaction: Interaction<CacheType>) {

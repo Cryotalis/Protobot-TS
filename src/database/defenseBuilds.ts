@@ -1,5 +1,5 @@
-import { GoogleSpreadsheetRow } from "google-spreadsheet"
-import { defenseBuilds } from "./index.js"
+import { GoogleSpreadsheetRow } from 'google-spreadsheet'
+import { defenseBuilds } from './index.js'
 
 export let defenseImages: Array<GoogleSpreadsheetRow>
 export let defenseBuildData: defenseObject[] = []
@@ -28,11 +28,11 @@ export async function loadDefenseBuilds(){
 						sheet.getCell(y + 10, x + 2).value?.toString() ?? ''
 					],
 					mods: [
-						{name: sheet.getCell(y + 12, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 12, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
-						{name: sheet.getCell(y + 14, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 14, x + 1).formula?.match(/\d+/)?.toString() || "0"}, 
-						{name: sheet.getCell(y + 16, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 16, x + 1).formula?.match(/\d+/)?.toString() || "0"}
+						{name: sheet.getCell(y + 12, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 12, x + 1).formula?.match(/\d+/)?.toString() || '0'}, 
+						{name: sheet.getCell(y + 14, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 14, x + 1).formula?.match(/\d+/)?.toString() || '0'}, 
+						{name: sheet.getCell(y + 16, x + 2).value?.toString() ?? '', qualibean: sheet.getCell(y + 16, x + 1).formula?.match(/\d+/)?.toString() || '0'}
 					],
-					relic: sheet.getCell(y + 12, x).formula?.match(/(?<=").+(?=")/)?.toString() || ""
+					relic: sheet.getCell(y + 12, x).formula?.match(/(?<=").+(?=")/)?.toString() || ''
 				})
 			}
 		}	
