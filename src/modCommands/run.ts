@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { connectDatabase, database, loadDefenseBuilds } from '../database/index.js'
+import { connectDatabase, database } from '../database/index.js'
+import { loadDefenseBuilds } from '../database/defenseBuilds.js'
 import { runStartup } from '../index.js'
 import { registerCommands } from '../utils/commands.js'
 

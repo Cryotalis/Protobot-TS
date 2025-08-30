@@ -4,10 +4,6 @@ import { JWT } from 'google-auth-library'
 import { PublicDatabaseSchema, publicDatabaseConfig } from './publicTypes.js'
 import { PrivateDatabaseSchema, privateDatabaseConfig } from './privateTypes.js'
 
-export * from './privateTypes.js'
-export * from './publicTypes.js'
-export * from './defenseBuilds.js'
-
 type DatabaseSchema = PublicDatabaseSchema & PrivateDatabaseSchema
 export const database = {} as DatabaseSchema
 

@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { processItem } from '../commandHelpers/price.js'
-import { database, rarityName } from '../database/index.js'
+import { database } from '../database/index.js'
+import { rarityName } from '../database/publicTypes.js'
 import { findBestCIMatch } from '../utils/string.js'
 
 export const command = {
