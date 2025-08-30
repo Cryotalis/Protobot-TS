@@ -1,4 +1,4 @@
-import { Collection, REST, Routes } from 'discord.js'
+import { REST, Routes } from 'discord.js'
 import { readdirSync } from 'fs'
 import { client } from '../index.js'
 import { BOT_ID, BOT_TOKEN, HOME_SERVER_ID } from '../data/index.js'
@@ -13,7 +13,6 @@ export function isModCommand(name: string) { return modCommands.includes(name) }
 export async function registerCommands() {
     const commands = []
     const privateCommands = []              // Administrator level commands only usable by privileged users
-    client.commands = new Collection()
 
     for (const file of commandFiles) {
         const { command } = regCommands.includes(file)

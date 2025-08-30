@@ -5,14 +5,13 @@ import { CacheType, Interaction } from 'discord.js'
 import { isModCommand, sendToChannel } from '../utils/index.js'
 import { CHANNEL_IDS } from '../data/index.js'
 
-// Slash Command Handler
 export function onInteractionCreate(interaction: Interaction<CacheType>) {
+    // Slash Command Handler
     if (interaction.isCommand() || interaction.isMessageContextMenuCommand()) {
         if (database.blacklist.find(user => user.get('id') === interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
     
         const isModCmd = isModCommand(interaction.commandName)
-        // TODO: REMOVE THIS ANY!!!
-        const command: any = client.commands?.get(interaction.commandName)
+        const command = client.commands.get(interaction.commandName)
         if (!command) {interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true}); return}
         if (isModCmd && !(interaction.memberPermissions?.has('ManageMessages') || database.contributors.find(user => user.get('id') === interaction.user.id))){
             interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true}); return

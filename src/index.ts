@@ -1,4 +1,4 @@
-import { Client, Collection, GatewayIntentBits, VoiceChannel } from 'discord.js'
+import { VoiceChannel } from 'discord.js'
 import { inspect } from 'util'
 import { schedule } from 'node-cron'
 import { registerFont } from 'canvas'
@@ -6,18 +6,12 @@ import { connectDatabase, loadDefenseBuilds } from './database/index.js'
 import { BOT_TOKEN, CHANNEL_IDS } from './data/index.js'
 import { registerCommands, sendToChannel } from './utils/index.js'
 import { onInteractionCreate, onMessageCreate, onThreadCreate, onThreadUpdate } from './events/index.js'
+import { BotClient } from './classes/BotClient.js'
 
 import './cron/index.js'
 import './events/index.js'
 
-export const client: Client<boolean> & {commands?: Collection<unknown, unknown>} = new Client({
-	intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.MessageContent
-	], 
-	rest: { timeout: 60000 }
-})
+export const client = new BotClient()
 
 export async function runStartup() {
 	await connectDatabase()
