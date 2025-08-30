@@ -1,8 +1,9 @@
 import { EmbedBuilder } from 'discord.js'
 import { schedule } from 'node-cron'
 import { database } from '../database/index.js'
-import { getTwitchUserInfo, streamInfo, userInfo } from '../library.js'
 import { sendToChannel } from '../utils/discord.js'
+import { getTwitchUserInfo } from '../utils/twitch.js'
+import { streamInfo, userInfo } from '../data/twitch.js'
 
 // Twitch Live Notifications
 export interface channelConfig {id: string, message: string | undefined, categories: string[]}

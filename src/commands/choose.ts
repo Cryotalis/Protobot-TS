@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { formatList } from '../library.js'
+import { formatList } from '../utils/string.js'
 
 export const command = {
 	data: new SlashCommandBuilder()

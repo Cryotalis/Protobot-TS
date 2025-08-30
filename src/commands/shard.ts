@@ -1,7 +1,8 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, EmbedBuilder, ComponentType, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from 'discord.js'
 import { client } from '../index.js'
-import { findBestCIMatch, heroEmotes } from '../library.js'
 import { database } from '../database/index.js'
+import { heroEmotes } from '../data/discord.js'
+import { findBestCIMatch } from '../utils/string.js'
 
 export const command = {
 	data: new SlashCommandBuilder()

@@ -1,7 +1,7 @@
 import { Client, Message, EmbedBuilder } from 'discord.js'
 import { findBestMatch } from 'string-similarity'
-import { heroEmotes } from '../library.js'
 import { database } from '../database/index.js'
+import { heroEmotes } from '../data/discord.js'
 
 exports.run = async (client: Client, message: Message, prefix: string, args: string[]) => {
     const modNames = database.mods.map(mod => mod.get('name'))
