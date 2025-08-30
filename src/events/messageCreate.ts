@@ -1,8 +1,8 @@
 import { Message, OmitPartialGroupDMChannel } from 'discord.js'
 import { database, UserLogInfo } from '../database/index.js'
 import { createAMLogEntry, DMRules } from './index.js'
-import { CHANNEL_IDS } from '../data/index.js'
 import { sendToChannel } from '../utils/discord.js'
+import { CHANNEL_IDS } from '../data/discord.js'
 
 const LFTAutomodChannels = [
     '460339922231099402',   // #looking-for-trade-pc

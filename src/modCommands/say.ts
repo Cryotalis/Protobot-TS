@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { BOT_OWNER_ID } from '../data/index.js'
 import { sendToChannel } from '../utils/discord.js'
+import { BOT_OWNER_ID } from '../data/discord.js'
 
 export const command = {
 	data: new SlashCommandBuilder()

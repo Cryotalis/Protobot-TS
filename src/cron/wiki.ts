@@ -3,7 +3,7 @@ import { EmbedBuilder } from 'discord.js'
 import { schedule } from 'node-cron'
 import { parse } from 'node-html-parser'
 import { database } from '../database/index.js'
-import { CHANNEL_IDS } from '../data/index.js'
+import { CHANNEL_IDS } from '../data/discord.js'
 import { sendToChannel } from '../utils/discord.js'
 import { capFirstLetter } from '../utils/string.js'
 

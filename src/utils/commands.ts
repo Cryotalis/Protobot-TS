@@ -1,7 +1,7 @@
 import { REST, Routes } from 'discord.js'
 import { readdirSync } from 'fs'
 import { client } from '../index.js'
-import { BOT_ID, BOT_TOKEN, HOME_SERVER_ID } from '../data/index.js'
+import { BOT_ID, BOT_TOKEN, HOME_SERVER_ID } from '../data/discord.js'
 
 const regCommands = readdirSync('./prod/commands')
 const modCommands = readdirSync('./prod/modCommands')
