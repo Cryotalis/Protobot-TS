@@ -29,11 +29,11 @@ client.on('ready', async () => {
 	console.log('Protobot is now online')
 	sendToChannel(CHANNEL_IDS.LOG, '**:white_check_mark:  Protobot is now online**')
 
-	schedule('0 * * * *', runStartup)
-
-	// Update Server Count every 30 minutes
 	const serverCountChannel = await client.channels.fetch(CHANNEL_IDS.SERVER_COUNT) as VoiceChannel
-	setInterval(() => serverCountChannel.edit({name: `Server Count: ${client.guilds.cache.size}`}), 1.8e+6)
+	schedule('0 * * * *', () => {
+		runStartup()
+		serverCountChannel.edit({ name: `Server Count: ${client.guilds.cache.size}` })
+	})
 })
 
 client.on('interactionCreate', onInteractionCreate)
