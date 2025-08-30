@@ -1,11 +1,11 @@
 import axios from 'axios'
 import { EmbedBuilder } from 'discord.js'
 import { schedule } from 'node-cron'
-import { database } from '../database/index.js'
-import { capFirstLetter } from '../library.js'
 import { parse } from 'node-html-parser'
-import { sendToChannel } from '../utils/index.js'
+import { database } from '../database/index.js'
 import { CHANNEL_IDS } from '../data/index.js'
+import { sendToChannel } from '../utils/discord.js'
+import { capFirstLetter } from '../utils/string.js'
 
 // DD2 Wiki Changes
 schedule('* * * * *', async () => {

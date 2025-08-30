@@ -2,8 +2,9 @@ import { inspect } from 'util'
 import { database } from '../database/index.js'
 import { client } from '../index.js'
 import { CacheType, Interaction } from 'discord.js'
-import { isModCommand, sendToChannel } from '../utils/index.js'
 import { CHANNEL_IDS } from '../data/index.js'
+import { isModCommand } from '../utils/commands.js'
+import { sendToChannel } from '../utils/discord.js'
 
 export function onInteractionCreate(interaction: Interaction<CacheType>) {
     // Slash Command Handler

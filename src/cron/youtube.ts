@@ -2,7 +2,7 @@ import axios from 'axios'
 import Parser from 'rss-parser'
 import { schedule } from 'node-cron'
 import { database } from '../database/index.js'
-import { sendToChannel } from '../utils/index.js'
+import { sendToChannel } from '../utils/discord.js'
 
 // Youtube Post Notifications
 schedule('* * * * *', () => {
