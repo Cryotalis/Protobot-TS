@@ -1,33 +1,44 @@
 import { inspect } from 'util'
-import { database } from '../database/database.js'
 import { client } from '../index.js'
 import { CacheType, Interaction } from 'discord.js'
 import { isModCommand, sendToChannel } from '../utils/discord.js'
 import { CHANNEL_IDS } from '../data/discord.js'
+import { isBlacklisted, isContributor } from '../database/helpers.js'
 
 export function onInteractionCreate(interaction: Interaction<CacheType>) {
     // Slash Command Handler
     if (interaction.isCommand() || interaction.isMessageContextMenuCommand()) {
-        if (database.blacklist.find(user => user.get('id') === interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
+        if (isBlacklisted(interaction.user.id)) {
+            interaction.reply(`${interaction.user} you have been banned running commands.`)
+            return
+        }
     
-        const commandType = isModCommand(interaction.commandName) ? 'mod command' : 'command'
         const command = client.commands.get(interaction.commandName)
-        if (!command) {interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true}); return}
-        if (commandType === 'mod command' && !(interaction.memberPermissions?.has('ManageMessages') || database.contributors.find(user => user.get('id') === interaction.user.id))){
-            interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true}); return
+        const commandType = isModCommand(interaction.commandName) ? 'mod command' : 'command'
+        const hasModPermission = interaction.memberPermissions?.has('ManageMessages')
+        if (!command) {
+            interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true})
+            return
+        }
+        if (commandType === 'mod command' && !(hasModPermission || isContributor(interaction.user.id))) {
+            interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true})
+            return
         } 
-    
+        
+        const logMessage = `**${interaction.user.tag}** ran the ${commandType} \`${interaction.commandName}\` `
+                         + `in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`
+
         try {
             command.execute(interaction)
         } catch (error) {
             console.error(error)
             sendToChannel(CHANNEL_IDS.ERROR, {
-                content: `🚫  **${interaction.user.tag}** ran the ${commandType} \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`,
-                files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]
+                content: `🚫  ${logMessage}`,
+                files: [{ attachment: Buffer.from(inspect(error, { depth: null })), name: 'error.ts' }]
             })
             interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
         } finally {
-            sendToChannel(CHANNEL_IDS.LOG, `:scroll:  **${interaction.user.tag}** ran the ${commandType} \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`)
+            sendToChannel(CHANNEL_IDS.LOG, `:scroll:  ${logMessage}`)
         }
     }
 
