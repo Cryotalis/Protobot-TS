@@ -2,8 +2,7 @@ import { inspect } from 'util'
 import { database } from '../database/index.js'
 import { client } from '../index.js'
 import { CacheType, Interaction } from 'discord.js'
-import { isModCommand } from '../utils/commands.js'
-import { sendToChannel } from '../utils/discord.js'
+import { isModCommand, sendToChannel } from '../utils/discord.js'
 import { CHANNEL_IDS } from '../data/discord.js'
 
 export function onInteractionCreate(interaction: Interaction<CacheType>) {
@@ -11,10 +10,10 @@ export function onInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isCommand() || interaction.isMessageContextMenuCommand()) {
         if (database.blacklist.find(user => user.get('id') === interaction.user.id)) {interaction.reply(`${interaction.user} you have been banned running commands.`); return}
     
-        const isModCmd = isModCommand(interaction.commandName)
+        const commandType = isModCommand(interaction.commandName) ? 'mod command' : 'command'
         const command = client.commands.get(interaction.commandName)
         if (!command) {interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true}); return}
-        if (isModCmd && !(interaction.memberPermissions?.has('ManageMessages') || database.contributors.find(user => user.get('id') === interaction.user.id))){
+        if (commandType === 'mod command' && !(interaction.memberPermissions?.has('ManageMessages') || database.contributors.find(user => user.get('id') === interaction.user.id))){
             interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true}); return
         } 
     
@@ -23,12 +22,12 @@ export function onInteractionCreate(interaction: Interaction<CacheType>) {
         } catch (error) {
             console.error(error)
             sendToChannel(CHANNEL_IDS.ERROR, {
-                content: `🚫  **${interaction.user.tag}** ran the ${isModCmd ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`,
+                content: `🚫  **${interaction.user.tag}** ran the ${commandType} \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`,
                 files: [{attachment: Buffer.from(inspect(error, {depth: null}), 'utf-8'), name: 'error.ts'}]
             })
             interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
         } finally {
-            sendToChannel(CHANNEL_IDS.LOG, `:scroll:  **${interaction.user.tag}** ran the ${isModCmd ? 'mod ' : ''}command \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`)
+            sendToChannel(CHANNEL_IDS.LOG, `:scroll:  **${interaction.user.tag}** ran the ${commandType} \`${interaction.commandName}\` in **${interaction.guild?.name ?? 'Direct Messages'}** (${interaction.guildId ?? interaction.channelId})`)
         }
     }
 
