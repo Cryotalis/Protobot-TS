@@ -1,5 +1,5 @@
 import { Message, OmitPartialGroupDMChannel } from 'discord.js'
-import { database } from '../database/index.js'
+import { database } from '../database/database.js'
 import { UserLogInfo } from '../database/privateTypes.js'
 import { createAMLogEntry, DMRules } from './index.js'
 import { sendToChannel } from '../utils/discord.js'

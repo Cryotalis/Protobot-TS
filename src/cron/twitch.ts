@@ -1,6 +1,6 @@
 import { EmbedBuilder } from 'discord.js'
 import { schedule } from 'node-cron'
-import { database } from '../database/index.js'
+import { database } from '../database/database.js'
 import { sendToChannel } from '../utils/discord.js'
 import { getTwitchUserInfo } from '../utils/twitch.js'
 import { streamInfo, userInfo } from '../data/twitch.js'

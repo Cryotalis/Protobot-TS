@@ -1,5 +1,5 @@
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
-import { defenseBuilds } from './index.js'
+import { defenseBuilds } from './database.js'
 
 export let defenseImages: Array<GoogleSpreadsheetRow>
 export let defenseBuildData: defenseObject[] = []

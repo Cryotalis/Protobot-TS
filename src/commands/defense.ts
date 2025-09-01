@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, SlashCommandBuilder, ComponentType, StringSelectMenuBuilder, AttachmentBuilder } from 'discord.js'
 import { createCanvas, loadImage } from 'canvas'
 import { defenseBuildData, defenseImages } from '../database/defenseBuilds.js'
-import { database } from '../database/index.js'
+import { database } from '../database/database.js'
 import { findBestCIMatch } from '../utils/string.js'
 import { wrapText, drawCentered } from '../utils/canvas.js'
 import { CanvasTextInfo } from '../data/canvas.js'

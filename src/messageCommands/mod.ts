@@ -1,6 +1,6 @@
 import { Client, Message, EmbedBuilder } from 'discord.js'
 import { findBestMatch } from 'string-similarity'
-import { database } from '../database/index.js'
+import { database } from '../database/database.js'
 import { heroEmotes } from '../data/discord.js'
 
 exports.run = async (client: Client, message: Message, prefix: string, args: string[]) => {

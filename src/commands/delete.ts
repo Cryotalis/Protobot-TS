@@ -1,5 +1,5 @@
 import { MessageContextMenuCommandInteraction, ContextMenuCommandBuilder, MessageFlags } from 'discord.js'
-import { database } from '../database/index.js'
+import { database } from '../database/database.js'
 import { BOT_ID } from '../data/discord.js'
 
 export const command = {

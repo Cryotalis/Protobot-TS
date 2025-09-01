@@ -1,5 +1,5 @@
 import { inspect } from 'util'
-import { database } from '../database/index.js'
+import { database } from '../database/database.js'
 import { client } from '../index.js'
 import { CacheType, Interaction } from 'discord.js'
 import { isModCommand, sendToChannel } from '../utils/discord.js'
