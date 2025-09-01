@@ -7,7 +7,7 @@ import {
     SlashCommandBuilder
 } from 'discord.js'
 
-type Command = {
+export type Command = {
     data: SlashCommandBuilder | ContextMenuCommandBuilder,
     execute: (interaction: Interaction) => Promise<void>
 }

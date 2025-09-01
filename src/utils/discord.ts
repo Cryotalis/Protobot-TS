@@ -2,6 +2,7 @@ import { MessageCreateOptions, MessagePayload, REST, Routes, TextChannel } from 
 import { client } from '../index.js'
 import { readdirSync } from 'fs'
 import { BOT_ID, BOT_TOKEN, HOME_SERVER_ID } from '../data/discord.js'
+import { Command } from '../classes/BotClient.js'
 
 const regCommands = readdirSync('./prod/commands')
 const modCommands = readdirSync('./prod/modCommands')
@@ -15,7 +16,7 @@ export async function registerCommands() {
     const privateCommands = []              // Administrator level commands only usable by privileged users
 
     for (const file of commandFiles) {
-        const { command } = regCommands.includes(file)
+        const { command } : { command: Command } = regCommands.includes(file)
             ? await import(`./commands/${file}`)
             : await import(`./modCommands/${file}`)
 
