@@ -1,8 +1,9 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { connectDatabase, database } from '../database/database.js'
+import { connectDatabase } from '../database/database.js'
 import { loadDefenseBuilds } from '../database/defenseBuilds.js'
 import { runStartup } from '../index.js'
 import { registerCommands } from '../utils/discord.js'
+import { isContributor } from '../database/helpers.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -30,7 +31,7 @@ export const command = {
 		)
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
-		if (!database.contributors.find(u => u.get('id') === interaction.user.id)) {
+		if (!isContributor(interaction.user.id)) {
 			return interaction.reply('This command is reserved for Protobot Council Members only.')
 		}
 

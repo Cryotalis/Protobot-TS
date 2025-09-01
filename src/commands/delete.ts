@@ -1,6 +1,6 @@
 import { MessageContextMenuCommandInteraction, ContextMenuCommandBuilder, MessageFlags } from 'discord.js'
-import { database } from '../database/database.js'
 import { BOT_ID } from '../data/discord.js'
+import { isContributor } from '../database/helpers.js'
 
 export const command = {
 	data: new ContextMenuCommandBuilder()
@@ -9,12 +9,11 @@ export const command = {
 	,
 	async execute(interaction: MessageContextMenuCommandInteraction) {
 		const isBotMessage = interaction.targetMessage.author.id === BOT_ID
-		const isContributor = database.contributors.find(u => u.get('id') === interaction.user.id)
 		/** Whether the target message is the result of a command issued by the user. */
 		const isOGCommandUser = interaction.user === interaction.targetMessage.interactionMetadata?.user
 
 		let msgContent: string
-		if (isBotMessage && (isContributor || isOGCommandUser)) {
+		if (isBotMessage && (isContributor(interaction.user.id) || isOGCommandUser)) {
 			msgContent = 'Message deleted.'
 			await interaction.targetMessage.delete()
 		} else {
