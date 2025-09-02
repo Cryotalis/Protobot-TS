@@ -1,9 +1,9 @@
 export const BOT_OWNER_ID = '251458435554607114'
 const MINTIE_ID = '631961435051917362'
-const EUROPA_ID = '521180443958181889'
+const PROTOBOT_ID = '521180443958181889'
 
 const devMode = process.env.DEV_MODE === 'true'
-export const BOT_ID = devMode ? MINTIE_ID : EUROPA_ID
+export const BOT_ID = devMode ? MINTIE_ID : PROTOBOT_ID
 export const BOT_TOKEN = devMode ? process.env.DEV_TOKEN! : process.env.BOT_TOKEN!
 
 export const HOME_SERVER_ID = '379501550097399810'
