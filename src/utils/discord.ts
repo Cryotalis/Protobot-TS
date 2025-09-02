@@ -17,8 +17,8 @@ export async function registerCommands() {
 
     for (const file of commandFiles) {
         const { command } : { command: Command } = regCommands.includes(file)
-            ? await import(`./commands/${file}`)
-            : await import(`./modCommands/${file}`)
+            ? await import(`../commands/${file}`)
+            : await import(`../modCommands/${file}`)
 
         privateCommandFiles.includes(file)
             ? privateCommands.push(command.data.toJSON())
