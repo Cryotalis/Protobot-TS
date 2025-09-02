@@ -2,8 +2,7 @@ import { EmbedBuilder } from 'discord.js'
 import { schedule } from 'node-cron'
 import { database } from '../database/database.js'
 import { sendToChannel } from '../utils/discord.js'
-import { getTwitchUserInfo } from '../utils/twitch.js'
-import { streamInfo, userInfo } from '../data/twitch.js'
+import { getTwitchStreamInfo, getTwitchUserInfo } from '../utils/twitch.js'
 
 // Twitch Live Notifications
 export interface channelConfig {id: string, message: string | undefined, categories: string[]}
@@ -12,11 +11,13 @@ schedule('* * * * *', () => {
     database.twitchChannels.forEach(async channel => {
         const configs: channelConfig[] = JSON.parse(channel.get('configs') || '[]')
         if (configs.length === 0) return
+
         const [streamInfo, userInfo] = await Promise.all([
-            getTwitchUserInfo(channel.get('username'), 1) as Promise<streamInfo>,
-            getTwitchUserInfo(channel.get('username'), 0) as Promise<userInfo>
+            getTwitchStreamInfo(channel.get('username')),
+            getTwitchUserInfo(channel.get('username')),
         ])
         if (!streamInfo || !userInfo) return
+
         const recentStreamIDs: string[] = JSON.parse(channel.get('recentStreamIDs') || '[]')
         if (recentStreamIDs.includes(streamInfo.id)) return
 
