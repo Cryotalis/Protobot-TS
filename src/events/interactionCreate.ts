@@ -1,12 +1,12 @@
 import { inspect } from 'util'
 import { client } from '../index.js'
-import { CacheType, Interaction } from 'discord.js'
+import { CacheType, Interaction, MessageFlags } from 'discord.js'
 import { isModCommand, sendToChannel } from '../utils/discord.js'
 import { CHANNEL_IDS } from '../data/discord.js'
 import { isBlacklisted, isContributor } from '../database/helpers.js'
 
 export function onInteractionCreate(interaction: Interaction<CacheType>) {
-    // Slash Command Handler
+    // Slash Commands & Context Menu Commands
     if (interaction.isCommand() || interaction.isMessageContextMenuCommand()) {
         if (isBlacklisted(interaction.user.id)) {
             interaction.reply(`${interaction.user} you have been banned running commands.`)
@@ -17,11 +17,17 @@ export function onInteractionCreate(interaction: Interaction<CacheType>) {
         const commandType = isModCommand(interaction.commandName) ? 'mod command' : 'command'
         const hasModPermission = interaction.memberPermissions?.has('ManageMessages')
         if (!command) {
-            interaction.reply({content: 'Failed to load command. Please try again in a few seconds.', ephemeral: true})
+            interaction.reply({
+                content: 'Failed to load command. Please try again later.',
+                flags: MessageFlags.Ephemeral
+            })
             return
         }
         if (commandType === 'mod command' && !(hasModPermission || isContributor(interaction.user.id))) {
-            interaction.reply({content: 'You do not have permission to use this command.', ephemeral: true})
+            interaction.reply({
+                content: 'You do not have permission to use this command.',
+                flags: MessageFlags.Ephemeral
+            })
             return
         } 
         
@@ -36,7 +42,10 @@ export function onInteractionCreate(interaction: Interaction<CacheType>) {
                 content: `🚫  ${logMessage}`,
                 files: [{ attachment: Buffer.from(inspect(error, { depth: null })), name: 'error.ts' }]
             })
-            interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
+            interaction.reply({
+                content: 'There was an error while executing this command!',
+                flags: MessageFlags.Ephemeral
+            })
         } finally {
             sendToChannel(CHANNEL_IDS.LOG, `:scroll:  ${logMessage}`)
         }

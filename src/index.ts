@@ -24,7 +24,7 @@ runStartup()
 registerFont('assets/Arial.ttf', {family: 'Arial'})
 registerFont('assets/Arial Bold.ttf', {family: 'Arial Bold'})
 
-client.on('ready', async () => {
+client.on('clientReady', async () => {
 	client.user?.setActivity('/help')
 
 	console.log('Protobot is now online')
