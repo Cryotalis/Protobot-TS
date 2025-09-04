@@ -1,10 +1,10 @@
 import { GoogleSpreadsheetRow, GoogleSpreadsheetWorksheet } from 'google-spreadsheet'
 
 type ModKeys = 'name' | 'description' | 'drop' | 'hero' | 'type' | 'image'
-type ModInfo = { [K in ModKeys]: string }
+export type ModInfo = { [K in ModKeys]: string }
 
 type ShardKeys = ModKeys | 'upgradeLevels' | 'dropURL' | 'gilded'
-type ShardInfo = { [K in ShardKeys]: string }
+export type ShardInfo = { [K in ShardKeys]: string }
 
 export type rarityName = 'Legendary' | 'Mythical' | 'Epic' | 'Powerful'
 type PriceKeys = 'name' | 'pcPrice' | 'psPrice' | 'xboxPrice'
