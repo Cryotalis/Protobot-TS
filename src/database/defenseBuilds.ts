@@ -1,9 +1,17 @@
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { defenseBuilds } from './database.js'
 
+export interface defenseObject {
+	name: string,
+	role: string,
+	tertiary: string,
+	shards: string[],
+	mods: { name: string, qualibean: string }[],
+	relic: string
+}
+
 export let defenseImages: Array<GoogleSpreadsheetRow>
 export let defenseBuildData: defenseObject[] = []
-export interface defenseObject {name: string, role: string, tertiary: string, shards: string[], mods: {name: string, qualibean: string}[], relic: string}
 
 export async function loadDefenseBuilds(){
     await defenseBuilds.loadInfo()
