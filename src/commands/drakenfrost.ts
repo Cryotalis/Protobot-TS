@@ -1,4 +1,5 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
+import { dateDiff } from '../utils/time.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -19,16 +20,7 @@ export const command = {
 		)
 		if (nextDate <= now) nextDate.setDate(nextDate.getDate() + 7)
 		
-		// Calculate time difference
-		// TODO: Time difference should be calculated with a util function
-		let timeDiff = (nextDate.getTime() - now.getTime()) / 1000
-		const dayDiff = Math.floor(timeDiff / 86400)
-		timeDiff -= dayDiff * 86400
-		const hourDiff = Math.floor(timeDiff / 3600)
-		timeDiff -= hourDiff * 3600
-		const minDiff = Math.floor(timeDiff / 60)
-		timeDiff -= minDiff * 60
-		const secDiff = Math.floor(timeDiff)
+		const { days, hours, minutes, seconds } = dateDiff(nextDate, now)
 		
 		nextDate.setMinutes(nextDate.getMinutes() - nextDate.getTimezoneOffset()) // Convert back to local time
 		
@@ -48,7 +40,7 @@ export const command = {
 			.setThumbnail('https://i.imgur.com/BrTSxJu.png')
 			.addFields([
 				{
-					name: `\u200B    ${dayDiff}           ${hourDiff}            ${minDiff}             ${secDiff}`,
+					name: `\u200B    ${days}           ${hours}            ${minutes}             ${seconds}`,
 					value: 'Days \u2009 Hours \u2009 Minutes \u2009 Seconds\n\u200B '
 				},
 				{ name: 'Week 1', value: DFKMods[0], 	   inline: true },

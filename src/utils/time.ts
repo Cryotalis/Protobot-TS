@@ -13,21 +13,17 @@ export function findTimeZone(timeZone: string) {
  * Converts UTC offset in format ±hours:minutes to minutes
  * @param {String} offset - The UTC offset in format ±hours:minutes 
  */
-export function parseOffset(offset: string){
+export function parseOffset(offset: string) {
     const hours = parseInt(offset.match(/-?\d+/)![0])
     const minutes = /:\d+/.test(offset) ? parseInt(offset.match(/(?<=:)\d+/)![0]) : 0
     return hours * 60 + minutes
 }
 
 /**
- * Returns the difference between 2 dates (secondDate - firstDate) as a string in the following format: days, hours, minutes, and seconds.
- * @param {boolean} shortFormat - Whether to use the shorthand format (d h m s instead of days, hours, minutes, and seconds)
+ * Returns the difference between 2 dates in days, hours, minutes, and seconds.
  */
-export function dateDiff(firstDate: Date, secondDate: Date, shortFormat: boolean = false) {
-    if (firstDate === secondDate) {return 'right now'}
-    let timeDiff = Math.abs(secondDate.getTime() - firstDate.getTime()) / 1000 //Gets difference between the dates in seconds
-
-    //Calculates difference of days, hours, minutes, seconds
+export function dateDiff(firstDate: Date, secondDate: Date) {
+    let timeDiff = Math.abs(secondDate.getTime() - firstDate.getTime()) / 1000
     const days = Math.floor(timeDiff / 86400)
     timeDiff -= days * 86400
     const hours = Math.floor(timeDiff / 3600)
@@ -36,16 +32,7 @@ export function dateDiff(firstDate: Date, secondDate: Date, shortFormat: boolean
     timeDiff -= minutes * 60
     const seconds = Math.floor(timeDiff)
 
-    //Labels days, hours, minutes, seconds grammatically and leaves blank when appropriate
-    const daysOutput = days === 1 ? `${days} day,` : days ? `${days} days,` : ''
-    const hoursOutput = hours === 1 ? `${hours} hour,` : hours ? `${hours} hours,` : ''
-    const minutesOutput = minutes === 1 ? `${minutes} minute,` : minutes ? `${minutes} minutes,` : ''
-    const secondsOutput = seconds === 1 ? `${seconds} second,` : seconds ? `${seconds} seconds,` : ''
-    let dateString = `${daysOutput} ${hoursOutput} ${minutesOutput} ${secondsOutput}`
-        .replace(/,(?=[^,]*$)/, '') //removes extra comma at the end of the string
-        .replace(/,(?=[^,]*$)/, ' and') //replaces last comma in string with "and"
-    if (shortFormat) dateString = dateString.replace(/\sdays?/, 'd').replace(/\shours?/, 'h').replace(/\sminutes?/, 'm').replace(/\sseconds?/, 's').replace(/\sand/, '').replace(/,/g, '')
-    return secondDate > firstDate ? dateString.trim() : `-${dateString.trim()}` //Removes extra whitespace from both ends, make time negative if applicable
+    return { days, hours, minutes, seconds }
 }
 
 /**
