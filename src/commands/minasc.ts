@@ -6,28 +6,30 @@ export const command = {
 		.setDescription('Calculate your minimum ascension and talent caps')
 		.addNumberOption(option => option.setName('ascension')
 			.setDescription('Your Ascension')
-			.setRequired(true)
 			.setMinValue(1)
-			.setMaxValue(50000))
+			.setMaxValue(50000)
+			.setRequired(true)
+		)
 		.addNumberOption(option => option.setName('floor')
 			.setDescription('Your highest Onslaught Floor')
-			.setRequired(true)
 			.setMinValue(1)
-			.setMaxValue(999))
+			.setMaxValue(999)
+			.setRequired(true)
+		)
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
 		const ascInput = interaction.options.getNumber('ascension')!
 		const floorInput = interaction.options.getNumber('floor')!
 		const ascension = Math.round(ascInput)
 		const floor = Math.round(floorInput)
-		const user = interaction.member?.user
 
-		let talentCaps = floor >= 30 ? (floor-30)*4.16 + ascension/50 : ascension/50
-		const minAsc = Math.round(talentCaps * 3)
-		const offense = minAsc%3 > 0 ? Math.floor(talentCaps) + 1 : Math.floor(talentCaps)
-		const defense = minAsc%3 > 1 ? Math.floor(talentCaps) + 1 : Math.floor(talentCaps)
+		const talentCaps = floor >= 30
+			? (floor - 30) * 4.16 + ascension / 50
+			: ascension / 50
+		const minAsc  = Math.round(talentCaps * 3)
+		const offense = Math.floor(talentCaps) + Number(minAsc % 3 > 0)
+		const defense = Math.floor(talentCaps) + Number(minAsc % 3 > 1)
 		const utility = Math.floor(talentCaps)
-		talentCaps = Math.round(talentCaps)
 
 		const suggestion = minAsc < 500
 		? 'Your Minimum Ascension is far too low. If you reset right now, you will most likely not be able to get back to where you were or do many resets very easily.'
@@ -41,19 +43,26 @@ export const command = {
 		? 'What are you waiting for? You have more than enough Minimum Ascension for your next reset!'
 		: 'Hmm, it seems that your input is invalid, so I cannot provide a proper suggestion...'
 		
+		const { avatar, id, username } = interaction.user
 		const ascEmbed = new EmbedBuilder()
 			.setColor('Blue')
-			.setAuthor({name: (interaction as Interaction).user.tag})
-			.setThumbnail(`https://cdn.discordapp.com/avatars/${user?.id}/${user?.avatar}.png`)
+			.setAuthor({ name: username })
+			.setThumbnail(`https://cdn.discordapp.com/avatars/${id}/${avatar}.png`)
 			.addFields([
-				{name: '**Ascension:**', value: `${ascension}`, inline: true},
-				{name: '**Floor:**', value: `${floor}`, inline: true},
-				{name: '**Talent Caps:**', value: `${talentCaps}`, inline: true},
-				{name: '**Minimum Ascension:**', value: `\`\`\`${minAsc} (${offense} Offense | ${defense} Defense | ${utility} Utility)\`\`\``},
-				{name: '<:protobot:563244237433602048> My suggestion:', value: suggestion},
-				{name: '\u200b', value: '[Click Here](https://wiki.dungeondefenders2.com/wiki/Ancient_Power_Calculations) to learn more about how this was calculated'}
+				{ name: '**Ascension:**',   value: `${ascension}`, 				  inline: true },
+				{ name: '**Floor:**', 	    value: `${floor}`,	 				  inline: true },
+				{ name: '**Talent Caps:**', value: `${(Math.round(talentCaps))}`, inline: true },
+				{
+					name: '**Minimum Ascension:**',
+					value: `\`\`\`${minAsc} (${offense} Offense | ${defense} Defense | ${utility} Utility)\`\`\``
+				},
+				{ name: '<:protobot:563244237433602048> My suggestion:', value: suggestion},
+				{
+					name: '\u200b',
+					value: '[Click Here](https://wiki.dungeondefenders2.com/wiki/Ancient_Power_Calculations) to learn more about how this was calculated'
+				}
 			])
 		
-		await interaction.reply({embeds: [ascEmbed], allowedMentions: {repliedUser: false}})
+		interaction.reply({ embeds: [ascEmbed] })
 	}
 }
