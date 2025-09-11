@@ -3,6 +3,7 @@ import { processItem } from '../commandHelpers/price.js'
 import { database } from '../database/database.js'
 import { rarityName } from '../database/publicTypes.js'
 import { findBestCIMatch } from '../utils/string.js'
+import { getServoVariant } from '../commandHelpers/mod.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -37,13 +38,11 @@ export const command = {
 		const searchItem = interaction.options.getString('item')!
 		
 		let bestMatch = findBestCIMatch(searchItem, database.prices.map(i => i.get('name'))).bestMatch.target
+		const target = /Chip|Servo/i.test(searchItem)
+			? bestMatch
+			: getServoVariant(bestMatch)
 
-		// If no mod type was given, default to Servo if a Servo variant exists
-		if (!/Chip|Servo/i.test(searchItem) && database.mods.find(mod => mod.get('name') === bestMatch.replace('Chip', 'Servo'))) {
-			bestMatch = bestMatch.replace('Chip', 'Servo')
-		}
-
-		const itemResult = database.prices.find(i => i.get('name') === bestMatch)!
+		const itemResult = database.prices.find(i => i.get('name') === target)!
 		const { name, pcPrice, psPrice, xboxPrice } = processItem(itemResult, amount, qualibean, rarity)
 
 		const priceEmbed = new EmbedBuilder()
@@ -51,10 +50,22 @@ export const command = {
 			.setAuthor({ name: 'Price Check' })
 			.setTitle(`Showing Prices for ${name}:`)
 			.addFields([
-				{ name: '<:Windows:841728740333715497>  PC Price', value: `${pcPrice} <:gold:460345588911833088>` },
-				{ name: '<:PS:841728740282597426>  PlayStation Price', value: `${psPrice} <:gold:460345588911833088>` },
-				{ name: '<:Xbox:841728740303437824>  Xbox Price', value: `${xboxPrice} <:gold:460345588911833088>` },
-				{ name: '\u200b', value: 'Prices taken from [DD2 Market Prices](https://docs.google.com/spreadsheets/d/1GXtKq58mLDBWbhTlUhOj4GbMmJ37MZf2D8rnDHHl_R8)' }
+				{
+					name: '<:Windows:841728740333715497>  PC Price',
+					value: `${pcPrice} <:gold:460345588911833088>`
+				},
+				{
+					name: '<:PS:841728740282597426>  PlayStation Price',
+					value: `${psPrice} <:gold:460345588911833088>`
+				},
+				{
+					name: '<:Xbox:841728740303437824>  Xbox Price',
+					value: `${xboxPrice} <:gold:460345588911833088>`
+				},
+				{
+					name: '\u200b',
+					value: 'Prices taken from [DD2 Market Prices](https://docs.google.com/spreadsheets/d/1GXtKq58mLDBWbhTlUhOj4GbMmJ37MZf2D8rnDHHl_R8)'
+				}
 			])
 
 		interaction.reply({ embeds: [priceEmbed] })
