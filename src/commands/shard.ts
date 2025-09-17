@@ -34,19 +34,17 @@ export const command = {
         if (shardBestMatch.rating >= modBestMatch.rating) {
 			interaction.reply({ embeds: [shardEmbed] })
 		} else {
-			const mod = database.mods.find(mod => mod.get('name') === modTarget)!
-			interaction
-				.reply({ embeds: [shardEmbed], components: [suggestionButton] })
-				.then(response => {
-					const collector = response.createMessageComponentCollector({
-						componentType: ComponentType.Button,
-						filter: msg => msg.user.id === interaction.user.id,
-						time: 30000
-					})
-					collector.on('collect', () => {
-						interaction.editReply({ embeds: [getModEmbed(mod)], components: [] })
-					})
-				})
+			const response = await interaction.reply({ embeds: [shardEmbed], components: [suggestionButton] })
+			const collector = response.createMessageComponentCollector({
+				componentType: ComponentType.Button,
+				filter: msg => msg.user.id === interaction.user.id,
+				time: 30000
+			})
+			collector.on('collect', () => {
+				const mod = database.mods.find(mod => mod.get('name') === modTarget)!
+				interaction.editReply({ embeds: [getModEmbed(mod)], components: [] })
+			})
+				
 		}
 	}
 }
