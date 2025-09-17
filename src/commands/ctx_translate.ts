@@ -8,21 +8,24 @@ export const command = {
 		.setType(3)
 	,
 	async execute(interaction: MessageContextMenuCommandInteraction) {
-        if (!interaction.targetMessage.content) {
+		const textInput = interaction.targetMessage.content
+        if (!textInput) {
 			interaction.reply({ content: 'I could not find any text to translate.', flags: MessageFlags.Ephemeral })
 			return
 		}
 
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
 		const gTranslate = new Translate({
 			credentials: {
 				client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!,
 				private_key: process.env.GOOGLE_PRIVATE_KEY!
 			}
 		})
-		const userLocale = /-/.test(interaction.locale) ? interaction.locale.match(/.+(?=-)/)![0] : interaction.locale
-		const outputLanguage = languageCodes.find(lang => lang.code === userLocale)!
-		const [_, translationObj] = await gTranslate.translate(interaction.targetMessage.content, outputLanguage.code)
+		
+		const userLangCode = interaction.locale.match(/[a-z]+/i)![0]
+		const outputLang = languageCodes.find(lang => lang.code === userLangCode)!
+		const [_, translationObj] = await gTranslate.translate(textInput, outputLang.code)
 		const translation = translationObj.data.translations[0]
 		const detectedSourceLang = languageCodes.find(({code}) => code === translation.detectedSourceLanguage)?.name
 								?? translation.detectedSourceLanguage
@@ -30,11 +33,11 @@ export const command = {
 		const translateEmbed = new EmbedBuilder()
 			.setColor('Blue')
 			.addFields([
-				{name: `Input (${detectedSourceLang})`, value: interaction.targetMessage.content},
-				{name: `Output (${outputLanguage.name})`, value: translation.translatedText}
+				{ name: `Input (${detectedSourceLang})`, value: textInput },
+				{ name: `Output (${outputLang.name})`, value: translation.translatedText }
 			])
-			.setFooter({text: 'Google Translate', iconURL: 'https://i.imgur.com/vcZDlz7.png'})
+			.setFooter({ text: 'Google Translate', iconURL: 'https://i.imgur.com/vcZDlz7.png' })
 		
-		interaction.editReply({embeds: [translateEmbed]})
+		interaction.editReply({ embeds: [translateEmbed] })
 	}
 }
