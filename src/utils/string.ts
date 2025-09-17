@@ -1,11 +1,6 @@
 import { findBestMatch } from 'string-similarity'
 
 /**
- * Returns the last word in a string
- */
-export const findLastWord = (string: string) => string.trim().split(' ').pop() || ''
-
-/**
  * Capitalizes the first letter of every word in a string
  */
 export const capitalize = (string: string) => string.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
