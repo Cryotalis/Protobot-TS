@@ -1,6 +1,6 @@
 import { MessageContextMenuCommandInteraction, EmbedBuilder, ContextMenuCommandBuilder, MessageFlags } from 'discord.js'
-import { Translate } from '@google-cloud/translate/build/src/v2/index.js'
 import { languageCodes } from '../data/languageCodes.js'
+import { gTranslate } from '../commandHelpers/translate.js'
 
 export const command = {
 	data: new ContextMenuCommandBuilder()
@@ -15,13 +15,6 @@ export const command = {
 		}
 
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral })
-
-		const gTranslate = new Translate({
-			credentials: {
-				client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!,
-				private_key: process.env.GOOGLE_PRIVATE_KEY!
-			}
-		})
 		
 		const userLangCode = interaction.locale.match(/[a-z]+/i)![0]
 		const outputLang = languageCodes.find(lang => lang.code === userLangCode)!

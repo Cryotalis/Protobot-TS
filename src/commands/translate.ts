@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { Translate } from '@google-cloud/translate/build/src/v2/index.js'
 import { languageCodes } from '../data/languageCodes.js'
 import { findBestCIMatch } from '../utils/string.js'
+import { gTranslate } from '../commandHelpers/translate.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -27,13 +27,6 @@ export const command = {
 		const textInput = interaction.options.getString('text')!
 		const sourceLangInput = interaction.options.getString('from')
 		const outputLangInput = interaction.options.getString('to')
-		
-		const gTranslate = new Translate({
-			credentials: {
-				client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL!,
-				private_key: process.env.GOOGLE_PRIVATE_KEY!
-			}
-		})
 		
 		const userLangCode = interaction.locale.match(/[a-z]+/i)![0]
 		const sourceLangBestMatch = sourceLangInput && findBestCIMatch(sourceLangInput, languageCodes.map(c => c.name)).bestMatch.target
