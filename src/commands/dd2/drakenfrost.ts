@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { dateDiff } from '../utils/time.js'
+import { dateDiff } from '../../utils/time.js'
 
 export const command = {
 	data: new SlashCommandBuilder()

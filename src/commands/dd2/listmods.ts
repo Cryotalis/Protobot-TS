@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { database } from '../database/database.js'
-import { capitalize } from '../utils/string.js'
+import { database } from '../../database/database.js'
+import { capitalize } from '../../utils/string.js'
 
 export const command = {
 	data: new SlashCommandBuilder()

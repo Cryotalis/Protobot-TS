@@ -1,9 +1,9 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
-import { connectDatabase } from '../database/database.js'
-import { loadDefenseBuilds } from '../database/defenseBuilds.js'
-import { runStartup } from '../index.js'
-import { registerCommands } from '../utils/discord.js'
-import { isContributor } from '../database/helpers.js'
+import { connectDatabase } from '../../database/database.js'
+import { loadDefenseBuilds } from '../../database/defenseBuilds.js'
+import { runStartup } from '../../index.js'
+import { registerCommands } from '../../utils/discord.js'
+import { isContributor } from '../../database/helpers.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
