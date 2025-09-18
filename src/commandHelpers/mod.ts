@@ -1,8 +1,8 @@
 import { EmbedBuilder } from 'discord.js'
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
-import { ModInfo } from '../../database/publicTypes.js'
-import { heroEmotes } from '../../data/discord.js'
-import { database } from '../../database/database.js'
+import { ModInfo } from '../database/publicTypes.js'
+import { heroEmotes } from '../data/discord.js'
+import { database } from '../database/database.js'
 
 export function getModEmbed(mod: GoogleSpreadsheetRow<ModInfo>) {
     return new EmbedBuilder()

@@ -1,7 +1,7 @@
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
-import { ShardInfo } from '../../database/publicTypes.js'
+import { ShardInfo } from '../database/publicTypes.js'
 import { EmbedBuilder } from 'discord.js'
-import { heroEmotes } from '../../data/discord.js'
+import { heroEmotes } from '../data/discord.js'
 
 export function getShardEmbed(shard: GoogleSpreadsheetRow<ShardInfo>) {
     return new EmbedBuilder()

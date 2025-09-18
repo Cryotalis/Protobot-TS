@@ -1,9 +1,9 @@
 import { createCanvas, loadImage } from 'canvas'
 import { AttachmentBuilder } from 'discord.js'
-import { CanvasTextInfo } from '../../data/canvas.js'
-import { database } from '../../database/database.js'
-import { defenseBuildData, defenseImages } from '../../database/defenseBuilds.js'
-import { wrapText, drawCentered } from '../../utils/canvas.js'
+import { CanvasTextInfo } from '../data/canvas.js'
+import { database } from '../database/database.js'
+import { defenseBuildData, defenseImages } from '../database/defenseBuilds.js'
+import { wrapText, drawCentered } from '../utils/canvas.js'
 
 export async function generateBuildImage(defenseName: string, defenseRole: string) {
     const { shards } = database

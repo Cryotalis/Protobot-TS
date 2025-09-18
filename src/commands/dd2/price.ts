@@ -1,9 +1,9 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
-import { processItem } from '../commandHelpers/price.js'
+import { processItem } from '../../commandHelpers/price.js'
 import { database } from '../../database/database.js'
 import { rarityName } from '../../database/publicTypes.js'
 import { findBestCIMatch } from '../../utils/string.js'
-import { getServoVariant } from '../commandHelpers/mod.js'
+import { getServoVariant } from '../../commandHelpers/mod.js'
 
 export const command = {
 	data: new SlashCommandBuilder()

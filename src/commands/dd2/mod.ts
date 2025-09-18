@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, ButtonBuilder, ComponentType, ButtonStyle, SlashCommandBuilder } from 'discord.js'
 import { database } from '../../database/database.js'
 import { findBestCIMatch } from '../../utils/string.js'
-import { getModEmbed, getServoVariant } from '../commandHelpers/mod.js'
-import { getShardEmbed } from '../commandHelpers/shard.js'
+import { getModEmbed, getServoVariant } from '../../commandHelpers/mod.js'
+import { getShardEmbed } from '../../commandHelpers/shard.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
