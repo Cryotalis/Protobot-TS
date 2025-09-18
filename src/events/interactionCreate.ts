@@ -1,10 +1,10 @@
-import { CacheType, Interaction, MessageFlags } from 'discord.js'
+import { CacheType, ChannelType, Interaction, MessageFlags } from 'discord.js'
 import { client } from '../index.js'
 import { sendToChannel } from '../utils/discord.js'
 import { CHANNEL_IDS } from '../data/discord.js'
 import { isBlacklisted } from '../database/helpers.js'
 
-export function onInteractionCreate(interaction: Interaction<CacheType>) {
+export async function onInteractionCreate(interaction: Interaction<CacheType>) {
     // Slash Commands & Context Menu Commands
     if (interaction.isCommand() || interaction.isMessageContextMenuCommand()) {
         if (isBlacklisted(interaction.user.id)) {
@@ -26,6 +26,35 @@ export function onInteractionCreate(interaction: Interaction<CacheType>) {
 
         command.execute(interaction)
         sendToChannel(CHANNEL_IDS.LOG, `:scroll:  ${logMessage} (${interaction.guildId ?? interaction.channelId})`)
+    }
+
+    if (interaction.isModalSubmit()) {
+        if (interaction.customId === 'postModal' && interaction.channel?.type === ChannelType.GuildText) {
+            const postContent = interaction.fields.getTextInputValue('postContent')
+            const messageID = interaction.fields.getTextInputValue('messageID')
+
+            if (messageID) {
+                const messageToEdit = await interaction.channel.messages.fetch(messageID)
+                await messageToEdit.edit(postContent)
+
+                const channelThreads = (await interaction.channel.threads.fetch()).threads
+                const postHistory = channelThreads.find(t => t.name.includes(messageID))
+                postHistory?.send(postContent)
+            } else {
+                const post = await interaction.channel.send(postContent)
+                const postHistory = await interaction.channel.threads.create({
+                    name: `Edit History for ${post.id}`,
+                    type: ChannelType.PrivateThread,
+                    invitable: false,
+                })
+                postHistory.send(postContent)
+            }
+
+            interaction.reply({
+                content: messageID ? 'Post edited.' : 'Post created.',
+                flags: MessageFlags.Ephemeral
+            })
+        }
     }
 
     // if (interaction.isButton()) {
