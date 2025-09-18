@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, SlashCommandBuilder, ComponentType, StringSelectMenuBuilder } from 'discord.js'
 import { defenseBuildData } from '../../database/defenseBuilds.js'
 import { findBestCIMatch } from '../../utils/string.js'
-import { generateBuildImage } from '../../commandHelpers/defense.js'
+import { generateBuildImage } from '../commandHelpers/defense.js'
 
 export const command = {
 	data: new SlashCommandBuilder()

@@ -1,6 +1,6 @@
 import { MessageContextMenuCommandInteraction, EmbedBuilder, ContextMenuCommandBuilder, MessageFlags } from 'discord.js'
 import { languageCodes } from '../../data/languageCodes.js'
-import { gTranslate } from '../../commandHelpers/translate.js'
+import { gTranslate } from '../commandHelpers/translate.js'
 
 export const command = {
 	data: new ContextMenuCommandBuilder()

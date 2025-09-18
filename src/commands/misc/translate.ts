@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { languageCodes } from '../../data/languageCodes.js'
 import { findBestCIMatch } from '../../utils/string.js'
-import { gTranslate } from '../../commandHelpers/translate.js'
+import { gTranslate } from '../commandHelpers/translate.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
