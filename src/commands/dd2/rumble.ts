@@ -8,15 +8,15 @@ export const command = {
 		.setDescription('Show what items are available from Elemental Rumble this week')
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
-		// Rumble rotation changes on Tuesdays at 0:00 (UTC)
-		const TIMESTAMP = 1756771200000 // September 1st, 2025, 0:00 UTC, used as a reference to calculate week number
+		// Rumble rotation changes on Wednesday at 0:00 (UTC)
+		const TIMESTAMP = 1756857600000 // September 3rd, 2025, 0:00 UTC, used as a reference to calculate week number
 		const now = new Date()
 		now.setMinutes(now.getMinutes() + now.getTimezoneOffset()) // Ensure that UTC is being used
 		
-		const nextDate = new Date( // Gets the next Tuesday at 0:00 (UTC)
+		const nextDate = new Date( // Gets the next Wednesday at 0:00 (UTC)
 			now.getUTCFullYear(),
 			now.getUTCMonth(),
-			now.getUTCDate() + (9 - now.getUTCDay()) % 7,
+			now.getUTCDate() + (10 - now.getUTCDay()) % 7,
 			0, 0, 0, 0
 		)
 		if (nextDate <= now) nextDate.setDate(nextDate.getDate() + 7)
