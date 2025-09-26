@@ -26,8 +26,7 @@ export const command = {
 		nextDate.setMinutes(nextDate.getMinutes() - nextDate.getTimezoneOffset()) // Convert back to local time
 
 		const weekNum = Math.floor((now.getTime() - TIMESTAMP) / 8.64e+7 / 7 % 4) // 8.64e+7 = 1 day
-		const weekNames = ['Fire', 'Water', 'Storm', 'Earth'].map(n => n + ' Week')
-		weekNames[weekNum] = `**${weekNames[weekNum]}**`
+		const weekNames = ['Fire', 'Water', 'Storm', 'Earth'].map((w, i) => i === weekNum ? `**${w}**` : w)
 	
 		const rumbleEmbed = new EmbedBuilder()
 			.setColor('Blue')
@@ -36,14 +35,9 @@ export const command = {
 			.addFields([
 				{
 					name: `\u200B    ${days}           ${hours}            ${minutes}             ${seconds}`,
-					value: 'Days \u2009 Hours \u2009 Minutes \u2009 Seconds\n\u200B '
+					value: 'Days \u2009 Hours \u2009 Minutes \u2009 Seconds\n\u200b'
 				},
-				{ name: 'Week 1', value: weekNames[0], 	   inline: true },
-				{ name: 'Week 2', value: weekNames[1], 	   inline: true },
-				{ name: '\u200b', value: '\u200b', 		   inline: true },
-				{ name: 'Week 3', value: weekNames[2], 	   inline: true },
-				{ name: 'Week 4', value: weekNames[3], 	   inline: true },
-				{ name: '\u200b', value: `\u200b\n\u200b`, inline: true },
+				{ name: 'Weekly Rotation', value: weekNames.join(' -> ') + '\n\u200b' },
 				{ name: '**Next Rotation At**:', value: `<t:${nextDate.getTime()/1000}:F>`}
 			])
 			.setImage(`attachment://${rumbleRotationImages[weekNum].name}`)
