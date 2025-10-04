@@ -14,9 +14,16 @@ export const command = {
 			.setRequired(false)
 
 		const postContentInput = new TextInputBuilder()
-			.setCustomId('postContent')
-			.setLabel('Enter the contents for your post')
+			.setCustomId('textContent')
+			.setLabel('Enter the text content for your post')
 			.setStyle(TextInputStyle.Paragraph)
+			.setRequired(false)
+		
+		const imagesInput = new TextInputBuilder()
+			.setCustomId('imageLinks')
+			.setLabel('Enter image links separated by commas')
+			.setStyle(TextInputStyle.Paragraph)
+			.setRequired(false)
 
 		const modal = new ModalBuilder()
 			.setCustomId('postModal')
@@ -24,6 +31,7 @@ export const command = {
 			.addComponents(
 				new ActionRowBuilder<TextInputBuilder>().addComponents(messageIDInput),
 				new ActionRowBuilder<TextInputBuilder>().addComponents(postContentInput),
+				new ActionRowBuilder<TextInputBuilder>().addComponents(imagesInput),
 			)
 		
 		interaction.showModal(modal)

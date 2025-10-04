@@ -1,4 +1,4 @@
-import { CacheType, ChannelType, Interaction, MessageFlags } from 'discord.js'
+import { AttachmentBuilder, CacheType, ChannelType, Interaction, MessageFlags } from 'discord.js'
 import { client } from '../index.js'
 import { sendToChannel } from '../utils/discord.js'
 import { CHANNEL_IDS } from '../data/discord.js'
@@ -30,24 +30,37 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
 
     if (interaction.isModalSubmit()) {
         if (interaction.customId === 'postModal' && interaction.channel?.type === ChannelType.GuildText) {
-            const postContent = interaction.fields.getTextInputValue('postContent')
             const messageID = interaction.fields.getTextInputValue('messageID')
+            const textContent = interaction.fields.getTextInputValue('textContent')
+            const imageLinks = interaction.fields.getTextInputValue('imageLinks')
+            const messagePayload = {
+                content: textContent,
+                files: imageLinks ? imageLinks.split(',').map(l => new AttachmentBuilder(l.trim())) : []
+            }
+
+            if (!textContent && !imageLinks) {
+                interaction.reply({
+                    content: 'Post must contain text or an image!',
+                    flags: MessageFlags.Ephemeral
+                })
+                return
+            }
 
             if (messageID) {
                 const messageToEdit = await interaction.channel.messages.fetch(messageID)
-                await messageToEdit.edit(postContent)
+                await messageToEdit.edit(messagePayload)
 
                 const channelThreads = (await interaction.channel.threads.fetch()).threads
                 const postHistory = channelThreads.find(t => t.name.includes(messageID))
-                postHistory?.send(postContent)
+                postHistory?.send(messagePayload)
             } else {
-                const post = await interaction.channel.send(postContent)
+                const post = await interaction.channel.send(messagePayload)
                 const postHistory = await interaction.channel.threads.create({
                     name: `Edit History for ${post.id}`,
                     type: ChannelType.PrivateThread,
                     invitable: false,
                 })
-                postHistory.send(postContent)
+                postHistory.send(messagePayload)
             }
 
             interaction.reply({
