@@ -1,4 +1,4 @@
-import { AttachmentBuilder, CacheType, ChannelType, Interaction, MessageFlags } from 'discord.js'
+import { AttachmentBuilder, CacheType, ChannelType, EmbedBuilder, Interaction, MessageFlags } from 'discord.js'
 import { client } from '../index.js'
 import { sendToChannel } from '../utils/discord.js'
 import { CHANNEL_IDS } from '../data/discord.js'
@@ -33,10 +33,6 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
             const messageID = interaction.fields.getTextInputValue('messageID')
             const textContent = interaction.fields.getTextInputValue('textContent')
             const imageLinks = interaction.fields.getTextInputValue('imageLinks')
-            const messagePayload = {
-                content: textContent,
-                files: imageLinks ? imageLinks.split(',').map(l => new AttachmentBuilder(l.trim())) : []
-            }
 
             if (!textContent && !imageLinks) {
                 interaction.reply({
@@ -46,13 +42,26 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
                 return
             }
 
+            const messagePayload = {
+                content: textContent,
+                files: imageLinks ? imageLinks.split(',').map(l => new AttachmentBuilder(l.trim())) : []
+            }
+            const historyEmbed = new EmbedBuilder()
+                .setAuthor({
+                    name: `${messageID ? 'Edited' : 'Posted'} by ${interaction.user.username}`,
+                    iconURL: interaction.user.displayAvatarURL()
+                })
+                .setDescription(textContent || null)
+            
+            if (imageLinks) { historyEmbed.addFields([{ name: 'Image Links', value: imageLinks }]) }
+
             if (messageID) {
                 const messageToEdit = await interaction.channel.messages.fetch(messageID)
                 await messageToEdit.edit(messagePayload)
 
                 const channelThreads = (await interaction.channel.threads.fetch()).threads
                 const postHistory = channelThreads.find(t => t.name.includes(messageID))
-                postHistory?.send(messagePayload)
+                postHistory?.send({ embeds: [historyEmbed] })
             } else {
                 const post = await interaction.channel.send(messagePayload)
                 const postHistory = await interaction.channel.threads.create({
@@ -60,7 +69,7 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
                     type: ChannelType.PrivateThread,
                     invitable: false,
                 })
-                postHistory.send(messagePayload)
+                postHistory.send({ embeds: [historyEmbed] })
             }
 
             interaction.reply({

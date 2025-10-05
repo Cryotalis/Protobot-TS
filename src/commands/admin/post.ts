@@ -11,12 +11,14 @@ export const command = {
 			.setCustomId('messageID')
 			.setLabel('Enter a message ID (to edit a post instead)')
 			.setStyle(TextInputStyle.Short)
+			.setMaxLength(30)
 			.setRequired(false)
 
 		const postContentInput = new TextInputBuilder()
 			.setCustomId('textContent')
 			.setLabel('Enter the text content for your post')
 			.setStyle(TextInputStyle.Paragraph)
+			.setMaxLength(2000)
 			.setRequired(false)
 		
 		const imagesInput = new TextInputBuilder()
