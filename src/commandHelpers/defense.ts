@@ -34,7 +34,7 @@ export async function generateBuildImage(defenseName: string, defenseRole: strin
     if (defense.tertiary) drawCentered(ctx, defense.tertiary, '16px Arial Bold', 'black', '#00FFFF', 229, 110)
 
     /* Draw the icons for Shard and Relic */
-    const shardIcon = await loadImage('assets/Green Shard Icon.png')
+    const shardIcon = await loadImage('assets/Green_Shard_Icon.png')
     const relicIcon = await loadImage(defense.relic)
     ctx.drawImage(shardIcon, 13, 170)
     ctx.drawImage(relicIcon, 9, 293, 45, 45)
