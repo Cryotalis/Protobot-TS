@@ -31,8 +31,8 @@ client.on('clientReady', async () => {
 	sendToChannel(CHANNEL_IDS.COMMAND_LOG, '**:white_check_mark:  Protobot is now online**')
 
 	const serverCountChannel = await client.channels.fetch(CHANNEL_IDS.SERVER_COUNT) as VoiceChannel
-	schedule('0 * * * *', () => {
-		runStartup()
+	schedule('0 * * * *', () => { runStartup() })
+	schedule('0 0 * * *', () => {
 		serverCountChannel.edit({ name: `Server Count: ${client.guilds.cache.size}` })
 	})
 })
