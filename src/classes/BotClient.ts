@@ -6,6 +6,7 @@ import {
     Interaction,
     SlashCommandBuilder
 } from 'discord.js'
+import { MILLISECONDS } from '../data/time.js'
 
 export type Command = {
     data: SlashCommandBuilder | ContextMenuCommandBuilder,
@@ -22,7 +23,7 @@ export class BotClient extends Client {
                 GatewayIntentBits.GuildMessages,
                 GatewayIntentBits.MessageContent
             ],
-            rest: { timeout: 60000 }
+            rest: { timeout: MILLISECONDS.MINUTE }
         })
         this.commands = new Collection()
     }

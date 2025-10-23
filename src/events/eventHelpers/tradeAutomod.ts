@@ -1,6 +1,7 @@
 import { EmbedBuilder, Message } from 'discord.js'
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { UserLogInfo } from '../../database/privateTypes.js'
+import { MILLISECONDS } from '../../data/time.js'
 
 const tradeRules = 
 `1. Follow the trading format below.
@@ -64,7 +65,7 @@ export function DMRules(violation: 'Formatting' | '23 Hour Rule', message: Messa
     ]
 
     if (violation === '23 Hour Rule') {
-        const cooldownEnd = `<t:${Date.parse(user.get('lastMsgTimestamp'))/1000 + 8.28e+4}>`
+        const cooldownEnd = `<t:${(Date.parse(user.get('lastMsgTimestamp')) + 23 * MILLISECONDS.HOUR) / 1000}>`
 
         embeds.push(
             new EmbedBuilder()

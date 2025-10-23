@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { dateDiff } from '../../utils/time.js'
 import { rumbleIcon, rumbleRotationImages } from '../../data/assets.js'
+import { MILLISECONDS } from '../../data/time.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -25,7 +26,7 @@ export const command = {
 		
 		nextDate.setMinutes(nextDate.getMinutes() - nextDate.getTimezoneOffset()) // Convert back to local time
 
-		const weekNum = Math.floor((now.getTime() - TIMESTAMP) / 8.64e+7 / 7 % 4) // 8.64e+7 = 1 day
+		const weekNum = Math.floor((now.getTime() - TIMESTAMP) / MILLISECONDS.WEEK % 4)
 		const weekNames = ['Fire', 'Water', 'Storm', 'Earth'].map((w, i) => i === weekNum ? `**${w}**` : w)
 	
 		const rumbleEmbed = new EmbedBuilder()

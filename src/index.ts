@@ -28,7 +28,7 @@ client.on('clientReady', async () => {
 	client.user?.setActivity('/help')
 
 	console.log('Protobot is now online')
-	sendToChannel(CHANNEL_IDS.LOG, '**:white_check_mark:  Protobot is now online**')
+	sendToChannel(CHANNEL_IDS.COMMAND_LOG, '**:white_check_mark:  Protobot is now online**')
 
 	const serverCountChannel = await client.channels.fetch(CHANNEL_IDS.SERVER_COUNT) as VoiceChannel
 	schedule('0 * * * *', () => {

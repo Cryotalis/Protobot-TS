@@ -25,7 +25,7 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
                          + `in **${interaction.guild?.name ?? 'Direct Messages'}**`
 
         command.execute(interaction)
-        sendToChannel(CHANNEL_IDS.LOG, `:scroll:  ${logMessage} (${interaction.guildId ?? interaction.channelId})`)
+        sendToChannel(CHANNEL_IDS.COMMAND_LOG, `:scroll:  ${logMessage} (${interaction.guildId ?? interaction.channelId})`)
     }
 
     if (interaction.isModalSubmit()) {
