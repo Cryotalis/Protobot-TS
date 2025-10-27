@@ -27,6 +27,13 @@ export const command = {
 			.setStyle(TextInputStyle.Paragraph)
 			.setRequired(false)
 
+		const pinInput = new TextInputBuilder()
+			.setCustomId('shouldPin')
+			.setLabel('Pin this message?')
+			.setPlaceholder('Yes/No')
+			.setStyle(TextInputStyle.Short)
+			.setRequired(false)
+
 		const modal = new ModalBuilder()
 			.setCustomId('postModal')
 			.setTitle('Post a Message')
@@ -34,6 +41,7 @@ export const command = {
 				new ActionRowBuilder<TextInputBuilder>().addComponents(messageIDInput),
 				new ActionRowBuilder<TextInputBuilder>().addComponents(postContentInput),
 				new ActionRowBuilder<TextInputBuilder>().addComponents(imagesInput),
+				new ActionRowBuilder<TextInputBuilder>().addComponents(pinInput),
 			)
 		
 		interaction.showModal(modal)

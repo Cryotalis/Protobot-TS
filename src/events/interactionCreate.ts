@@ -33,6 +33,7 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
             const messageID = interaction.fields.getTextInputValue('messageID')
             const textContent = interaction.fields.getTextInputValue('textContent')
             const imageLinks = interaction.fields.getTextInputValue('imageLinks')
+            const shouldPinMessage = /yes/i.test(interaction.fields.getTextInputValue('shouldPin'))
 
             if (!textContent && !imageLinks) {
                 interaction.reply({
@@ -58,12 +59,15 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
             if (messageID) {
                 const messageToEdit = await interaction.channel.messages.fetch(messageID)
                 await messageToEdit.edit(messagePayload)
+                if (shouldPinMessage && !messageToEdit.pinned) { await messageToEdit.pin() }
 
                 const channelThreads = (await interaction.channel.threads.fetch()).threads
                 const postHistory = channelThreads.find(t => t.name.includes(messageID))
                 postHistory?.send({ embeds: [historyEmbed] })
             } else {
                 const post = await interaction.channel.send(messagePayload)
+                if (shouldPinMessage && !post.pinned) { await post.pin() }
+                
                 const postHistory = await interaction.channel.threads.create({
                     name: `Edit History for ${post.id}`,
                     type: ChannelType.PrivateThread,

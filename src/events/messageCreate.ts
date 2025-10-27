@@ -56,40 +56,39 @@ export async function onMessageCreate(message: OmitPartialGroupDMChannel<Message
         user.save()
     }
 
-    if (message.guildId === DD_SERVER_ID) {
-        recentMessages.push(message)
-        if (recentMessages.length > 25) recentMessages = recentMessages.splice(5)
-        for (const msg of recentMessages) {
-            const identicalMessages = recentMessages.filter(m => m.content === msg.content)
-            if (identicalMessages.length > 1) {
-                spamMessages.push(msg)
-            }
-        }
+    // if (message.guildId === DD_SERVER_ID) {
+    //     recentMessages.push(message)
+    //     if (recentMessages.length > 25) recentMessages = recentMessages.splice(5)
+    //     for (const msg of recentMessages) {
+    //         const identicalMessages = recentMessages.filter(m => m.content === msg.content)
+    //         if (identicalMessages.length > 1) {
+    //             spamMessages.push(msg)
+    //         }
+    //     }
 
-        for (const msg of spamMessages) {
-            msg.delete()
-            spamMessages.shift()
-            if (msg.member?.isCommunicationDisabled()) { continue }
+    //     for (const msg of spamMessages) {
+    //         msg.delete()
+    //         if (msg.member?.moderatable || msg.member?.isCommunicationDisabled()) { continue }
 
-            const logEmbed = new EmbedBuilder()
-                .setColor('Red')
-                .setAuthor({
-                    name: msg.author.username,
-                    iconURL: msg.author.displayAvatarURL({ extension: 'png' })
-                })
-                .setDescription(`${msg.author} was timed out for 1 day.`)
-                .addFields([
-                    {
-                        name: 'Content',
-                        value: msg.content.length > 1024 ? `${msg.content.slice(0, 1020)}...` : msg.content
-                    },
-                    { name: 'Reason', value: 'Posting identical messages in multiple channels.' }
-                ])
-                .setFooter({text: `User ID: ${msg.author.id} | Message ID: ${msg.id}`})
-                .setTimestamp(new Date())
+    //         const logEmbed = new EmbedBuilder()
+    //             .setColor('Red')
+    //             .setAuthor({
+    //                 name: msg.author.username,
+    //                 iconURL: msg.author.displayAvatarURL({ extension: 'png' })
+    //             })
+    //             .setDescription(`${msg.author} was timed out for 1 day.`)
+    //             .addFields([
+    //                 {
+    //                     name: 'Content',
+    //                     value: msg.content.length > 1024 ? `${msg.content.slice(0, 1020)}...` : msg.content
+    //                 },
+    //                 { name: 'Reason', value: 'Posting identical messages in multiple channels.' }
+    //             ])
+    //             .setFooter({text: `User ID: ${msg.author.id} | Message ID: ${msg.id}`})
+    //             .setTimestamp(new Date())
 
-            msg.member?.timeout(MILLISECONDS.DAY, 'Posting identical messages in multiple channels.')
-            sendToChannel(CHANNEL_IDS.AUTOMOD, { embeds: [logEmbed] })
-        }
-    }
+    //         msg.member?.timeout(MILLISECONDS.DAY, 'Posting identical messages in multiple channels.')
+    //         sendToChannel(CHANNEL_IDS.AUTOMOD, { embeds: [logEmbed] })
+    //     }
+    // }
 }
