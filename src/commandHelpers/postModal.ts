@@ -32,9 +32,9 @@ export function getPostModal(editMsgID: string = '') {
         .setCustomId('postModal')
         .setTitle('Post a Message')
         .addComponents(
-            new ActionRowBuilder<TextInputBuilder>().addComponents(messageIDInput),
+            new ActionRowBuilder<TextInputBuilder>().addComponents(messageIDInput.setValue(editMsgID)),
             new ActionRowBuilder<TextInputBuilder>().addComponents(postContentInput),
             new ActionRowBuilder<TextInputBuilder>().addComponents(imagesInput),
-            new ActionRowBuilder<TextInputBuilder>().addComponents(pinInput.setValue(editMsgID)),
+            new ActionRowBuilder<TextInputBuilder>().addComponents(pinInput),
         )
 }
