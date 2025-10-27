@@ -12,15 +12,12 @@ export const command = {
 		/** Whether the target message is the result of a command issued by the user. */
 		const isOGCommandUser = interaction.user === interaction.targetMessage.interactionMetadata?.user
 
-		let msgContent: string
+		let msgContent = 'You do not have permission to delete that message!'
 		if (isBotMessage && (isContributor(interaction.user.id) || isOGCommandUser)) {
 			msgContent = 'Message deleted.'
 			await interaction.targetMessage.delete()
-		} else {
-			msgContent = 'You do not have permission to delete that message!'
 		}
 
 		interaction.reply({content: msgContent, flags: MessageFlags.Ephemeral})
-		
 	}
 }
