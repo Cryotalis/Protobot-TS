@@ -1,4 +1,4 @@
-import { AttachmentBuilder, CacheType, ChannelType, EmbedBuilder, Interaction, MessageFlags } from 'discord.js'
+import { AnyThreadChannel, CacheType, ChannelType, EmbedBuilder, Interaction, Message, MessageEditOptions, MessageFlags } from 'discord.js'
 import { client } from '../index.js'
 import { sendToChannel } from '../utils/discord.js'
 import { CHANNEL_IDS } from '../data/discord.js'
@@ -31,53 +31,62 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
     if (interaction.isModalSubmit()) {
         if (interaction.customId === 'postModal' && interaction.channel?.type === ChannelType.GuildText) {
             const messageID = interaction.fields.getTextInputValue('messageID')
-            const textContent = interaction.fields.getTextInputValue('textContent')
-            const imageLinks = interaction.fields.getTextInputValue('imageLinks')
-            const shouldPinMessage = /yes/i.test(interaction.fields.getTextInputValue('shouldPin'))
+            const content = interaction.fields.getTextInputValue('textContent')
+            const files = interaction.fields.getUploadedFiles('files')?.map(f => f)
+            const postOptions = interaction.fields.getStringSelectValues('options')
 
-            if (!textContent && !imageLinks) {
+            let targetMessage: Message<boolean>
+            let postHistory: AnyThreadChannel | undefined
+
+            if (messageID) {
+                const editOptions: MessageEditOptions = {
+                    ...(content ? { content } : postOptions.includes('Remove Text') ? { content: null } : {}),
+                    ...(files ? { files } : postOptions.includes('Remove Files') ? { files: [] } : {}),
+                }
+                
+                targetMessage = await interaction.channel.messages.fetch(messageID)
+                const deleteCondition1 = !targetMessage.content && editOptions.files?.length === 0
+                const deleteCondition2 = !targetMessage.attachments && editOptions.content === null
+                const doDeleteMessage = postOptions.includes('Delete') || deleteCondition1 || deleteCondition2
+                doDeleteMessage
+                    ? await targetMessage.delete()
+                    : await targetMessage.edit(editOptions)
+
+                const channelThreads = (await interaction.channel.threads.fetch()).threads
+                postHistory = channelThreads.find(t => t.name.includes(messageID))
+            } else if (content || files) {
+                targetMessage = await interaction.channel.send({ content, files })
+                postHistory = await interaction.channel.threads.create({
+                    name: `Edit History for ${targetMessage.id}`,
+                    type: ChannelType.PrivateThread,
+                    invitable: false,
+                })
+            } else {
                 interaction.reply({
-                    content: 'Post must contain text or an image!',
+                    content: 'Post must contain text or files!',
                     flags: MessageFlags.Ephemeral
                 })
                 return
             }
 
-            const messagePayload = {
-                content: textContent,
-                files: imageLinks ? imageLinks.split(',').map(l => new AttachmentBuilder(l.trim())) : []
-            }
             const historyEmbed = new EmbedBuilder()
                 .setAuthor({
                     name: `${messageID ? 'Edited' : 'Posted'} by ${interaction.user.username}`,
                     iconURL: interaction.user.displayAvatarURL()
                 })
-                .setDescription(textContent || null)
-            
-            if (imageLinks) { historyEmbed.addFields([{ name: 'Image Links', value: imageLinks }]) }
+                .setDescription(content || 'Text Content unchanged.')
+                .addFields([{ name: 'Post Options', value: postOptions.join(', ') || 'None' }])
+            postHistory?.send({ embeds: [historyEmbed], files })
 
-            if (messageID) {
-                const messageToEdit = await interaction.channel.messages.fetch(messageID)
-                await messageToEdit.edit(messagePayload)
-                if (shouldPinMessage && !messageToEdit.pinned) { await messageToEdit.pin() }
-
-                const channelThreads = (await interaction.channel.threads.fetch()).threads
-                const postHistory = channelThreads.find(t => t.name.includes(messageID))
-                postHistory?.send({ embeds: [historyEmbed] })
-            } else {
-                const post = await interaction.channel.send(messagePayload)
-                if (shouldPinMessage && !post.pinned) { await post.pin() }
-                
-                const postHistory = await interaction.channel.threads.create({
-                    name: `Edit History for ${post.id}`,
-                    type: ChannelType.PrivateThread,
-                    invitable: false,
-                })
-                postHistory.send({ embeds: [historyEmbed] })
-            }
+            if (postOptions.includes('Pin') && !targetMessage.pinned) { await targetMessage.pin() }
+            if (postOptions.includes('Unpin') && targetMessage.pinned) { await targetMessage.unpin() }
 
             interaction.reply({
-                content: messageID ? 'Post edited.' : 'Post created.',
+                content: !targetMessage.deletable
+                    ? 'Post deleted.'
+                    : messageID
+                        ? 'Post edited.'
+                        : 'Post created.',
                 flags: MessageFlags.Ephemeral
             })
         }
