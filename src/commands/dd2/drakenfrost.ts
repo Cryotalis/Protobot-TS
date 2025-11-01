@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { dateDiff } from '../../utils/time.js'
 import { MILLISECONDS } from '../../data/time.js'
+import { DFKIcon, DFKRotationImages } from '../../data/assets.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -26,19 +27,13 @@ export const command = {
 		nextDate.setMinutes(nextDate.getMinutes() - nextDate.getTimezoneOffset()) // Convert back to local time
 		
 		const weekNum = Math.floor((now.getTime() - TIMESTAMP) / MILLISECONDS.WEEK % 4)
-		const rotationImages = [
-			'https://i.imgur.com/pMJ8J5X.png',
-			'https://i.imgur.com/r19VbPW.png',
-			'https://i.imgur.com/4mHTFMv.png',
-			'https://i.imgur.com/GXBplZd.png'
-		]
 		const DFKMods = ['Torchbearer', 'Frozen Path', 'Frostfire Remnants', 'Drakenlord\'s Soul']
 		DFKMods[weekNum] = `**${DFKMods[weekNum]}**`
 
 		const DFKEmbed = new EmbedBuilder()
 			.setColor('Blue')
 			.setTitle('__**Time until next rotation:**__')
-			.setThumbnail('https://i.imgur.com/BrTSxJu.png')
+			.setThumbnail(`attachment://${DFKIcon.name}`)
 			.addFields([
 				{
 					name: `\u200B    ${days}           ${hours}            ${minutes}             ${seconds}`,
@@ -52,8 +47,14 @@ export const command = {
 				{ name: '\u200b', value: `\u200b\n\u200b`, inline: true },
 				{ name: '**Next Rotation At**:', value: `<t:${nextDate.getTime()/1000}:F>`}
 			])
-			.setImage(rotationImages[weekNum])
+			.setImage(`attachment://${DFKRotationImages[weekNum].name}`)
 
-		interaction.reply({ embeds: [DFKEmbed] })
+		interaction.reply({
+			embeds: [DFKEmbed],
+			files: [
+				DFKIcon,
+				DFKRotationImages[weekNum]
+			]
+		})
 	}
 }
