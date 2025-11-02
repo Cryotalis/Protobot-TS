@@ -9,7 +9,7 @@ export const command = {
 	,
 	async execute(interaction: MessageContextMenuCommandInteraction) {
 		if (interaction.targetMessage.author.id === BOT_ID) {
-            interaction.showModal(getPostModal(interaction.targetMessage.id))
+            interaction.showModal(getPostModal(interaction.targetMessage.content, interaction.targetMessage.id))
 		} else {
             interaction.reply({
                 content: 'You do not have permission to edit that message!',

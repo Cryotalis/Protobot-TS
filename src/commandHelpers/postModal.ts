@@ -1,6 +1,6 @@
 import { TextInputBuilder, TextInputStyle, ModalBuilder, LabelBuilder, FileUploadBuilder, StringSelectMenuBuilder } from 'discord.js'
 
-export function getPostModal(editMsgID: string = '') {
+export function getPostModal(originalText: string = '', editMsgID: string = '') {
     const messageIDInput = new LabelBuilder()
         .setLabel('Message ID of Post to Edit')
         .setDescription('Leave this blank when creating a new post')
@@ -20,6 +20,7 @@ export function getPostModal(editMsgID: string = '') {
             new TextInputBuilder()
                 .setCustomId('textContent')
                 .setPlaceholder('Etheria was once a land of living legends...')
+                .setValue(originalText)
                 .setStyle(TextInputStyle.Paragraph)
                 .setMaxLength(2000)
                 .setRequired(false)
