@@ -25,33 +25,43 @@ export const command = {
 			const defenseRole = roleInput
 				? findBestCIMatch(roleInput, roleOptions).bestMatch.target
 				: roleOptions[0]
-			await interaction.reply({ files: [await generateBuildImage(defenseName, defenseRole)] })
-			return 
-		}
-	
-		const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
-			.addComponents(
-				new StringSelectMenuBuilder()
-					.setCustomId('Defense Build Selector')
-					.setPlaceholder('Select a build')
-					.addOptions(roleOptions.map(option => ({label: option, value: option})))
-			)
-		
-		interaction.reply({ content: `Please select a **${defenseName}** build:`, components: [menu] }).then(response => {
+			const defense = defenseBuildData.find(({name, role}) => name === defenseName && role === defenseRole)!
+
+			interaction.reply({ files: [await generateBuildImage(defense)] })
+		} else {
+			const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
+				.addComponents(
+					new StringSelectMenuBuilder()
+						.setCustomId('Defense Build Selector')
+						.setPlaceholder('Select a build')
+						.addOptions(roleOptions.map(option => ({ label: option, value: option })))
+				)
+			
+			const response = await interaction.reply({
+				content: `Please select a **${defenseName}** build:`,
+				components: [menu]
+			})
+
 			const collector = response.createMessageComponentCollector({
 				componentType: ComponentType.StringSelect,
 				filter: msg => msg.user.id === interaction.user.id,
 				time: 30000,
 				max: 1
 			})
+
 			collector.on('collect', async i => {
-				i.deferUpdate()
-				interaction.editReply({
+				const defense = defenseBuildData.find(({name, role}) => name === defenseName && role === i.values[0])!
+
+				const loadingIndicator = await i.update({
+					content: `Loading your **${defense.name}** (${defense.role}) build <a:loading:763160594974244874>`,
+					components: []
+				})
+
+				loadingIndicator.edit({
 					content: null,
-					components: [],
-					files: [await generateBuildImage(defenseName, i.values[0])]
+					files: [await generateBuildImage(defense)]
 				})
 			})
-		})
+		}
 	}
 }
