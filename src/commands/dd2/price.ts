@@ -32,9 +32,9 @@ export const command = {
 		)
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
-		const amount = interaction.options.getNumber('amount') ?? undefined
+		const amount = interaction.options.getNumber('amount') ?? 1 // Default to 1 if no amount was given
 		const qualibean = interaction.options.getNumber('quality') ?? 10 // Default to 10/10 if no quality was given
-		const rarity = interaction.options.getString('rarity') as rarityName ?? undefined
+		const rarity = interaction.options.getString('rarity') as rarityName ?? null
 		const searchItem = interaction.options.getString('item')!
 		
 		let bestMatch = findBestCIMatch(searchItem, database.prices.map(i => i.get('name'))).bestMatch.target

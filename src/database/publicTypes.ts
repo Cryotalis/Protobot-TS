@@ -8,10 +8,10 @@ export type ShardInfo = { [K in ShardKeys]: string }
 
 export type rarityName = 'Legendary' | 'Mythical' | 'Epic' | 'Powerful'
 type PriceKeys = 'name' | 'pcPrice' | 'psPrice' | 'xboxPrice'
-export type PriceInfo = { 
+export type PriceInfo = {
     [K in PriceKeys]: string
 } & {
-    rarity: rarityName | undefined
+    rarity: rarityName | null
 }
 
 type DefenseKeys = 'name' | 'status_effects' | 'damage_type' | 'defense_type' | 'mana_cost' | 'base_def_power' | 'base_def_health' | 't1_atk_scalar' | 't2_atk_scalar' | 't3_atk_scalar' | 't4_atk_scalar' | 't5_atk_scalar' | 't1_hp_scalar' | 't2_hp_scalar' | 't3_hp_scalar' | 't4_hp_scalar' | 't5_hp_scalar' | 'base_atk_rate' | 'max_atk_rate' | 'base_range' | 'max_range' | 'base_atk_range' | 'max_atk_range' | 'range_scalar' | 'asc_def_power' | 'asc_def_health' | 'asc_gambit' | 'hero' | 'image_url'

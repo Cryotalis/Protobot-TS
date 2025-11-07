@@ -1,6 +1,6 @@
 import { GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { database} from '../database/database.js'
-import { PriceInfo, rarityName } from '../database/publicTypes.js'
+import { PriceInfo } from '../database/publicTypes.js'
 
 function parsePrice(price: string) {
     price = price.replace(/💡|💬/, '').trim()
@@ -30,7 +30,7 @@ function stringPrice(priceArr: (string | number)[]) {
     return processedArr.length === 3 ? processedArr.slice(0, 2).join('-') + processedArr[2] : processedArr.join('')
 }
 
-export function processItem(item: GoogleSpreadsheetRow<PriceInfo>, amount?: number, qualibean?: number, rarity?: rarityName) : PriceInfo {
+export function processItem(item: GoogleSpreadsheetRow<PriceInfo>, amount: number, qualibean: number, rarity: PriceInfo['rarity']) : PriceInfo {
     function processPrice(priceString: string) {
         if (/tenacity/i.test(item.get('name')) && qualibean !== 10) return '0'
 
@@ -62,22 +62,22 @@ export function processItem(item: GoogleSpreadsheetRow<PriceInfo>, amount?: numb
     
     let itemPrefix = '', itemStack = 1
     if (database.mods.find(mod => mod.get('name') === item.get('name')) || /Chip|Servo/i.test(item.get('name'))) { // If the item is a mod
-        rarity = undefined
+        rarity = null
         if (!qualibean) qualibean = 10
         itemPrefix = qualibean + '/10'
     } else if (item.get('rarity')) { // If the item is a pet
         // Mythical pets listed in the price sheet cannot have any other rarity
         if (item.get('rarity') === 'Mythical' && rarity !== 'Mythical') rarity = 'Mythical'
 
-        qualibean = undefined
+        qualibean = 0
         if (!rarity) rarity = item.get('rarity')
         itemPrefix = rarity!
     } else { // If the item is a material
         if (!item.get('name').includes('x1')) itemStack = 99
         if (!amount) amount = itemStack
 
-        qualibean = undefined
-        rarity = undefined
+        qualibean = 0
+        rarity = null
         itemPrefix = amount + 'x'
     }
 
