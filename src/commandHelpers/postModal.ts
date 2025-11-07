@@ -46,6 +46,7 @@ export function getPostModal(originalText: string = '', editMsgID: string = '') 
                     { label: 'Remove Text Content', value: 'Remove Text' },
                     { label: 'Remove Files',        value: 'Remove Files' },
                     { label: 'Delete This Post',    value: 'Delete' },
+                    { label: 'No Action',           value: 'No Action' },
                 )
                 .setRequired(false)
         )
