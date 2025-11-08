@@ -5,7 +5,7 @@ import path from 'path'
 
 const pngFilePaths = getAllFilePaths('./assets', 'png')
 
-const attachmentFilePaths = pngFilePaths.filter(f => /Misc_Icons|Infographics|Shard_Icons/.test(f))
+const attachmentFilePaths = pngFilePaths.filter(f => /Misc_Icons|Infographics|Difficulty_Icons|Shard_Icons/.test(f))
 const imageFilePaths = pngFilePaths.filter(f => /Misc_Icons|Defense_Icons|Difficulty_Icons/.test(f))
 
 const imagePromises = imageFilePaths.map(f => loadImage(f))

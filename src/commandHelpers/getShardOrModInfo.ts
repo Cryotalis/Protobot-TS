@@ -12,8 +12,8 @@ export function getShardInfo(shard: GoogleSpreadsheetRow<ShardInfo>) {
 
     const embed = new EmbedBuilder()
         .setColor('Blue')
-        .setAuthor({name: shard.get('name'), iconURL: `attachments://${difficultyIcon.name}`})
-        .setThumbnail(`attachments://${shardIcon.name}`)
+        .setAuthor({name: shard.get('name'), iconURL: `attachment://${difficultyIcon.name}`})
+        .setThumbnail(`attachment://${shardIcon.name}`)
         .setDescription(shard.get('description'))
         .addFields([
             { name: 'Gilded: ', value: shard.get('gilded'), inline: false },
@@ -37,7 +37,7 @@ export function getModInfo(modInput: GoogleSpreadsheetRow<ModInfo>) {
     const embed = new EmbedBuilder()
         .setColor('Blue')
         .setAuthor({ name: mod.get('name') })
-        .setThumbnail(`attachments://${modTypeIcon.name}`)
+        .setThumbnail(`attachment://${modTypeIcon.name}`)
         .setDescription(mod.get('description'))
         .addFields([
             { name: 'Acquisition:', value: mod.get('drop') },
