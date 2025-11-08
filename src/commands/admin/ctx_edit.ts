@@ -1,6 +1,6 @@
 import { MessageContextMenuCommandInteraction, ContextMenuCommandBuilder, MessageFlags } from 'discord.js'
 import { BOT_ID } from '../../data/discord.js'
-import { getPostModal } from '../../commandHelpers/postModal.js'
+import { getPostModal } from '../../commandHelpers/getPostModal.js'
 
 export const command = {
 	data: new ContextMenuCommandBuilder()

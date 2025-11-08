@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js'
-import { getPostModal } from '../../commandHelpers/postModal.js'
+import { getPostModal } from '../../commandHelpers/getPostModal.js'
 
 export const command = {
 	data: new SlashCommandBuilder()

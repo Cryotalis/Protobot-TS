@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, ButtonBuilder, ComponentType, ButtonStyle, SlashCommandBuilder } from 'discord.js'
 import { database } from '../../database/database.js'
 import { findBestCIMatch } from '../../utils/string.js'
-import { getModEmbed, getServoVariant } from '../../commandHelpers/mod.js'
-import { getShardEmbed } from '../../commandHelpers/shard.js'
+import { getModEmbed } from '../../commandHelpers/getModEmbed.js'
+import { getShardEmbed } from '../../commandHelpers/getShardEmbed.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -17,18 +17,15 @@ export const command = {
 		const shardBestMatch = findBestCIMatch(userInput, allShardNames).bestMatch
 		const modBestMatch = findBestCIMatch(userInput, allModNames).bestMatch
 
-		const target = /Chip|Servo/i.test(userInput)
-			? modBestMatch.target
-			: getServoVariant(modBestMatch.target)
-
-		const mod = database.mods.find(mod => mod.get('name') === target)!
-		const modEmbed = getModEmbed(mod)
+		const targetMod = database.mods.find(mod => mod.get('name') === modBestMatch.target)!
+		const targetShard = database.shards.find(shard => shard.get('name') === shardBestMatch.target)!
+		const modEmbed = getModEmbed(targetMod)
 
 		const suggestionButton = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
 				new ButtonBuilder()
 					.setCustomId('primary')
-					.setLabel(`Looking for ${shardBestMatch.target} (the shard)?`)
+					.setLabel(`Looking for ${targetShard.get('name')} (the shard)?`)
 					.setStyle(ButtonStyle.Primary)
 			)
 
@@ -36,14 +33,15 @@ export const command = {
 			interaction.reply({ embeds: [modEmbed] })
 		} else {
 			const response = await interaction.reply({ embeds: [modEmbed], components: [suggestionButton] })
+
 			const collector = response.createMessageComponentCollector({
 				componentType: ComponentType.Button,
 				filter: msg => msg.user.id === interaction.user.id,
 				time: 30000
 			})
+			
 			collector.on('collect', () => {
-				const shard = database.shards.find(shard => shard.get('name') === shardBestMatch.target)!
-				interaction.editReply({ embeds: [getShardEmbed(shard)], components: [] })
+				interaction.editReply({ embeds: [getShardEmbed(targetShard)], components: [] })
 			})
 				
 		}

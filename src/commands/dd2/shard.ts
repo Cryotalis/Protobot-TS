@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, ActionRowBuilder, ComponentType, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from 'discord.js'
 import { database } from '../../database/database.js'
 import { findBestCIMatch } from '../../utils/string.js'
-import { getShardEmbed } from '../../commandHelpers/shard.js'
-import { getModEmbed, getServoVariant } from '../../commandHelpers/mod.js'
+import { getShardEmbed } from '../../commandHelpers/getShardEmbed.js'
+import { getModEmbed } from '../../commandHelpers/getModEmbed.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -16,18 +16,16 @@ export const command = {
         const allModNames = database.mods.map(mod => mod.get('name'))
         const shardBestMatch = findBestCIMatch(userInput, allShardNames).bestMatch
         const modBestMatch = findBestCIMatch(userInput, allModNames).bestMatch
-        const modTarget = /Chip|Servo/i.test(userInput)
-            ? modBestMatch.target
-            : getServoVariant(modBestMatch.target)
-
-        const shard = database.shards.find(shard => shard.get('name') === shardBestMatch.target)!
-        const shardEmbed = getShardEmbed(shard)
+        
+        const targetMod = database.mods.find(mod => mod.get('name') === modBestMatch.target)!
+        const targetShard = database.shards.find(shard => shard.get('name') === shardBestMatch.target)!
+        const shardEmbed = getShardEmbed(targetShard)
 
         const suggestionButton = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('primary')
-                    .setLabel(`Looking for ${modTarget} (the mod)?`)
+                    .setLabel(`Looking for ${targetMod.get('name')} (the mod)?`)
                     .setStyle(ButtonStyle.Primary)
             )
         
@@ -35,14 +33,15 @@ export const command = {
 			interaction.reply({ embeds: [shardEmbed] })
 		} else {
 			const response = await interaction.reply({ embeds: [shardEmbed], components: [suggestionButton] })
+
 			const collector = response.createMessageComponentCollector({
 				componentType: ComponentType.Button,
 				filter: msg => msg.user.id === interaction.user.id,
 				time: 30000
 			})
+
 			collector.on('collect', () => {
-				const mod = database.mods.find(mod => mod.get('name') === modTarget)!
-				interaction.editReply({ embeds: [getModEmbed(mod)], components: [] })
+				interaction.editReply({ embeds: [getModEmbed(targetMod)], components: [] })
 			})
 				
 		}

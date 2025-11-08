@@ -1,4 +1,4 @@
-import { Image, loadImage } from 'canvas'
+import { loadImage } from 'canvas'
 import { AttachmentBuilder } from 'discord.js'
 import { getAllFilePaths } from '../utils/filesystem.js'
 import path from 'path'
