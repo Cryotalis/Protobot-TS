@@ -1,8 +1,6 @@
 import { readdirSync } from 'fs'
 import path from 'path'
 
-const EXCLUDED_DIRECTORIES = ['archive', 'attachments']
-
 /**
  * Recursively finds all file paths that match the given extension, starting from the given directory
  * @param directory - The directory from which to start looking for files
@@ -17,7 +15,7 @@ export function getAllFilePaths(directory: string, extension: string) {
 
     for (const p of targetPaths) {
         const fullPath = path.join(targetDirectory, p.name)
-        if (p.isDirectory() && !EXCLUDED_DIRECTORIES.includes(p.name)) {
+        if (p.isDirectory()) {
             filePaths = filePaths.concat(getAllFilePaths(fullPath, extension))
         } else if (p.isFile() && path.extname(p.name) === targetExt) {
             filePaths.push(fullPath)

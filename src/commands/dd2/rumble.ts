@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { dateDiff } from '../../utils/time.js'
-import { rumbleIcon, rumbleRotationImages } from '../../data/assets.js'
 import { MILLISECONDS } from '../../data/time.js'
+import { attachments } from '../../data/assets.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -28,6 +28,13 @@ export const command = {
 
 		const weekNum = Math.floor((now.getTime() - TIMESTAMP) / MILLISECONDS.WEEK % 4)
 		const weekNames = ['Fire', 'Water', 'Storm', 'Earth'].map((w, i) => i === weekNum ? `**${w}**` : w)
+		const rumbleIcon = attachments['Elemental_Rumble_Icon.png']
+		const infographics = [
+			attachments['Fire_Week_Items.png'],
+			attachments['Water_Week_Items.png'],
+			attachments['Storm_Week_Items.png'],
+			attachments['Earth_Week_Items.png'],
+		]
 	
 		const rumbleEmbed = new EmbedBuilder()
 			.setColor('Blue')
@@ -41,14 +48,11 @@ export const command = {
 				{ name: 'Weekly Rotation', value: weekNames.join(' -> ') + '\n\u200b' },
 				{ name: '**Next Rotation At**:', value: `<t:${nextDate.getTime()/1000}:F>`}
 			])
-			.setImage(`attachment://${rumbleRotationImages[weekNum].name}`)
+			.setImage(`attachment://${infographics[weekNum].name}`)
 
 		interaction.reply({
 			embeds: [rumbleEmbed],
-			files: [
-				rumbleIcon,
-				rumbleRotationImages[weekNum]
-			]
+			files: [rumbleIcon, infographics[weekNum]]
 		})
 	}
 }

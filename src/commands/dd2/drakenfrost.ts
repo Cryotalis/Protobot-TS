@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { dateDiff } from '../../utils/time.js'
 import { MILLISECONDS } from '../../data/time.js'
-import { DFKIcon, DFKRotationImages } from '../../data/assets.js'
+import { attachments } from '../../data/assets.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -27,34 +27,38 @@ export const command = {
 		nextDate.setMinutes(nextDate.getMinutes() - nextDate.getTimezoneOffset()) // Convert back to local time
 		
 		const weekNum = Math.floor((now.getTime() - TIMESTAMP) / MILLISECONDS.WEEK % 4)
-		const DFKMods = ['Torchbearer', 'Frozen Path', 'Frostfire Remnants', 'Drakenlord\'s Soul']
-		DFKMods[weekNum] = `**${DFKMods[weekNum]}**`
+		const drakenfrostDDLogo = attachments['Drakenfrost_DD_Logo.png']
+		const DFKModNames = ['Torchbearer', 'Frozen Path', 'Frostfire Remnants', 'Drakenlord\'s Soul']
+			.map((modName, i) => i === weekNum ? `**${modName}**` : modName)
+		const infographics = [
+			attachments['Torchbearer_Week.png'],
+			attachments['Frozen_Path_Week.png'],
+			attachments['Frostfire_Remnants_Week.png'],
+			attachments['Drakenlords_Soul_Week.png'],
+		]
 
 		const DFKEmbed = new EmbedBuilder()
 			.setColor('Blue')
 			.setTitle('__**Time until next rotation:**__')
-			.setThumbnail(`attachment://${DFKIcon.name}`)
+			.setThumbnail(`attachment://${drakenfrostDDLogo.name}`)
 			.addFields([
 				{
 					name: `\u200B    ${days}           ${hours}            ${minutes}             ${seconds}`,
 					value: 'Days \u2009 Hours \u2009 Minutes \u2009 Seconds\n\u200B '
 				},
-				{ name: 'Week 1', value: DFKMods[0], 	   inline: true },
-				{ name: 'Week 2', value: DFKMods[1], 	   inline: true },
+				{ name: 'Week 1', value: DFKModNames[0],   inline: true },
+				{ name: 'Week 2', value: DFKModNames[1],   inline: true },
 				{ name: '\u200b', value: '\u200b', 		   inline: true },
-				{ name: 'Week 3', value: DFKMods[2], 	   inline: true },
-				{ name: 'Week 4', value: DFKMods[3], 	   inline: true },
+				{ name: 'Week 3', value: DFKModNames[2],   inline: true },
+				{ name: 'Week 4', value: DFKModNames[3],   inline: true },
 				{ name: '\u200b', value: `\u200b\n\u200b`, inline: true },
 				{ name: '**Next Rotation At**:', value: `<t:${nextDate.getTime()/1000}:F>`}
 			])
-			.setImage(`attachment://${DFKRotationImages[weekNum].name}`)
+			.setImage(`attachment://${infographics[weekNum].name}`)
 
 		interaction.reply({
 			embeds: [DFKEmbed],
-			files: [
-				DFKIcon,
-				DFKRotationImages[weekNum]
-			]
+			files: [drakenfrostDDLogo, infographics[weekNum]]
 		})
 	}
 }
