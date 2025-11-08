@@ -3,7 +3,7 @@ import { processItem } from '../../commandHelpers/processPrice.js'
 import { database } from '../../database/database.js'
 import { rarityName } from '../../database/publicTypes.js'
 import { findBestCIMatch } from '../../utils/string.js'
-import { getServoVariant } from '../../commandHelpers/getModEmbed.js'
+import { getServoVariantName } from '../../commandHelpers/getShardOrModInfo.js'
 
 export const command = {
 	data: new SlashCommandBuilder()
@@ -37,10 +37,10 @@ export const command = {
 		const rarity = interaction.options.getString('rarity') as rarityName ?? null
 		const searchItem = interaction.options.getString('item')!
 		
-		let bestMatch = findBestCIMatch(searchItem, database.prices.map(i => i.get('name'))).bestMatch.target
+		const bestMatch = findBestCIMatch(searchItem, database.prices.map(i => i.get('name'))).bestMatch.target
 		const target = /Chip|Servo/i.test(searchItem)
 			? bestMatch
-			: getServoVariant(bestMatch)
+			: getServoVariantName(bestMatch)
 
 		const itemResult = database.prices.find(i => i.get('name') === target)!
 		const { name, pcPrice, psPrice, xboxPrice } = processItem(itemResult, amount, qualibean, rarity)
