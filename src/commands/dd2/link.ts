@@ -6,7 +6,12 @@ export const command = {
 	data: new SlashCommandBuilder()
 		.setName('link')
 		.setDescription('Fetch a link for a commonly referenced resource')
-		.addStringOption(option => option.setName('link').setDescription('The name of the link of the commonly referenced resource').setRequired(true))
+		.addStringOption(option => option
+			.setName('link')
+			.setDescription('The name of the link of the commonly referenced resource')
+			.addChoices(database.links.map(link => ({ name: link.get('name'), value: link.get('name') })))
+			.setRequired(true)
+		)
 		.addUserOption(option => option.setName('target').setDescription('The user to mention with this command'))
 	,
 	async execute(interaction: ChatInputCommandInteraction) {
@@ -17,11 +22,11 @@ export const command = {
 
 		const linkEmbed = new EmbedBuilder()
 			.setColor('Blue')
-			.setAuthor({name: linkInfo.get('author')})
+			.setAuthor({ name: linkInfo.get('author') })
 			.setTitle(linkInfo.get('name'))
 			.setURL(linkInfo.get('link'))
-			.setDescription(linkInfo.get('description'))
+			.setDescription(linkInfo.get('description') ?? null)
 
-		await interaction.reply({content: targettedUser && `*Link for ${targettedUser}:*`, embeds: [linkEmbed]})
+		interaction.reply({ content: targettedUser && `*Link for ${targettedUser}:*`, embeds: [linkEmbed] })
 	}
 }

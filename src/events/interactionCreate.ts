@@ -4,9 +4,10 @@ import { sendToChannel } from '../utils/discord.js'
 import { CHANNEL_IDS } from '../data/discord.js'
 import { isBlacklisted } from '../database/helpers.js'
 import { handlePostModalSubmit } from './eventHelpers/handlePostModalSubmit.js'
+import { findBestCIMatch } from '../utils/string.js'
+import { database } from '../database/database.js'
 
 export async function onInteractionCreate(interaction: Interaction<CacheType>) {
-    // Slash Commands & Context Menu Commands
     if (interaction.isCommand() || interaction.isMessageContextMenuCommand()) {
         if (isBlacklisted(interaction.user.id)) {
             interaction.reply(`${interaction.user} you have been banned running commands.`)
@@ -34,81 +35,32 @@ export async function onInteractionCreate(interaction: Interaction<CacheType>) {
             handlePostModalSubmit(interaction)
         }
     }
-
-    // if (interaction.isButton()) {
-    //     if (interaction.customId === 'Helper Application Button'){
-    //         const helperAppPart1 = new ModalBuilder()
-    //             .setCustomId('Helper Application Modal')
-    //             .setTitle('Helper Application')
-    //             .addComponents(
-    //                 new ActionRowBuilder<TextInputBuilder>()
-    //                 .addComponents(
-    //                     new TextInputBuilder()
-    //                         .setCustomId('Helper Reason')
-    //                         .setLabel('Why are you interested in becoming a Helper?')
-    //                         .setStyle(TextInputStyle.Paragraph)
-    //                         .setMaxLength(1000)
-    //                         .setRequired(true)
-    //                 )
-    //                 .addComponents(
-    //                     new TextInputBuilder()
-    //                         .setCustomId('DD Game')
-    //                         .setLabel('Which DD Game are you most experienced with?')
-    //                         .setPlaceholder('DD1 / DD2 / DDA / etc.')
-    //                         .setStyle(TextInputStyle.Short)
-    //                         .setRequired(true)
-    //                 )
-    //                 .addComponents(
-    //                     new TextInputBuilder()
-    //                         .setCustomId('DD Game Hours')
-    //                         .setLabel('Around how many hours have you logged?')
-    //                         .setPlaceholder('The approximate number of hours you\'ve spent in the DD game you\'re most experienced with.')
-    //                         .setStyle(TextInputStyle.Short)
-    //                         .setRequired(true)
-    //                 )
-    //                 .addComponents(
-    //                     new TextInputBuilder()
-    //                         .setCustomId('DD Game Solo')
-    //                         .setLabel('What is the hardest content you can do solo?')
-    //                         .setPlaceholder('The hardest content you can consistently solo in the DD game you\'re most experienced with.')
-    //                         .setStyle(TextInputStyle.Short)
-    //                         .setRequired(true)
-    //                 )
-    //                 .addComponents(
-    //                     new TextInputBuilder()
-    //                         .setCustomId('DD Game Knowledge')
-    //                         .setLabel('Rate your knowledge of your chosen DD game.')
-    //                         .setPlaceholder('Rate your knowledge on a scale from 0 to 10. 0 means you know nothing, 10 means you know everything.')
-    //                         .setStyle(TextInputStyle.Short)
-    //                         .setRequired(true)
-    //                 )
-    //             )
-        
-    //         await interaction.showModal(helperAppPart1)
-    //     }
-        
-    //     if (interaction.customId === 'Content Creator Button'){
-    //         const contentCreatorModal = new ModalBuilder()
-    //             .setCustomId('Content Creator Modal')
-    //             .setTitle('Content Creator Role Request')
-    //             .addComponents(
-    //                 new ActionRowBuilder<TextInputBuilder>()
-    //                 .addComponents(
-    //                     new TextInputBuilder()
-    //                         .setCustomId('Channel Link')
-    //                         .setLabel('Please provide a link to your channel')
-    //                         .setPlaceholder('YouTube/Twitch Channel Link')
-    //                         .setStyle(TextInputStyle.Paragraph)
-    //                         .setRequired(true)
-    //                 )
-    //             )
-        
-    //         await interaction.showModal(contentCreatorModal)
-    //     }
-        
-    //     if (interaction.customId === 'Defender Role Button'){
-            
-    //     }
-    // }
     
+    if (interaction.isAutocomplete()) {
+        const focusedOption = interaction.options.getFocused(true)
+        let allChoices: string[] = []
+
+        switch (interaction.commandName) {
+            case 'shard': 
+                allChoices = database.shards.map(s => s.get('name'))
+                break
+            case 'mod':
+                allChoices = database.mods.map(m => m.get('name'))
+                break
+            case 'defense':
+                allChoices = database.defenses.map(d => d.get('name'))
+                break
+            case 'price':
+                if (focusedOption.name !== 'item') return
+                allChoices = database.prices.map(i => i.get('name'))
+                break
+        }
+        
+        if (!focusedOption.value) { allChoices = allChoices.slice(0, 10) }
+        const ratedChoices = findBestCIMatch(focusedOption.value, allChoices).ratings
+        const bestChoices = ratedChoices.sort((a, b) => b.rating - a.rating)
+        const results = bestChoices.slice(0, 10).map(({target}) => ({ name: target, value: target}))
+
+        interaction.respond(results).catch(() => {})
+    }
 }

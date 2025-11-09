@@ -5,7 +5,12 @@ export const command = {
 	data: new SlashCommandBuilder()
 		.setName('shard')
 		.setDescription('Fetch information about a shard in DD2')
-        .addStringOption(option => option.setName('name').setDescription('The name of the shard').setRequired(true))
+        .addStringOption(option => option
+			.setName('name')
+			.setDescription('The name of the shard')
+			.setAutocomplete(true)
+			.setRequired(true)
+		)
     ,
 	async execute(interaction: ChatInputCommandInteraction) {
         showShard(interaction)

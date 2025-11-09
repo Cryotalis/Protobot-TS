@@ -12,6 +12,7 @@ export const command = {
 		.addStringOption(option => option
 			.setName('item')
 			.setDescription('The item you are looking for the price of')
+			.setAutocomplete(true)
 			.setRequired(true)
 		)
 		.addNumberOption(option => option
