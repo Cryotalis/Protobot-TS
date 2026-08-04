@@ -4,13 +4,13 @@ import { MILLISECONDS } from '../../data/time.js'
 import { sendToChannel } from '../../utils/discord.js'
 import { truncateString } from '../../utils/string.js'
 
-const recentMessages: Message[] = []
+export const recentMessages: Message[] = []
 
 /**
  * Detects and handles duplicate messages posted across one or more channels.
  */
 export async function checkForSpam(message: Message) {
-    const { repeatMessages, remainingMessages } = Object.groupBy(recentMessages, m => {
+    const repeatMessages = recentMessages.filter(m => {
         const authorMatch = m.author === message.author
         const textMatch = m.content === message.content
         const channelMatch = m.channelId === message.channelId
@@ -20,9 +20,7 @@ export async function checkForSpam(message: Message) {
             m.attachments.first()?.width === message.attachments.first()?.width &&
             m.attachments.first()?.height === message.attachments.first()?.height
     
-        return (authorMatch && textMatch && imgMatch && !channelMatch && (m.content || m.attachments.size))
-            ? "repeatMessages"
-            : "remainingMessages"
+        return authorMatch && textMatch && imgMatch && !channelMatch && (m.content || m.attachments.size)
     })
     
     if (repeatMessages && repeatMessages.length >= 1) {
@@ -68,7 +66,6 @@ export async function checkForSpam(message: Message) {
     
         message.delete()
         for (const msg of repeatMessages) { msg.delete() }
-        if (remainingMessages) { recentMessages.splice(0, recentMessages.length, ...remainingMessages) }
     } else {
         recentMessages.push(message)
         if (recentMessages.length > 10) { recentMessages.splice(0, 1) }
