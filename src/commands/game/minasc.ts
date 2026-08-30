@@ -55,7 +55,7 @@ export const command = {
 					name: '**Minimum Ascension:**',
 					value: `\`\`\`${minAsc} (${offense} Offense | ${defense} Defense | ${utility} Utility)\`\`\``
 				},
-				{ name: '<:protobot:563244237433602048> My suggestion:', value: suggestion },
+				{ name: '<:Protobot:1543489548548440115> My suggestion:', value: suggestion },
 				{
 					name: '\u200b',
 					value: '[Click Here](https://wiki.dungeondefenders2.com/wiki/Ancient_Power_Calculations) to learn more about how this was calculated'

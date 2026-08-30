@@ -52,16 +52,16 @@ export const command = {
 			.setTitle(`Showing Prices for ${name}:`)
 			.addFields([
 				{
-					name: '<:Windows:841728740333715497>  PC Price',
-					value: `${pcPrice} <:gold:460345588911833088>`
+					name: '<:Windows:1543489828727951421>  PC Price',
+					value: `${pcPrice} <:gold:1543489825192288347>`
 				},
 				{
-					name: '<:PS:841728740282597426>  PlayStation Price',
-					value: `${psPrice} <:gold:460345588911833088>`
+					name: '<:PlayStation:1543489827448561735>  PlayStation Price',
+					value: `${psPrice} <:gold:1543489825192288347>`
 				},
 				{
-					name: '<:Xbox:841728740303437824>  Xbox Price',
-					value: `${xboxPrice} <:gold:460345588911833088>`
+					name: '<:Xbox:1543489825947263027>  Xbox Price',
+					value: `${xboxPrice} <:gold:1543489825192288347>`
 				},
 				{
 					name: '\u200b',
