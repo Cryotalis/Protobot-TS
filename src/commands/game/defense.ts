@@ -64,7 +64,7 @@ export const command = {
 
 			const [loadingIndicator, defenseImage] = await Promise.all([
 				i.update({
-					content: `Loading your **${defense.name}** (${defense.role}) build <a:loading:763160594974244874>`,
+					content: `Loading your **${defense.name}** (${defense.role}) build <a:loading:1543823328568020992>`,
 					components: []
 				}),
 				generateBuildImage(defense)

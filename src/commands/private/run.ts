@@ -38,25 +38,25 @@ export const command = {
 		const command = interaction.options.getSubcommand()
 
 		if (command === 'startup'){
-			interaction.reply('Running startup functions <a:loading:763160594974244874>'),
+			interaction.reply('Running startup functions <a:loading:1543823328568020992>'),
 			await runStartup()
 			interaction.editReply('Startup Completed.')
 		}
 
 		if (command === 'connect_database'){
-			interaction.reply('Connecting to Database <a:loading:763160594974244874>'),
+			interaction.reply('Connecting to Database <a:loading:1543823328568020992>'),
 			await connectDatabase()
 			interaction.editReply('Database Connection Successful.')
 		}
 
 		if (command === 'load_defenses'){
-			interaction.reply('Loading Defense Builds <a:loading:763160594974244874>'),
+			interaction.reply('Loading Defense Builds <a:loading:1543823328568020992>'),
 			await loadDefenseBuilds()
 			interaction.editReply('Defense Builds Loaded.')
 		}
 
 		if (command === 'register_commands'){
-			interaction.reply('Registering Commands <a:loading:763160594974244874>'),
+			interaction.reply('Registering Commands <a:loading:1543823328568020992>'),
 			await registerCommands()
 			interaction.editReply('Commands Registered.')
 		}
